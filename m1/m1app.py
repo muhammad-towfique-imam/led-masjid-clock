@@ -76,80 +76,59 @@ class BanglaSetupPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(0, weight=18)
-        self.rowconfigure(1, weight=1)
-        self.rowconfigure(2, weight=1)
-        self.rowconfigure(3, weight=18)
-
         lbl_heading = ttk.Label(self, text="Bangla Setup", style="heading.TLabel")
-        lbl_heading.grid(row=0, column=0)
+        lbl_heading.pack(pady=50)
 
-        line1_frame = ttk.Frame(self)
-
-        lbl_year = ttk.Label(line1_frame, text="Bangla Year:", style="form.TLabel")
-        lbl_year.pack(side=tk.LEFT, padx=0)
-
+        frame = ttk.Frame(self)
+        lbl_year = ttk.Label(frame, text="Bangla Year:", style="form.TLabel")
+        lbl_year.grid(row=1, column=0, sticky = tk.W, pady=5)
         current_year = date.today().year
-        cmb_bn_year = ttk.Combobox(line1_frame, font=(None, 11), values=list(range(current_year-2, current_year+3)))
+        cmb_bn_year = ttk.Combobox(frame, font=(None, 11), values=list(range(current_year-2, current_year+3)))
         cmb_bn_year.current(2)
-        cmb_bn_year.pack(side=tk.LEFT, padx=10)
+        cmb_bn_year.grid(row=1, column=1, padx=10, sticky = tk.W, pady=5)
 
-        bn_apply = ttk.Button(line1_frame, text="Apply", command=lambda: controller.show_frame(StartPage), style="form.TButton")
-        bn_apply.pack(side=tk.LEFT, padx=10)
+        btn_apply = ttk.Button(frame, text="Apply", command=lambda: controller.show_frame(StartPage), style="form.TButton")
+        btn_apply.grid(row=2, column=0, columnspan=2, sticky = tk.E, pady=5)
+        
+        frame.pack()
 
-        line1_frame.grid(row=1, column=0)
+
+
+
 
 class HijriSetupPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(0, weight=18)
-        self.rowconfigure(1, weight=1)
-        self.rowconfigure(2, weight=1)
-        self.rowconfigure(3, weight=1)
-        self.rowconfigure(4, weight=1)
-        self.rowconfigure(5, weight=1)
-        self.rowconfigure(6, weight=1)
-        self.rowconfigure(7, weight=18)
         now = datetime.datetime.today()
         hz_year, hz_month, magrib_h, magrib_m = get_hijri_info()
 
         lbl_heading = ttk.Label(self, text="Hijri Setup", style="heading.TLabel")
-        lbl_heading.grid(row=0, column=0)
+        lbl_heading.pack()
 
-        line1_frame = ttk.Frame(self)
-        lbl_year = ttk.Label(line1_frame, text="Hijri Year:", style="form.TLabel")
-        lbl_year.pack(side=tk.LEFT, padx=0)
-        cmb_hz_year = ttk.Combobox(line1_frame, font=(None, 11), values=list(range(hz_year-2, hz_year+3)))
+        frame = ttk.Frame(self)
+        lbl_year = ttk.Label(frame, text="Hijri Year:", style="form.TLabel")
+        lbl_year.grid(row=0, column=0, sticky = tk.W, pady=5)
+        cmb_hz_year = ttk.Combobox(frame, font=(None, 11), values=list(range(hz_year-2, hz_year+3)))
         cmb_hz_year.current(2)
-        cmb_hz_year.pack(side=tk.LEFT, padx=10)
-        line1_frame.grid(row=1, column=0, pady=5)
+        cmb_hz_year.grid(row=0, column=1, padx=10, sticky = tk.W, pady=5)
 
-        line2_frame = ttk.Frame(self)
-        lbl_month = ttk.Label(line2_frame, text="Hijri Month:", style="form.TLabel")
-        lbl_month.pack(side=tk.LEFT, padx=0)
-        cmb_hz_month = ttk.Combobox(line2_frame, font=(None, 11), values=get_hijri_months())
+        lbl_month = ttk.Label(frame, text="Hijri Month:", style="form.TLabel")
+        lbl_month.grid(row=1, column=0, sticky = tk.W, pady=5)
+        cmb_hz_month = ttk.Combobox(frame, font=(None, 11), values=get_hijri_months())
         cmb_hz_month.current(hz_month - 1)   # 1 based month
-        cmb_hz_month.pack(side=tk.LEFT, padx=10)
-        line2_frame.grid(row=2, column=0, pady=5)
+        cmb_hz_month.grid(row=1, column=1, padx=10, sticky = tk.W, pady=5)
 
-        line3_frame = ttk.Frame(self)
-        lbl_start_date = ttk.Label(line3_frame, text="Select start date of Hijri month:", style="form.TLabel")
-        lbl_start_date.pack(side=tk.LEFT, padx=0)
-        line3_frame.grid(row=3, column=0)
+        lbl_start_date = ttk.Label(frame, text="Select start date of Hijri month:", style="form.TLabel")
+        lbl_start_date.grid(row=2, column=0, columnspan=2, padx=0, sticky = tk.W, pady=5)
 
-        line4_frame = ttk.Frame(self)
-        cal = Calendar(line4_frame, selectmode = 'day', year = now.year, month = now.month, day = now.day)
-        cal.pack(pady = 5)
-        line4_frame.grid(row=4, column=0)
+        cal = Calendar(frame, selectmode = 'day', year = now.year, month = now.month, day = now.day)
+        cal.grid(row=3, column=0, columnspan=2, sticky = tk.E, pady=5)
 
-
-        line4_frame = ttk.Frame(self)
-        bn_apply = ttk.Button(line4_frame, text="Apply", command=lambda: controller.show_frame(StartPage), style="form.TButton")
-        bn_apply.pack(side=tk.LEFT, padx=10)
-        line4_frame.grid(row=5, column=0, pady=5)
+        bn_apply = ttk.Button(frame, text="Apply", command=lambda: controller.show_frame(StartPage), style="form.TButton")
+        bn_apply.grid(row=4, column=0, columnspan=2, sticky = tk.E, pady=5)
+        
+        frame.pack()
 
 
   
