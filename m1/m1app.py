@@ -3,7 +3,7 @@ from tkinter import ttk
 from tkinter.font import BOLD
 from datetime import date
 from tkcalendar import Calendar
-from hijri_utils import get_hijri_date_after_5_days, get_hijri_months
+from hijri_utils import get_hijri_info, get_hijri_months
 import datetime
   
 class M1App(tk.Tk):
@@ -114,7 +114,7 @@ class HijriSetupPage(tk.Frame):
         self.rowconfigure(6, weight=1)
         self.rowconfigure(7, weight=18)
         now = datetime.datetime.today()
-        next_hz_date = get_hijri_date_after_5_days()
+        hz_year, hz_month, magrib_h, magrib_m = get_hijri_info()
 
         lbl_heading = ttk.Label(self, text="Hijri Setup", style="heading.TLabel")
         lbl_heading.grid(row=0, column=0)
@@ -122,7 +122,7 @@ class HijriSetupPage(tk.Frame):
         line1_frame = ttk.Frame(self)
         lbl_year = ttk.Label(line1_frame, text="Hijri Year:", style="form.TLabel")
         lbl_year.pack(side=tk.LEFT, padx=0)
-        cmb_hz_year = ttk.Combobox(line1_frame, font=(None, 11), values=list(range(next_hz_date.year-2, next_hz_date.year+3)))
+        cmb_hz_year = ttk.Combobox(line1_frame, font=(None, 11), values=list(range(hz_year-2, hz_year+3)))
         cmb_hz_year.current(2)
         cmb_hz_year.pack(side=tk.LEFT, padx=10)
         line1_frame.grid(row=1, column=0, pady=5)
@@ -131,7 +131,7 @@ class HijriSetupPage(tk.Frame):
         lbl_month = ttk.Label(line2_frame, text="Hijri Month:", style="form.TLabel")
         lbl_month.pack(side=tk.LEFT, padx=0)
         cmb_hz_month = ttk.Combobox(line2_frame, font=(None, 11), values=get_hijri_months())
-        cmb_hz_month.current(next_hz_date.month - 1)   # 1 based month
+        cmb_hz_month.current(hz_month - 1)   # 1 based month
         cmb_hz_month.pack(side=tk.LEFT, padx=10)
         line2_frame.grid(row=2, column=0, pady=5)
 
