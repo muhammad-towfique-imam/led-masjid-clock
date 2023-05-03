@@ -90,13 +90,13 @@ class BanglaSetupPage(tk.Frame):
         cmb_bn_year.current(2)
         cmb_bn_year.grid(row=1, column=1, padx=10, sticky = tk.W, pady=5)
 
-        btn_apply = ttk.Button(frame, text="Apply", command=lambda: self.apply(int(cmb_bn_year.get())), style="form.TButton")
+        btn_apply = ttk.Button(frame, text="Apply", command=lambda: self.apply(cmb_bn_year.get()), style="form.TButton")
         btn_apply.grid(row=2, column=0, columnspan=2, sticky = tk.E, pady=5)
         
         frame.pack()
 
     def apply(self, bn_year):
-        xml = get_bangla_program_xml(bn_year)
+        xml = get_bangla_program_xml(int(bn_year))
         hd_register(xml)
         self.controller.show_frame(StartPage)
 
@@ -130,10 +130,13 @@ class HijriSetupPage(tk.Frame):
         cal = Calendar(frame, selectmode = 'day', year = now.year, month = now.month, day = now.day)
         cal.grid(row=3, column=0, columnspan=2, sticky = tk.E, pady=5)
 
-        bn_apply = ttk.Button(frame, text="Apply", command=lambda: controller.show_frame(StartPage), style="form.TButton")
+        bn_apply = ttk.Button(frame, text="Apply", command=lambda: self.apply(cmb_hz_year.get(), cmb_hz_month.get(), magrib_h, magrib_m, cal.get_date()), style="form.TButton")
         bn_apply.grid(row=4, column=0, columnspan=2, sticky = tk.E, pady=5)
         
         frame.pack()
 
+    def apply(self, year, month, h, m, start_date):
+        
+        self.controller.show_frame(StartPage)
 
   
