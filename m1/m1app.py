@@ -5,6 +5,8 @@ from datetime import date
 from tkcalendar import Calendar
 from hijri_utils import get_hijri_info, get_hijri_months
 import datetime
+from m1.m1_bangla import get_bangla_program_xml
+from hd2020_helper import hd_register
   
 class M1App(tk.Tk):
      
@@ -75,6 +77,7 @@ class StartPage(tk.Frame):
 class BanglaSetupPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.controller = controller
 
         lbl_heading = ttk.Label(self, text="Bangla Setup", style="heading.TLabel")
         lbl_heading.pack(pady=50)
@@ -87,10 +90,16 @@ class BanglaSetupPage(tk.Frame):
         cmb_bn_year.current(2)
         cmb_bn_year.grid(row=1, column=1, padx=10, sticky = tk.W, pady=5)
 
-        btn_apply = ttk.Button(frame, text="Apply", command=lambda: controller.show_frame(StartPage), style="form.TButton")
+        btn_apply = ttk.Button(frame, text="Apply", command=lambda: self.apply(int(cmb_bn_year.get())), style="form.TButton")
         btn_apply.grid(row=2, column=0, columnspan=2, sticky = tk.E, pady=5)
         
         frame.pack()
+
+    def apply(self, bn_year):
+        xml = get_bangla_program_xml(bn_year)
+        hd_register(xml)
+        self.controller.show_frame(StartPage)
+
 
 class HijriSetupPage(tk.Frame):
     def __init__(self, parent, controller):
