@@ -3,10 +3,13 @@ from tkinter import ttk
 from tkinter.font import BOLD
 from datetime import date
 from tkcalendar import Calendar
-from hijri_utils import get_hijri_info, get_hijri_months
+from hijri_utils import get_next_hijri_month, get_hijri_months, get_min_margib_time, str_to_date
 import datetime
 from m1.m1_bangla import get_bangla_program_xml
+from m1.m1_hijri import get_hijri_program_xml
 from hd2020_helper import hd_register
+import bangladatetime
+import tkinter.messagebox as msg
   
 class M1App(tk.Tk):
      
@@ -85,28 +88,37 @@ class BanglaSetupPage(tk.Frame):
         frame = ttk.Frame(self)
         lbl_year = ttk.Label(frame, text="Bangla Year:", style="form.TLabel")
         lbl_year.grid(row=1, column=0, sticky = tk.W, pady=5)
-        current_year = date.today().year
-        cmb_bn_year = ttk.Combobox(frame, font=(None, 11), values=list(range(current_year-2, current_year+3)))
+        
+        now = datetime.datetime.today()
+        now_bn = bangladatetime.date.fromgregorian(now.year, now.month, now.day)
+
+        cmb_bn_year = ttk.Combobox(frame, font=(None, 11), values=list(range(now_bn.year-1, now_bn.year+4)))
         cmb_bn_year.current(2)
         cmb_bn_year.grid(row=1, column=1, padx=10, sticky = tk.W, pady=5)
 
-        btn_apply = ttk.Button(frame, text="Apply", command=lambda: self.apply(cmb_bn_year.get()), style="form.TButton")
-        btn_apply.grid(row=2, column=0, columnspan=2, sticky = tk.E, pady=5)
-        
+        btn_frame = ttk.Frame(frame)
+        bn_back = ttk.Button(btn_frame, text="Back", command=lambda: self.controller.show_frame(StartPage), style="form.TButton")
+        bn_back.pack(side = "left", padx=5)
+        bn_apply = ttk.Button(btn_frame, text="Apply", command=lambda: self.apply(cmb_bn_year.get()), style="form.TButton")
+        bn_apply.pack(side = "left", padx=5)
+        btn_frame.grid(row=2, column=0, sticky = tk.E, pady=5, columnspan=2)
+
         frame.pack()
 
     def apply(self, bn_year):
         xml = get_bangla_program_xml(int(bn_year))
         hd_register(xml)
+        msg.showinfo("Success", "Bangla program written successfully")
         self.controller.show_frame(StartPage)
 
 
 class HijriSetupPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.controller = controller
 
         now = datetime.datetime.today()
-        hz_year, hz_month, magrib_h, magrib_m = get_hijri_info()
+        hz_year, hz_month = get_next_hijri_month()
 
         lbl_heading = ttk.Label(self, text="Hijri Setup", style="heading.TLabel")
         lbl_heading.pack()
@@ -130,13 +142,21 @@ class HijriSetupPage(tk.Frame):
         cal = Calendar(frame, selectmode = 'day', year = now.year, month = now.month, day = now.day)
         cal.grid(row=3, column=0, columnspan=2, sticky = tk.E, pady=5)
 
-        bn_apply = ttk.Button(frame, text="Apply", command=lambda: self.apply(cmb_hz_year.get(), cmb_hz_month.get(), magrib_h, magrib_m, cal.get_date()), style="form.TButton")
-        bn_apply.grid(row=4, column=0, columnspan=2, sticky = tk.E, pady=5)
-        
+        btn_frame = ttk.Frame(frame)
+        bn_back = ttk.Button(btn_frame, text="Back", command=lambda: self.controller.show_frame(StartPage), style="form.TButton")
+        bn_back.pack(side = "left", padx=5)
+        bn_apply = ttk.Button(btn_frame, text="Apply", command=lambda: self.apply(cmb_hz_year.get(), cmb_hz_month.current() + 1, cal.get_date()), style="form.TButton")
+        bn_apply.pack(side = "left", padx=5)
+        btn_frame.grid(row=4, column=0, sticky = tk.E, pady=5, columnspan=2)
+
         frame.pack()
 
-    def apply(self, year, month, h, m, start_date):
-        
+    def apply(self, year, month, start_date_txt):
+        start_date = str_to_date(start_date_txt)
+        h, m = get_min_margib_time(start_date)
+        xml = get_hijri_program_xml(int(year), month, h, m, start_date)
+        hd_register(xml)
+        msg.showinfo("Success", "Hijri program written successfully")
         self.controller.show_frame(StartPage)
 
   

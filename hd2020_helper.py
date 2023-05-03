@@ -1,7 +1,8 @@
 import os
 from bs4 import BeautifulSoup
 
-HD_PROGRAM_DIR = os.getenv('APPDATA') + "\\Huidu\\HD2020\\program\\" if os.getenv('APPDATA') else ""
+HD_HOME = os.getenv('APPDATA').replace('\\', '/') + "/Huidu/HD2020" if os.getenv('APPDATA') else ""
+HD_PROGRAM_DIR = HD_HOME + "\\program/"
 HD_ROOT_FILE = HD_PROGRAM_DIR + "root.xml"
 
 def hd_installed():
