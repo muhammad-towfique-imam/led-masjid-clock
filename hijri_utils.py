@@ -4,6 +4,8 @@ from hijri_converter import Gregorian
 
 from praytimes import PrayTimes
 
+import base64
+
 prayTimes = PrayTimes()
 prayTimes.setMethod('Karachi')
 DATE_FMT = "%m/%d/%y"
@@ -65,6 +67,46 @@ def get_hijri_months():
         "Zul-qaadh",
         "Zul-hijjah",
     ]
+
+def replace_edit_data(data, year):
+    edit_data = data.encode("utf-8")
+    decoded = base64.decodebytes(edit_data)
+    y = str(year)
+    updated = '\x00{}\x00{}\x00{}\x00{}\x00'.format(y[0], y[1], y[2], y[3])
+    decoded = decoded.replace(b'\x001\x004\x004\x003\x00', str.encode(updated))
+    return base64.b64encode(decoded).decode("utf-8")
+
+def replace_rtf_data(data, year):
+    decoded = base64.b64decode(data).decode('utf-8')
+    decoded = decoded.replace('1443', str(year))
+    return base64.b64encode(decoded.encode('utf-8')).decode('utf-8')
+
+def set_year(bs_data, year, nodes):
+    for node in nodes:
+        area = bs_data.find('area', {"nodeName" : node})
+        text = area.find('text')
+        text['editData'] = replace_edit_data(text['editData'], year)
+        text['rtfData'] = replace_rtf_data(text['rtfData'], year)
+
+def set_month(hijri_month, start_date, programs, hour, min):
+    i = 1
+    for program in programs:
+        if i == hijri_month:
+            counter_date = start_date - datetime.timedelta(days=1)
+            program['nodeChecked'] = "1"
+            timings = program.find_all('timing')
+            for timing in timings:
+                timing['year_'] = counter_date.year
+                timing['month_'] = counter_date.month
+                timing['day_'] = counter_date.day
+                timing['hour_'] = hour + 12
+                timing['minute_'] = min
+                timing['second_'] = 0
+                timing['cumulative_'] = "1"                
+        else:
+            program.decompose()
+        i = i + 1
+
 
 if __name__ == "__main__":
     m = get_hijri_months()
