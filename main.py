@@ -8,7 +8,7 @@ def report_callback_exception(self, exc, val, tb):
 tk.Tk.report_callback_exception = report_callback_exception
 
 if __name__ == "__main__":
-    app = AppUI(model="m2")
+    app = AppUI(model="m1")
     app.eval('tk::PlaceWindow . center')
     app.mainloop()
 
