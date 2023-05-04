@@ -2,8 +2,6 @@ import datetime
 
 from hijri_converter import Gregorian
 
-from hijri_converter.locales import EnglishLocale
-
 from praytimes import PrayTimes
 
 prayTimes = PrayTimes()
@@ -53,7 +51,20 @@ def str_to_date(date_str):
     return datetime.datetime.strptime(date_str, DATE_FMT)
 
 def get_hijri_months():
-    return EnglishLocale.month_names
+    return [
+        "Muharram",
+        "Safar",
+        "Rabiul Awl",
+        "Rabiul Akhr",
+        "Juma Ula",
+        "Juma Akhir",
+        "Rajab",
+        "Shaban",
+        "Ramadan",
+        "Shawwal",
+        "Zul-qaadh",
+        "Zul-hijjah",
+    ]
 
 if __name__ == "__main__":
     m = get_hijri_months()
