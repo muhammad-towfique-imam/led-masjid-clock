@@ -7,8 +7,10 @@ from hijri_utils import get_next_hijri_month, get_hijri_months, get_min_margib_t
 import datetime
 from m1.m1_bangla import get_m1_bangla_xml
 from m1.m1_hijri import get_m1_hijri_xml
+from m1.m1_english import get_m1_english_xml
 from m2.m2_bangla import get_m2_bangla_xml
 from m2.m2_hijri import get_m2_hijri_xml
+from m2.m2_english import get_m2_english_xml
 from hd2020_helper import hd_register
 import bangladatetime
 import tkinter.messagebox as msg
@@ -42,7 +44,7 @@ class AppUI(tk.Tk):
   
         # iterating through a tuple consisting
         # of the different page layouts
-        for F in (StartPage, BanglaSetupPage, HijriSetupPage):
+        for F in (StartPage, EnglishSetupPage, BanglaSetupPage, HijriSetupPage):
   
             frame = F(container, self)
   
@@ -69,17 +71,51 @@ class StartPage(tk.Frame):
         self.rowconfigure(0, weight=18)
         self.rowconfigure(1, weight=1)
         self.rowconfigure(2, weight=1)
-        self.rowconfigure(3, weight=18)
+        self.rowconfigure(3, weight=1)
+        self.rowconfigure(4, weight=18)
 
         lbl_heading = ttk.Label(self, text="Matrix Clock " + controller.model.upper() , style="heading.TLabel")
         lbl_heading.grid(row=0, column=0)
 
+        en_btn = ttk.Button(self, text="English Setup", style="form.TButton", width=25, command=lambda: controller.show_frame(EnglishSetupPage))
+        en_btn.grid(row=1, column=0, padx=20, pady=5)
+
         bn_btn = ttk.Button(self, text="Bangla Setup", style="form.TButton", width=25, command=lambda: controller.show_frame(BanglaSetupPage))
-        bn_btn.grid(row=1, column=0, padx=20, pady=5)
+        bn_btn.grid(row=2, column=0, padx=20, pady=5)
 
         hz_btn = ttk.Button(self, text="Hijri Setup", style="form.TButton", width=25, command=lambda: controller.show_frame(HijriSetupPage))
-        hz_btn.grid(row=2, column=0, padx=20, pady=5)
+        hz_btn.grid(row=3, column=0, padx=20, pady=5)
   
+class EnglishSetupPage(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+
+        lbl_heading = ttk.Label(self, text="English Setup", style="heading.TLabel")
+        lbl_heading.pack(pady=50)
+
+        frame = ttk.Frame(self)
+
+        btn_frame = ttk.Frame(frame)
+        btn_back = ttk.Button(btn_frame, text="Back", command=lambda: self.controller.show_frame(StartPage), style="form.TButton")
+        btn_back.pack(side = "left", padx=5)
+        btn_apply = ttk.Button(btn_frame, text="Apply", command=lambda: self.apply(), style="form.TButton")
+        btn_apply.pack(side = "left", padx=5)
+        btn_frame.grid(row=1, column=0, sticky = tk.E, pady=5, columnspan=2)
+
+        frame.pack()
+
+    def apply(self):
+        if self.controller.model == 'm1':
+            xml = get_m1_english_xml()
+        elif self.controller.model == 'm2':
+            xml = get_m2_english_xml()
+        if xml:
+            hd_register(xml)
+            msg.showinfo("Success", "English program written successfully")
+        self.controller.show_frame(StartPage)
+
+
 class BanglaSetupPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
