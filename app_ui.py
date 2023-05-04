@@ -7,6 +7,8 @@ from hijri_utils import get_next_hijri_month, get_hijri_months, get_min_margib_t
 import datetime
 from m1.m1_bangla import get_m1_bangla_xml
 from m1.m1_hijri import get_m1_hijri_xml
+from m2.m2_bangla import get_m2_bangla_xml
+from m2.m2_hijri import get_m2_hijri_xml
 from hd2020_helper import hd_register
 import bangladatetime
 import tkinter.messagebox as msg
@@ -109,6 +111,8 @@ class BanglaSetupPage(tk.Frame):
     def apply(self, bn_year):
         if self.controller.model == 'm1':
             xml = get_m1_bangla_xml(int(bn_year))
+        elif self.controller.model == 'm2':
+            xml = get_m2_bangla_xml(int(bn_year))
         if xml:
             hd_register(xml)
             msg.showinfo("Success", "Bangla program written successfully")
@@ -160,6 +164,8 @@ class HijriSetupPage(tk.Frame):
         h, m = get_min_margib_time(start_date)
         if self.controller.model == 'm1':
             xml = get_m1_hijri_xml(int(year), month, h, m, start_date)
+        elif self.controller.model == 'm2':
+            xml = get_m2_hijri_xml(int(year), month, h, m, start_date)
         if xml:
             hd_register(xml)
             msg.showinfo("Success", "Hijri program written successfully")
