@@ -27,10 +27,15 @@ def replace_rtf_data(data, year):
 def set_year(bs_data, year):
     for node in ['s1-month-year', 's2-month-year']:
         areas = bs_data.find_all('area', {"nodeName" : node})
+        i = 1
         for area in areas:
             text = area.find('text')
-            text['editData'] = replace_edit_data(text['editData'], year)
-            text['rtfData'] = replace_rtf_data(text['rtfData'], year)
+            target_year = year
+            if i == 13:
+                target_year = year + 1
+            text['editData'] = replace_edit_data(text['editData'], target_year)
+            text['rtfData'] = replace_rtf_data(text['rtfData'], target_year)
+            i = i + 1
 
 def get_bangla_program_xml(bn_year):
     en_year = bn_year + 593
@@ -51,7 +56,7 @@ def get_bangla_program_xml(bn_year):
         if i == 1:
             start_date = year_start_date
             end_date = start_date + datetime.timedelta(days=30)
-        elif i >= 2 and i <= 6:
+        elif (i >= 2 and i <= 6) or i == 13:
             start_date = end_date + datetime.timedelta(days=1)
             end_date = start_date + datetime.timedelta(days=30)
         elif i >= 7 and i <= 10:
