@@ -25,7 +25,7 @@ def set_year(bs_data, year):
         text['editData'] = replace_edit_data(text['editData'], year)
         text['rtfData'] = replace_rtf_data(text['rtfData'], year)
 
-def get_hijri_program_xml(hijri_year, hijri_month, hour, min, start_date):
+def get_m1_hijri_xml(hijri_year, hijri_month, hour, min, start_date):
     with open('m1/m1-hijri.xml', 'r') as f:
         data = f.read()
     

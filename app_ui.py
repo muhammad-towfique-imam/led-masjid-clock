@@ -5,24 +5,25 @@ from datetime import date
 from tkcalendar import Calendar
 from hijri_utils import get_next_hijri_month, get_hijri_months, get_min_margib_time, str_to_date
 import datetime
-from m1.m1_bangla import get_bangla_program_xml
-from m1.m1_hijri import get_hijri_program_xml
+from m1.m1_bangla import get_m1_bangla_xml
+from m1.m1_hijri import get_m1_hijri_xml
 from hd2020_helper import hd_register
 import bangladatetime
 import tkinter.messagebox as msg
   
-class M1App(tk.Tk):
+class AppUI(tk.Tk):
      
     # __init__ function for class tkinterApp
-    def __init__(self, *args, **kwargs):
+    def __init__(self, model, *args, **kwargs):
         # __init__ function for class Tk
         tk.Tk.__init__(self, *args, **kwargs)
 
         style = ttk.Style(self)
-        style.configure('heading.TLabel', font=(None, 35, BOLD))
+        style.configure('heading.TLabel', font=(None, 25, BOLD))
         style.configure('form.TLabel', font=(None, 11))
         style.configure('form.TButton', font=(None, 11))
 
+        self.model = model
         self.title("Matrix Clock")
         self.geometry("600x400")
         self.resizable(0, 0)
@@ -68,7 +69,7 @@ class StartPage(tk.Frame):
         self.rowconfigure(2, weight=1)
         self.rowconfigure(3, weight=18)
 
-        lbl_heading = ttk.Label(self, text="Matrix Clock M1", style="heading.TLabel")
+        lbl_heading = ttk.Label(self, text="Matrix Clock " + controller.model.upper() , style="heading.TLabel")
         lbl_heading.grid(row=0, column=0)
 
         bn_btn = ttk.Button(self, text="Bangla Setup", style="form.TButton", width=25, command=lambda: controller.show_frame(BanglaSetupPage))
@@ -106,9 +107,11 @@ class BanglaSetupPage(tk.Frame):
         frame.pack()
 
     def apply(self, bn_year):
-        xml = get_bangla_program_xml(int(bn_year))
-        hd_register(xml)
-        msg.showinfo("Success", "Bangla program written successfully")
+        if self.controller.model == 'm1':
+            xml = get_m1_bangla_xml(int(bn_year))
+        if xml:
+            hd_register(xml)
+            msg.showinfo("Success", "Bangla program written successfully")
         self.controller.show_frame(StartPage)
 
 
@@ -116,6 +119,7 @@ class HijriSetupPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
+        self.parent = parent
 
         now = datetime.datetime.today()
         hz_year, hz_month = get_next_hijri_month()
@@ -154,9 +158,11 @@ class HijriSetupPage(tk.Frame):
     def apply(self, year, month, start_date_txt):
         start_date = str_to_date(start_date_txt)
         h, m = get_min_margib_time(start_date)
-        xml = get_hijri_program_xml(int(year), month, h, m, start_date)
-        hd_register(xml)
-        msg.showinfo("Success", "Hijri program written successfully")
+        if self.controller.model == 'm1':
+            xml = get_m1_hijri_xml(int(year), month, h, m, start_date)
+        if xml:
+            hd_register(xml)
+            msg.showinfo("Success", "Hijri program written successfully")
         self.controller.show_frame(StartPage)
 
   

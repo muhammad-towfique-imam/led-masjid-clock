@@ -37,7 +37,7 @@ def set_year(bs_data, year):
             text['rtfData'] = replace_rtf_data(text['rtfData'], target_year)
             i = i + 1
 
-def get_bangla_program_xml(bn_year):
+def get_m1_bangla_xml(bn_year):
     en_year = bn_year + 593
 
     year_start_date = datetime.datetime(en_year, 4, 14)
