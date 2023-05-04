@@ -23,27 +23,38 @@ class AppUI(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
 
         style = ttk.Style(self)
-        style.configure('heading.TLabel', font=(None, 25, BOLD))
+        style.configure('heading.TLabel', font=(None, 16, BOLD))
+        style.configure('subheading.TLabel', font=(None, 11))
         style.configure('form.TLabel', font=(None, 11))
         style.configure('form.TButton', font=(None, 11))
 
         self.model = model
         self.title("Matrix Clock")
-        self.geometry("600x400")
+        self.geometry("350x450")
         self.resizable(0, 0)
          
         # creating a container
         container = tk.Frame(self) 
         container.pack(side = "top", fill = "both", expand = True)
   
-        container.grid_rowconfigure(0, weight = 1)
         container.grid_columnconfigure(0, weight = 1)
+        container.grid_rowconfigure(0, weight = 1)
+        container.grid_rowconfigure(1, weight = 1)
+        container.grid_rowconfigure(2, weight = 8)
   
         # initializing frames to an empty array
         self.frames = {} 
   
         # iterating through a tuple consisting
         # of the different page layouts
+
+        lbl_heading = ttk.Label(container, text="Matrix Clock " + model.upper() , style="heading.TLabel")
+        lbl_heading.grid(row=0, column=0, pady=5)
+
+        self.sub_heading = tk.StringVar()
+        lbl_sub_heading = ttk.Label(container, style="subheading.TLabel", textvariable=self.sub_heading)
+        lbl_sub_heading.grid(row=1, column=0, pady=(0, 20))
+
         for F in (StartPage, EnglishSetupPage, BanglaSetupPage, HijriSetupPage):
   
             frame = F(container, self)
@@ -53,7 +64,7 @@ class AppUI(tk.Tk):
             # for loop
             self.frames[F] = frame
   
-            frame.grid(row = 0, column = 0, sticky ="nsew")
+            frame.grid(row = 2, column = 0, sticky ="nsew")
   
         self.show_frame(StartPage)
   
@@ -61,38 +72,32 @@ class AppUI(tk.Tk):
     # parameter
     def show_frame(self, cont):
         frame = self.frames[cont]
+        self.sub_heading.set(frame.title)
         frame.tkraise()
   
 class StartPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.title = ""
 
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(0, weight=18)
-        self.rowconfigure(1, weight=1)
-        self.rowconfigure(2, weight=1)
-        self.rowconfigure(3, weight=1)
-        self.rowconfigure(4, weight=18)
+        frame = ttk.Frame(self)
 
-        lbl_heading = ttk.Label(self, text="Matrix Clock " + controller.model.upper() , style="heading.TLabel")
-        lbl_heading.grid(row=0, column=0)
+        en_btn = ttk.Button(frame, text="English Setup", style="form.TButton", width=25, command=lambda: controller.show_frame(EnglishSetupPage))
+        en_btn.grid(row=0, column=0, padx=20, pady=5)
 
-        en_btn = ttk.Button(self, text="English Setup", style="form.TButton", width=25, command=lambda: controller.show_frame(EnglishSetupPage))
-        en_btn.grid(row=1, column=0, padx=20, pady=5)
+        bn_btn = ttk.Button(frame, text="Bangla Setup", style="form.TButton", width=25, command=lambda: controller.show_frame(BanglaSetupPage))
+        bn_btn.grid(row=1, column=0, padx=20, pady=5)
 
-        bn_btn = ttk.Button(self, text="Bangla Setup", style="form.TButton", width=25, command=lambda: controller.show_frame(BanglaSetupPage))
-        bn_btn.grid(row=2, column=0, padx=20, pady=5)
-
-        hz_btn = ttk.Button(self, text="Hijri Setup", style="form.TButton", width=25, command=lambda: controller.show_frame(HijriSetupPage))
-        hz_btn.grid(row=3, column=0, padx=20, pady=5)
+        hz_btn = ttk.Button(frame, text="Hijri Setup", style="form.TButton", width=25, command=lambda: controller.show_frame(HijriSetupPage))
+        hz_btn.grid(row=2, column=0, padx=20, pady=5)
+        
+        frame.pack(fill="none", expand=True)
   
 class EnglishSetupPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-
-        lbl_heading = ttk.Label(self, text="English Setup", style="heading.TLabel")
-        lbl_heading.pack(pady=50)
+        self.title = "English Setup"
 
         frame = ttk.Frame(self)
 
@@ -101,7 +106,7 @@ class EnglishSetupPage(tk.Frame):
         btn_back.pack(side = "left", padx=5)
         btn_apply = ttk.Button(btn_frame, text="Apply", command=lambda: self.apply(), style="form.TButton")
         btn_apply.pack(side = "left", padx=5)
-        btn_frame.grid(row=1, column=0, sticky = tk.E, pady=5, columnspan=2)
+        btn_frame.grid(row=0, column=0, sticky = tk.E, pady=5, columnspan=2)
 
         frame.pack()
 
@@ -120,9 +125,7 @@ class BanglaSetupPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-
-        lbl_heading = ttk.Label(self, text="Bangla Setup", style="heading.TLabel")
-        lbl_heading.pack(pady=50)
+        self.title = "Bangla Setup"
 
         frame = ttk.Frame(self)
         lbl_year = ttk.Label(frame, text="Bangla Year:", style="form.TLabel")
@@ -159,13 +162,10 @@ class HijriSetupPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        self.parent = parent
+        self.title = "Hijri Setup"
 
         now = datetime.datetime.today()
         hz_year, hz_month = get_next_hijri_month()
-
-        lbl_heading = ttk.Label(self, text="Hijri Setup", style="heading.TLabel")
-        lbl_heading.pack()
 
         frame = ttk.Frame(self)
         lbl_year = ttk.Label(frame, text="Hijri Year:", style="form.TLabel")
