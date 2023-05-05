@@ -13,6 +13,5 @@ if __name__ == "__main__":
     if len(sys.argv) == 2:
         model = sys.argv[1]
     app = AppUI(model=model)
-    app.eval('tk::PlaceWindow . center')
     app.mainloop()
 
