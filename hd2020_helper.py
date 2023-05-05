@@ -23,7 +23,7 @@ def register_program(root_xml, filename):
     screens = group.find_all('screen')
     found = False
     for screen in screens:    
-        if screen['path'] == path:
+        if filename in screen['path']:
             found = True
     if not found:
         screen = bs_data.new_tag("screen", path=path)

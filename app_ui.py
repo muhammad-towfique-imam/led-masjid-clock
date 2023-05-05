@@ -91,7 +91,7 @@ class StartPage(tk.Frame):
         hz_btn = ttk.Button(frame, text="Hijri Setup", style="form.TButton", width=25, command=lambda: controller.show_frame(HijriSetupPage))
         hz_btn.grid(row=2, column=0, padx=20, pady=5)
         
-        frame.pack(fill="none", expand=True)
+        frame.pack()
   
 class EnglishSetupPage(tk.Frame):
     def __init__(self, parent, controller):
