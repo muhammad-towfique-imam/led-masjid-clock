@@ -24,10 +24,33 @@ def str_to_time_delta(s):
     m = int(a[1])
     return datetime.timedelta(hours=h, minutes=m)
 
+def adjust_salah_times(t, d):
+    r0 = t[0] + d[0]
+    r1 = t[1] + d[1]
+    if r1 > 59:
+        r0 = r0 + 1
+        r1 = r1 - 60
+    if (r0 > 12):
+        r0 = r0 - 12
+    return (r0, r1)
+
+def get_salah_times(start):
+    times = get_prayer_times(start)
+    return [
+        adjust_salah_times(convert_salah_time(times['fajr']), (0, 50)),
+        (1, 15),
+        adjust_salah_times(convert_salah_time(times['asr']), (1, 40)),
+        adjust_salah_times(convert_salah_time(times['maghrib']), (0, 0)),
+        adjust_salah_times(convert_salah_time(times['isha']), (0, 25))
+    ]
+
+def convert_salah_time(time):
+    a = str(time).split(':')[:2]
+    return int(a[0]), int(a[1])
+
 def get_maghrib_time(start):
     maghrib = str_to_time_delta(get_prayer_times(start)['maghrib'])
-    a = str(maghrib).split(':')[:2]
-    return int(a[0]), int(a[1])
+    return convert_salah_time(maghrib)
 
 def get_next_hijri_month():
     now = datetime.datetime.today()

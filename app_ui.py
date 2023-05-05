@@ -4,7 +4,7 @@ from tkinter.font import BOLD
 from datetime import date
 from tkcalendar import Calendar
 import babel.numbers    # Do not remove, required to generate .exe as Calendar dependency
-from hijri_utils import get_next_hijri_month, get_hijri_months, get_min_margib_time, str_to_date
+from hijri_utils import get_next_hijri_month, get_hijri_months, get_min_margib_time, str_to_date, get_salah_times
 import datetime
 from m1.m1_bangla import get_m1_bangla_xml
 from m1.m1_hijri import get_m1_hijri_xml
@@ -12,6 +12,7 @@ from m1.m1_english import get_m1_english_xml
 from m2.m2_bangla import get_m2_bangla_xml
 from m2.m2_hijri import get_m2_hijri_xml
 from m2.m2_english import get_m2_english_xml
+from m2.m2_waqt import get_m2_waqt_xml
 from hd2020_helper import hd_register
 import bangladatetime
 import tkinter.messagebox as msg
@@ -58,7 +59,7 @@ class AppUI(tk.Tk):
 
         self.set_heading(model)
 
-        for F in (SelectModelPage, StartPage, EnglishSetupPage, BanglaSetupPage, HijriSetupPage):
+        for F in (SelectModelPage, StartPage, EnglishSetupPage, BanglaSetupPage, HijriSetupPage, WaqtSetupPage):
   
             frame = F(container, self)
   
@@ -109,6 +110,8 @@ class SelectModelPage(tk.Frame):
 
     def select(self, model):
         self.controller.set_heading(model)
+        if model == "m1":
+            self.controller.frames[StartPage].wqt_btn.grid_forget()
         self.controller.show_frame(StartPage)
 
 class StartPage(tk.Frame):
@@ -126,7 +129,10 @@ class StartPage(tk.Frame):
 
         hz_btn = ttk.Button(frame, text="Hijri Setup", style="form.TButton", width=25, command=lambda: controller.show_frame(HijriSetupPage))
         hz_btn.grid(row=2, column=0, padx=20, pady=5)
-        
+
+        self.wqt_btn = ttk.Button(frame, text="Waqt Setup", style="form.TButton", width=25, command=lambda: controller.show_frame(WaqtSetupPage))
+        self.wqt_btn.grid(row=3, column=0, padx=20, pady=5)
+
         frame.pack()
   
 class EnglishSetupPage(tk.Frame):
@@ -241,6 +247,60 @@ class HijriSetupPage(tk.Frame):
         if xml:
             hd_register(xml)
             msg.showinfo("Success", "Hijri program written successfully")
+        self.controller.show_frame(StartPage)
+
+  
+class WaqtSetupPage(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.title = "Waqt Setup"
+
+        now = datetime.datetime.today()
+        times = get_salah_times(now)
+
+        frame = ttk.Frame(self)
+
+        (cmb1_hour, cmb1_min) = self.build_waqt_row(frame, "Fazr", times[0], 0)
+        (cmb2_hour, cmb2_min) = self.build_waqt_row(frame, "Duhr", times[1], 1)
+        (cmb3_hour, cmb3_min) = self.build_waqt_row(frame, "Asr", times[2], 2)
+        (cmb4_hour, cmb4_min) = self.build_waqt_row(frame, "Magrib", times[3], 3)
+        (cmb5_hour, cmb5_min) = self.build_waqt_row(frame, "Isha", times[4], 4)
+
+        btn_frame = ttk.Frame(frame)
+        bn_back = ttk.Button(btn_frame, text="Back", command=lambda: self.controller.show_frame(StartPage), style="form.TButton")
+        bn_back.pack(side = "left", padx=5)
+        bn_apply = ttk.Button(btn_frame, text="Apply", style="form.TButton", command=lambda: self.apply([
+            f'{cmb1_hour.get()}:{cmb1_min.get():02}',
+            f'{cmb2_hour.get()}:{cmb2_min.get():02}',
+            f'{cmb3_hour.get()}:{cmb3_min.get():02}',
+            f'{cmb4_hour.get()}:{cmb4_min.get():02}',
+            f'{cmb5_hour.get()}:{cmb5_min.get():02}',
+        ]))
+        bn_apply.pack(side = "left", padx=5)
+        btn_frame.grid(row=5, column=0, sticky = tk.E, pady=5, columnspan=2)
+
+        frame.pack(pady=(10, 0))
+
+    def build_waqt_row(self, frame, name, time, row):
+        waqt_frame = ttk.Frame(frame)
+        lbl_waqt = ttk.Label(waqt_frame, text=name+":", style="form.TLabel")
+        lbl_waqt.pack(pady=5, side=tk.LEFT)
+        cmb_waqt_hour = ttk.Combobox(waqt_frame, width=2, font=(None, 11), values=list(range(1, 13)))
+        cmb_waqt_hour.current(time[0] -1)
+        cmb_waqt_hour.pack(padx=5, pady=5, side=tk.LEFT)
+        cmb_waqt_min = ttk.Combobox(waqt_frame, width=2, font=(None, 11), values=list(range(61)))
+        cmb_waqt_min.current(time[1])
+        cmb_waqt_min.pack(padx=5, pady=5, side=tk.LEFT)
+        waqt_frame.grid(row=row, column=0, sticky=tk.E)
+        return (cmb_waqt_hour, cmb_waqt_min)
+
+    def apply(self, times):
+        if self.controller.model == 'm2':
+            xml = get_m2_waqt_xml(times)
+        if xml:
+            hd_register(xml)
+            msg.showinfo("Success", "Waqt program written successfully")
         self.controller.show_frame(StartPage)
 
   
