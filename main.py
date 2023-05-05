@@ -1,6 +1,7 @@
 from app_ui import AppUI
 from tkinter.messagebox import showerror
 import tkinter as tk
+import sys
 
 def report_callback_exception(self, exc, val, tb):
     showerror("Error", message=str(val))
@@ -8,7 +9,10 @@ def report_callback_exception(self, exc, val, tb):
 tk.Tk.report_callback_exception = report_callback_exception
 
 if __name__ == "__main__":
-    app = AppUI(model="m1")
+    model = None
+    if len(sys.argv) == 2:
+        model = sys.argv[1]
+    app = AppUI(model=model)
     app.eval('tk::PlaceWindow . center')
     app.mainloop()
 

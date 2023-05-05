@@ -18,7 +18,7 @@ import tkinter.messagebox as msg
 class AppUI(tk.Tk):
      
     # __init__ function for class tkinterApp
-    def __init__(self, model, *args, **kwargs):
+    def __init__(self, model = None, *args, **kwargs):
         # __init__ function for class Tk
         tk.Tk.__init__(self, *args, **kwargs)
 
@@ -28,7 +28,6 @@ class AppUI(tk.Tk):
         style.configure('form.TLabel', font=(None, 11))
         style.configure('form.TButton', font=(None, 11))
 
-        self.model = model
         self.title("Matrix Clock")
         self.geometry("350x450")
         self.resizable(0, 0)
@@ -48,14 +47,17 @@ class AppUI(tk.Tk):
         # iterating through a tuple consisting
         # of the different page layouts
 
-        lbl_heading = ttk.Label(container, text="Matrix Clock " + model.upper() , style="heading.TLabel")
+        self.heading = tk.StringVar()
+        lbl_heading = ttk.Label(container, style="heading.TLabel", textvariable=self.heading)
         lbl_heading.grid(row=0, column=0, pady=5)
 
         self.sub_heading = tk.StringVar()
         lbl_sub_heading = ttk.Label(container, style="subheading.TLabel", textvariable=self.sub_heading)
         lbl_sub_heading.grid(row=1, column=0, pady=(0, 20))
 
-        for F in (StartPage, EnglishSetupPage, BanglaSetupPage, HijriSetupPage):
+        self.set_heading(model)
+
+        for F in (SelectModelPage, StartPage, EnglishSetupPage, BanglaSetupPage, HijriSetupPage):
   
             frame = F(container, self)
   
@@ -65,8 +67,10 @@ class AppUI(tk.Tk):
             self.frames[F] = frame
   
             frame.grid(row = 2, column = 0, sticky ="nsew")
-  
-        self.show_frame(StartPage)
+        if model:
+            self.show_frame(StartPage)
+        else:
+            self.show_frame(SelectModelPage)
   
     # to display the current frame passed as
     # parameter
@@ -74,7 +78,38 @@ class AppUI(tk.Tk):
         frame = self.frames[cont]
         self.sub_heading.set(frame.title)
         frame.tkraise()
-  
+
+    def set_heading(self, model):
+        self.model = model
+        if model:
+            self.heading.set("Matrix Clock - " + model.upper())
+        else:
+            self.heading.set("Matrix Clock")
+
+class SelectModelPage(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.title = "Select clock model"
+        self.controller = controller
+
+        frame = ttk.Frame(self)
+
+        lbl_year = ttk.Label(frame, text="Clock model :", style="form.TLabel")
+        lbl_year.grid(row=0, column=0, sticky = tk.W, pady=5)
+
+        cmb_model = ttk.Combobox(frame, font=(None, 11), values=list(["m1", "m2"]))
+        cmb_model.current(0)
+        cmb_model.grid(row=0, column=1, padx=10, sticky = tk.W, pady=5)
+        
+        btn_apply = ttk.Button(frame, text="Select", command=lambda: self.select(cmb_model.get()), style="form.TButton")
+        btn_apply.grid(row=1, column=0, columnspan=2, padx=10, sticky = tk.E, pady=5)
+
+        frame.pack()
+
+    def select(self, model):
+        self.controller.set_heading(model)
+        self.controller.show_frame(StartPage)
+
 class StartPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -108,7 +143,7 @@ class EnglishSetupPage(tk.Frame):
         btn_apply.pack(side = "left", padx=5)
         btn_frame.grid(row=0, column=0, sticky = tk.E, pady=5, columnspan=2)
 
-        frame.pack()
+        frame.pack(pady=(10, 0))
 
     def apply(self):
         if self.controller.model == 'm1':
@@ -145,7 +180,7 @@ class BanglaSetupPage(tk.Frame):
         bn_apply.pack(side = "left", padx=5)
         btn_frame.grid(row=2, column=0, sticky = tk.E, pady=5, columnspan=2)
 
-        frame.pack()
+        frame.pack(pady=(10, 0))
 
     def apply(self, bn_year):
         if self.controller.model == 'm1':
@@ -193,7 +228,7 @@ class HijriSetupPage(tk.Frame):
         bn_apply.pack(side = "left", padx=5)
         btn_frame.grid(row=4, column=0, sticky = tk.E, pady=5, columnspan=2)
 
-        frame.pack()
+        frame.pack(pady=(10, 0))
 
     def apply(self, year, month, start_date_txt):
         start_date = str_to_date(start_date_txt)
