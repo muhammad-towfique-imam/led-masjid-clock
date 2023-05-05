@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter.font import BOLD
 from datetime import date
 from tkcalendar import Calendar
+import babel.numbers    # Do not remove, required to generate .exe as Calendar dependency
 from hijri_utils import get_next_hijri_month, get_hijri_months, get_min_margib_time, str_to_date
 import datetime
 from m1.m1_bangla import get_m1_bangla_xml

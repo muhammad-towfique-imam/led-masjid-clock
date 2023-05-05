@@ -35,7 +35,7 @@ def hd_register(xml):
         raise Exception("HD2020 program is not installed")
     root_path = HD_ROOT_FILE
     if not hd_root_exists():
-        root_path = "root.xml"
+        root_path = "templates/root.xml"
 
     with open(root_path) as f:
         root_xml = f.read()

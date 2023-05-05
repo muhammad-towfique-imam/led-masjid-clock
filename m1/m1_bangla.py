@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from bangla_utils import set_year, set_month
 
 def get_m1_bangla_xml(bn_year):
-    with open('m1/m1-bangla.xml', 'r') as f:
+    with open('templates/m1/m1-bangla.xml', 'r') as f:
         data = f.read()
     
     bs_data = BeautifulSoup(data, "xml")

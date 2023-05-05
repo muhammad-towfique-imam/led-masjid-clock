@@ -4,7 +4,7 @@ from hijri_utils import set_year, set_month
 from bs4 import BeautifulSoup
 
 def get_m2_hijri_xml(hijri_year, hijri_month, hour, min, start_date):
-    with open('m2/m2-hijri.xml', 'r') as f:
+    with open('templates/m2/m2-hijri.xml', 'r') as f:
         data = f.read()
     
     bs_data = BeautifulSoup(data, "xml")
