@@ -1,36 +1,15 @@
-# README #
+# REQUIRMENTS #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+Run the following command before working on the project
 
-### What is this repository for? ###
-
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
-
-### How do I get set up? ###
-
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
-
-
+```
 pip install tkcalendar
 pip install hijri_converter
 pip install bangladatetime
 pip install bs4
 pip install lxml
+```
+
+# GENERATE EXE #
+
+Just load the `auto-py-to-exe-settings.json` file in auto-py-to-exe program and generate exe using it
