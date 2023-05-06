@@ -55,13 +55,13 @@ def load_settings():
 
 def load_waqt_times():
     settings = load_settings()
-    return settings["m2"]["waqt"]
+    return settings["waqt"]["times"]
 
 def save_waqt_times(times):
     settings = load_settings()
-    settings["m2"]["waqt"] = times
+    settings["waqt"]["times"] = times
     with open('settings.json', 'w') as f:
-        json.dump(settings, f)    
+        json.dump(settings, f, indent=2)    
 
 if __name__ == "__main__":
     waqt = load_waqt_times();
