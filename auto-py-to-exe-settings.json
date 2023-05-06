@@ -7,7 +7,7 @@
   },
   {
    "optionDest": "filenames",
-   "value": "C:/Development/Python/Workspace/matrix-clock/mc.py"
+   "value": "C:/Users/towfique/Documents/Python/matrix-clock/mc.py"
   },
   {
    "optionDest": "onefile",
@@ -19,7 +19,7 @@
   },
   {
    "optionDest": "icon_file",
-   "value": "C:/Development/Python/Workspace/matrix-clock/icon.ico"
+   "value": "C:/Users/towfique/Documents/Python/matrix-clock/icon.ico"
   },
   {
    "optionDest": "ascii",
@@ -71,7 +71,11 @@
   },
   {
    "optionDest": "datas",
-   "value": "C:/Development/Python/Workspace/matrix-clock/templates;templates/"
+   "value": "C:/Users/towfique/Documents/Python/matrix-clock/templates;templates/"
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/towfique/Documents/Python/matrix-clock/settings.json;."
   }
  ],
  "nonPyinstallerOptions": {
