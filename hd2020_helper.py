@@ -1,5 +1,6 @@
 import os
 from bs4 import BeautifulSoup
+import json
 
 HD_HOME = os.getenv('APPDATA').replace('\\', '/') + "/Huidu/HD2020" if os.getenv('APPDATA') else ""
 HD_PROGRAM_DIR = HD_HOME + "\\program/"
@@ -48,11 +49,23 @@ def hd_register(xml):
     with open(HD_PROGRAM_DIR + filename, 'w') as f:
         f.write(xml)
 
+def load_settings():
+    with open("settings.json") as f:
+        return json.load(f)
+
+def load_waqt_times():
+    settings = load_settings()
+    return settings["m2"]["waqt"]
+
+def save_waqt_times(times):
+    settings = load_settings()
+    settings["m2"]["waqt"] = times
+    with open('settings.json', 'w') as f:
+        json.dump(settings, f)    
+
 if __name__ == "__main__":
-    with open("m1/m1-bangla.xml") as f:
-        hd_register(f.read())
-    with open("m1/m1-hijri.xml") as f:
-        hd_register(f.read())
+    waqt = load_waqt_times();
+    print(waqt)
 
 
         

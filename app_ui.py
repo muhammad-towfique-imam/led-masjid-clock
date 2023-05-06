@@ -13,7 +13,7 @@ from m2.m2_bangla import get_m2_bangla_xml
 from m2.m2_hijri import get_m2_hijri_xml
 from m2.m2_english import get_m2_english_xml
 from m2.m2_waqt import get_m2_waqt_xml
-from hd2020_helper import hd_register
+from hd2020_helper import hd_register, load_waqt_times, save_waqt_times
 import bangladatetime
 import tkinter.messagebox as msg
   
@@ -256,8 +256,7 @@ class WaqtSetupPage(tk.Frame):
         self.controller = controller
         self.title = "Waqt Setup"
 
-        now = datetime.datetime.today()
-        times = get_salah_times(now)
+        times = load_waqt_times()
 
         frame = ttk.Frame(self)
 
@@ -271,11 +270,11 @@ class WaqtSetupPage(tk.Frame):
         bn_back = ttk.Button(btn_frame, text="Back", command=lambda: self.controller.show_frame(StartPage), style="form.TButton")
         bn_back.pack(side = "left", padx=5)
         bn_apply = ttk.Button(btn_frame, text="Apply", style="form.TButton", command=lambda: self.apply([
-            f'{cmb1_hour.get()}:{cmb1_min.get():02}',
-            f'{cmb2_hour.get()}:{cmb2_min.get():02}',
-            f'{cmb3_hour.get()}:{cmb3_min.get():02}',
-            f'{cmb4_hour.get()}:{cmb4_min.get():02}',
-            f'{cmb5_hour.get()}:{cmb5_min.get():02}',
+            (int(cmb1_hour.get()), int(cmb1_min.get())),
+            (int(cmb2_hour.get()), int(cmb2_min.get())),
+            (int(cmb3_hour.get()), int(cmb3_min.get())),
+            (int(cmb4_hour.get()), int(cmb4_min.get())),
+            (int(cmb5_hour.get()), int(cmb5_min.get())),
         ]))
         bn_apply.pack(side = "left", padx=5)
         btn_frame.grid(row=5, column=0, sticky = tk.E, pady=5, columnspan=2)
@@ -296,10 +295,18 @@ class WaqtSetupPage(tk.Frame):
         return (cmb_waqt_hour, cmb_waqt_min)
 
     def apply(self, times):
+        str_times = [
+            f'{times[0][0]}:{times[0][1]:02}',
+            f'{times[1][0]}:{times[1][1]:02}',
+            f'{times[2][0]}:{times[2][1]:02}',
+            f'{times[3][0]}:{times[3][1]:02}',
+            f'{times[4][0]}:{times[4][1]:02}',
+        ]
         if self.controller.model == 'm2':
-            xml = get_m2_waqt_xml(times)
+            xml = get_m2_waqt_xml(str_times)
         if xml:
             hd_register(xml)
+            save_waqt_times(times)
             msg.showinfo("Success", "Waqt program written successfully")
         self.controller.show_frame(StartPage)
 
