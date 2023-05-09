@@ -99,7 +99,7 @@ class SelectModelPage(tk.Frame):
         lbl_year = ttk.Label(frame, text="Clock model :", style="form.TLabel")
         lbl_year.grid(row=0, column=0, sticky = tk.W, pady=5)
 
-        cmb_model = ttk.Combobox(frame, font=(None, 11), values=list(["m1", "m2"]))
+        cmb_model = ttk.Combobox(frame, font=(None, 11), state = "readonly", values=list(["m1", "m2"]))
         cmb_model.current(0)
         cmb_model.grid(row=0, column=1, padx=10, sticky = tk.W, pady=5)
         
@@ -218,7 +218,7 @@ class HijriSetupPage(tk.Frame):
 
         lbl_month = ttk.Label(frame, text="Hijri Month:", style="form.TLabel")
         lbl_month.grid(row=1, column=0, sticky = tk.W, pady=5)
-        cmb_hz_month = ttk.Combobox(frame, font=(None, 11), values=get_hijri_months())
+        cmb_hz_month = ttk.Combobox(frame, font=(None, 11),  state = "readonly", values=get_hijri_months())
         cmb_hz_month.current(hz_month - 1)   # 1 based month
         cmb_hz_month.grid(row=1, column=1, padx=10, sticky = tk.W, pady=5)
 
