@@ -5,8 +5,8 @@ import base64
 def replace_edit_data(data, s, d):
     edit_data = data.encode("utf-8")
     decoded = base64.decodebytes(edit_data)
-    find = '\x00{}\x00{}\x00{}\x00{}\x00'.format(s[0], s[1], s[2], s[3])
-    updated = '\x00{}\x00{}\x00{}\x00{}\x00'.format(d[0], d[1], d[2], d[3])
+    find = '{}\x00{}\x00{}\x00{}\x00'.format(s[0], s[1], s[2], s[3])
+    updated = '{}\x00{}\x00{}\x00{}\x00'.format(d[0], d[1], d[2], d[3])
     decoded = decoded.replace(str.encode(find), str.encode(updated))
     return base64.b64encode(decoded).decode("utf-8")
 
