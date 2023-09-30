@@ -3,7 +3,7 @@ from waqt_utils import set_waqt
 from bs4 import BeautifulSoup
 import copy
 import datetime
-DT_FMT = '%d/%m/%y %H:%M'
+DT_FMT = '%d/%m/%y'
 
 def get_m2_waqt_xml(times):
     with open('templates/m2/m2-waqt.xml', 'r') as f:
