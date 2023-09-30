@@ -20,12 +20,15 @@ def replace_data(text, s, d):
     text['rtfData'] = replace_rtf_data(text['rtfData'], s, d)
 
 def set_waqt(bs_data, times):
-    area = bs_data.find('area', {"nodeName" : "times"})
+    set_waqt_time(bs_data, "fazr-time", "1:11", times[0])
+    set_waqt_time(bs_data, "duhr-time", "2:22", times[1])
+    set_waqt_time(bs_data, "asr-time", "3:33", times[2])
+    set_waqt_time(bs_data, "magrib-time", "4:44", times[3])
+    set_waqt_time(bs_data, "isha-time", "5:55", times[4])
+
+def set_waqt_time(bs_data, waqt, find_txt, replace_txt):
+    area = bs_data.find('area', {"nodeName" : waqt})
     if area:
         text = area.find('text')
-        replace_data(text, "1:11", times[0])
-        replace_data(text, "2:22", times[1])
-        replace_data(text, "3:33", times[2])
-        replace_data(text, "4:44", times[3])
-        replace_data(text, "5:55", times[4])
+        replace_data(text, find_txt, replace_txt)
 
