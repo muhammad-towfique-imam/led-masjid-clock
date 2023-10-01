@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import copy
 import datetime
 DT_FMT = '%d/%m/%y %H:%M'
+LABEL_DT_FMT = '%d.%m/%H:%M'
 WHOLE_DAY_IN_SEC = 86340
 
 def get_m2_waqt_xml(waqt_data):
@@ -57,6 +58,13 @@ def break_date(dt):
 def strip_time(d):
     return datetime.datetime(d.year, d.month, d.day)
 
+def join_time(d, time_sec):
+    sec = 0 if time_sec is None else time_sec
+    return d + datetime.timedelta(seconds=sec)
+
+def join_time_str(d, time_sec):
+    return join_time(d, time_sec).strftime(LABEL_DT_FMT)
+
 def get_time_as_seconds(d):
     return d.hour * 60 *60 + d.minute * 60 + d.second
 
@@ -70,9 +78,7 @@ def get_end_date(times, idx):
 
 def new_program(bs_data, tmpl, date_start, date_end, time_start, time_end, times):
     tmpl_copy = copy.copy(tmpl)
-    time_in_sec = 0 if time_start is None else time_start
-    dt = date_start + datetime.timedelta(seconds=time_in_sec)
-    tmpl_copy['nodeName'] = dt.strftime(DT_FMT)
+    tmpl_copy['nodeName'] = join_time_str(date_start, time_start) + " -- " + join_time_str(date_end, time_end)
     tmpl_copy['specifedDateEnabled'] = 1
     tmpl_copy['dateStart'] = int(date_start.timestamp())
     tmpl_copy['dateEnd'] = int(date_end.timestamp())
