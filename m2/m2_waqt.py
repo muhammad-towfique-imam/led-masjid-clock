@@ -13,8 +13,13 @@ def get_m2_waqt_xml(waqt_data):
     bs_data = BeautifulSoup(data, "xml")
     changes = waqt_data["changes"]
     changes.sort(key=lambda x:get_apply_date(x[0], x[2]))
+    base_date = datetime.datetime.today() - datetime.timedelta(days=30)
+    if len(changes):
+        first_change = changes[0]
+        base_date = strip_time(get_apply_date(first_change[0], [0, 0])) - datetime.timedelta(days=30)
     base = waqt_data["times"]
     times = []
+    times.append([base_date] + base)
     for (dt, w_idx, w_time) in changes:
         apply_date = get_apply_date(dt, w_time)
         base[w_idx] = w_time
@@ -30,7 +35,8 @@ def get_m2_waqt_xml(waqt_data):
         if date_start == date_end:
             new_program(bs_data, tmpl, date_start, date_end, time_start, time_end, waqt_times)
         else:
-            new_program(bs_data, tmpl, date_start, date_start, time_start, WHOLE_DAY_IN_SEC, waqt_times)
+            if time_start != 0:
+                new_program(bs_data, tmpl, date_start, date_start, time_start, WHOLE_DAY_IN_SEC, waqt_times)
             if (date_end - date_start).days > 1:
                 new_program(bs_data, tmpl, date_start + datetime.timedelta(days=1), date_end - datetime.timedelta(days=1), None, None, waqt_times)
             new_program(bs_data, tmpl, date_end, date_end, 0, time_end, waqt_times)
@@ -59,7 +65,7 @@ def get_end_date(times, idx):
         date_start = time[0]
         prev_date_end = date_start - datetime.timedelta(seconds=1)
         return prev_date_end
-    return datetime.datetime.today() + datetime.timedelta(days=365)
+    return datetime.datetime.today() + datetime.timedelta(days=30)
 
 def new_program(bs_data, tmpl, date_start, date_end, time_start, time_end, times):
     tmpl_copy = copy.copy(tmpl)
