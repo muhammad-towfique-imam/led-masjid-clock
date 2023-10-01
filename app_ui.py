@@ -288,7 +288,7 @@ class WaqtSetupPage(tk.Frame):
         cmb_waqt_hour = ttk.Combobox(waqt_frame, width=2, font=(None, 11), values=list(range(1, 13)))
         cmb_waqt_hour.current(time[0] -1)
         cmb_waqt_hour.pack(padx=5, pady=5, side=tk.LEFT)
-        cmb_waqt_min = ttk.Combobox(waqt_frame, width=2, font=(None, 11), values=list(range(61)))
+        cmb_waqt_min = ttk.Combobox(waqt_frame, width=2, font=(None, 11), values=list(range(60)))
         cmb_waqt_min.current(time[1])
         cmb_waqt_min.pack(padx=5, pady=5, side=tk.LEFT)
         waqt_frame.grid(row=row, column=0, sticky=tk.E)
