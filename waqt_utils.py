@@ -20,11 +20,11 @@ def replace_data(text, s, d):
     text['rtfData'] = replace_rtf_data(text['rtfData'], s, d)
 
 def set_waqt(tmpl, times):
-    set_waqt_time(tmpl, "fazr-time", "1:11", times[0])
-    set_waqt_time(tmpl, "duhr-time", "2:22", times[1])
-    set_waqt_time(tmpl, "asr-time", "3:33", times[2])
-    set_waqt_time(tmpl, "magrib-time", "4:44", times[3])
-    set_waqt_time(tmpl, "isha-time", "5:55", times[4])
+    set_waqt_time(tmpl, "fazr-time", "1:11", time_str(times[0]))
+    set_waqt_time(tmpl, "duhr-time", "2:22", time_str(times[1]))
+    set_waqt_time(tmpl, "asr-time", "3:33", time_str(times[2]))
+    set_waqt_time(tmpl, "magrib-time", "4:44", time_str(times[3]))
+    set_waqt_time(tmpl, "isha-time", "5:55", time_str(times[4]))
 
 def set_waqt_time(tmpl, waqt, find_txt, replace_txt):
     area = tmpl.find('area', {"nodeName" : waqt})
@@ -32,3 +32,5 @@ def set_waqt_time(tmpl, waqt, find_txt, replace_txt):
         text = area.find('text')
         replace_data(text, find_txt, replace_txt)
 
+def time_str(time):
+    return f'{time[0]}:{time[1]:02}'    
