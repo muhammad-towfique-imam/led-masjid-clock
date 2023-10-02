@@ -303,7 +303,34 @@ class WaqtSetupPage(tk.Frame):
             f'{times[4][0]}:{times[4][1]:02}',
         ]
         if self.controller.model == 'm2':
-            xml = get_m2_waqt_xml(str_times)
+            #xml = get_m2_waqt_xml(str_times)
+            times = [
+                [
+                    "3/10/23 19:00",
+                    "3:01",
+                    "3:02",
+                    "3:03",
+                    "3:04",
+                    "3:05"
+                ],
+                [
+                    "5/10/23 20:05",
+                    "5:01",
+                    "5:02",
+                    "5:03",
+                    "5:04",
+                    "5:05"
+                ],
+                [
+                    "1/10/23 19:00",
+                    "1:01",
+                    "1:02",
+                    "1:03",
+                    "1:04",
+                    "1:05"
+                ]
+            ]
+            xml = get_m2_waqt_xml(times)
         if xml:
             hd_register(xml)
             save_waqt_times(times)

@@ -55,6 +55,32 @@ def load_settings():
 
 def load_waqt_times():
     settings = load_settings()
+    settings = {
+            "waqt": {
+                "times": [
+                    [
+                        1,
+                        7
+                    ],
+                    [
+                        2,
+                        8
+                    ],
+                    [
+                        3,
+                        9
+                    ],
+                    [
+                        4,
+                        10
+                    ],
+                    [
+                        5,
+                        11
+                    ]
+                ]
+            }
+        }
     return settings["waqt"]["times"]
 
 def save_waqt_times(times):
