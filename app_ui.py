@@ -364,8 +364,17 @@ class WaqtSchedulePage(tk.Frame):
         self.cmb_waqt_hour.pack(padx=5, pady=5, side=tk.LEFT)
         self.cmb_waqt_min = ttk.Combobox(waqt_frame, width=2, font=(None, 11), values=list(range(60)))
         self.cmb_waqt_min.pack(padx=5, pady=5, side=tk.LEFT)
-        self.bn_save = ttk.Button(waqt_frame, text="Add", command=lambda: self.save_row(), style="form.TButton")
-        self.bn_save.pack(side = "right", padx=5)
+        save_icon = tk.PhotoImage(file="save.png")
+        delete_icon = tk.PhotoImage(file="delete.png")
+
+
+        self.bn_add = ttk.Button(waqt_frame, image=save_icon, command=lambda: self.add_row(), style="form.TButton")
+        self.bn_add.image = save_icon
+        self.bn_save = ttk.Button(waqt_frame, image=save_icon, command=lambda: self.edit_row(), style="form.TButton")
+        self.bn_save.image = save_icon
+        self.bn_delete = ttk.Button(waqt_frame, image=delete_icon, command=lambda: self.delete_row(), style="form.TButton")
+        self.bn_delete.image = delete_icon
+        self.enable_add_mode()
 
         waqt_frame.grid(row=1, column=0, sticky=tk.E)
 
@@ -388,7 +397,7 @@ class WaqtSchedulePage(tk.Frame):
         self.tree_view.column('date', anchor='center', width=75)
         self.tree_view.heading('time', text='Time')
         self.tree_view.column('time', anchor='center', width=75)
-        self.tree_view.bind("<Double-1>", self.edit_row)
+        self.tree_view.bind("<Double-1>", self.load_edit_row)
 
         tree_view_frame.grid(sticky = tk.E)
 
@@ -401,24 +410,42 @@ class WaqtSchedulePage(tk.Frame):
 
         frame.pack(pady=(10, 0))
 
-    def save_row(self):
+    def delete_row(self):
+        self.tree_view.delete(self.selected_id)
+        self.enable_add_mode()
+
+    def add_row(self):
         time = join_time((self.cmb_waqt_hour.current() + 1, self.cmb_waqt_min.current()))
         values = (self.waqt, self.cal.selection_get().strftime(self.DT_FMT), time)
-        if self.selected_id is None:
-            self.tree_view.insert("", tk.END, text="", values=values)
-        else:
-            self.tree_view.item(self.selected_id, text=self.selected_id, values=values)
-            self.selected_id = None
-            self.bn_save['text'] = "Add"
+        self.tree_view.insert("", tk.END, text="", values=values)
 
-    def edit_row(self, event):
-        self.selected_id = self.tree_view.identify('item', event.x, event.y)
-        row = self.tree_view.item(self.selected_id)
+    def edit_row(self):
+        time = join_time((self.cmb_waqt_hour.current() + 1, self.cmb_waqt_min.current()))
+        values = (self.waqt, self.cal.selection_get().strftime(self.DT_FMT), time)
+        self.tree_view.item(self.selected_id, text=self.selected_id, values=values)
+        self.enable_add_mode()
+
+    def enable_add_mode(self):
+        self.selected_id = None
+        self.bn_add.pack(side = "right", padx=5)
+        self.bn_save.pack_forget()
+        self.bn_delete.pack_forget()
+
+    def enable_edit_mode(self, selected_id):
+        self.selected_id = selected_id
+        self.bn_add.pack_forget()
+        self.bn_save.pack(side = "right", padx=5)
+        self.bn_delete.pack(side = "right", padx=5)
+
+    def load_edit_row(self, event):
+        id = self.tree_view.identify('item', event.x, event.y)
+        row = self.tree_view.item(id)
         values = row['values']
         dt = datetime.datetime.strptime(values[1], self.DT_FMT)
         time = split_time(values[2])
         self.load(dt, time)
-        self.bn_save['text'] = "Save"
+        self.bn_add['text'] = "Save"
+        self.enable_edit_mode(id)
 
     def load(self, dt, time):
         self.cal.selection_set(dt)
