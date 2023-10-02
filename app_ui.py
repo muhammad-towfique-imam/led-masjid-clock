@@ -16,6 +16,8 @@ from m2.m2_waqt import get_m2_waqt_xml
 from hd2020_helper import hd_register, load_waqt_times, save_waqt_times
 import bangladatetime
 import tkinter.messagebox as msg
+
+from waqt_utils import join_time, split_time
   
 class AppUI(tk.Tk):
      
@@ -31,7 +33,7 @@ class AppUI(tk.Tk):
         style.configure('form.TButton', font=(None, 11))
 
         self.title("Matrix Clock")
-        self.geometry("350x450")
+        self.geometry("350x650")
         self.resizable(0, 0)
          
         # creating a container
@@ -59,7 +61,7 @@ class AppUI(tk.Tk):
 
         self.set_heading(model)
 
-        for F in (SelectModelPage, StartPage, EnglishSetupPage, BanglaSetupPage, HijriSetupPage, WaqtSetupPage):
+        for F in (SelectModelPage, StartPage, EnglishSetupPage, BanglaSetupPage, HijriSetupPage, WaqtSetupPage, WaqtSchedulePage):
   
             frame = F(container, self)
   
@@ -249,7 +251,6 @@ class HijriSetupPage(tk.Frame):
             msg.showinfo("Success", "Hijri program written successfully")
         self.controller.show_frame(StartPage)
 
-  
 class WaqtSetupPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -291,8 +292,22 @@ class WaqtSetupPage(tk.Frame):
         cmb_waqt_min = ttk.Combobox(waqt_frame, width=2, font=(None, 11), values=list(range(60)))
         cmb_waqt_min.current(time[1])
         cmb_waqt_min.pack(padx=5, pady=5, side=tk.LEFT)
+
+        schedule_icon = tk.PhotoImage(file="schedule.png")
+        bn_schedule = ttk.Button(waqt_frame, image=schedule_icon, command=lambda: self.goto_schedule_page(name, time))
+        bn_schedule.image = schedule_icon
+        bn_schedule.pack(side = "left", padx=5)
+
         waqt_frame.grid(row=row, column=0, sticky=tk.E)
         return (cmb_waqt_hour, cmb_waqt_min)
+
+    def goto_schedule_page(self, name, time):
+        now = datetime.datetime.today()
+        page = self.controller.frames[WaqtSchedulePage]
+        page.title = "Schedule Waqt Change: " + name
+        page.waqt = name
+        page.load(now, time)
+        self.controller.show_frame(WaqtSchedulePage)
 
     def apply(self, times):
         str_times = [
@@ -329,3 +344,89 @@ class WaqtSetupPage(tk.Frame):
         self.controller.show_frame(StartPage)
 
   
+class WaqtSchedulePage(tk.Frame):
+    
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.DT_FMT = '%d/%m/%y'
+        self.selected_id = None
+
+        frame = ttk.Frame(self)
+
+        self.cal = Calendar(frame, selectmode = 'day')
+        self.cal.grid(row=0, column=0, columnspan=2, sticky = tk.E, pady=5)
+
+        waqt_frame = ttk.Frame(frame)
+        lbl_waqt = ttk.Label(waqt_frame, text="Time :", style="form.TLabel")
+        lbl_waqt.pack(pady=5, side=tk.LEFT)
+        self.cmb_waqt_hour = ttk.Combobox(waqt_frame, width=2, font=(None, 11), values=list(range(1, 13)))
+        self.cmb_waqt_hour.pack(padx=5, pady=5, side=tk.LEFT)
+        self.cmb_waqt_min = ttk.Combobox(waqt_frame, width=2, font=(None, 11), values=list(range(60)))
+        self.cmb_waqt_min.pack(padx=5, pady=5, side=tk.LEFT)
+        self.bn_save = ttk.Button(waqt_frame, text="Add", command=lambda: self.save_row(), style="form.TButton")
+        self.bn_save.pack(side = "right", padx=5)
+
+        waqt_frame.grid(row=1, column=0, sticky=tk.E)
+
+        tree_view_frame = ttk.Frame(frame)
+
+        self.tree_view = ttk.Treeview(tree_view_frame, height = 10, selectmode='browse')
+
+        treeScroll = ttk.Scrollbar(tree_view_frame)
+        treeScroll.configure(command=self.tree_view.yview)
+        self.tree_view.configure(yscrollcommand=treeScroll.set)
+        treeScroll.pack(side= tk.LEFT, fill = tk.BOTH)
+        self.tree_view.pack()
+
+        self.tree_view['columns'] = ('waqt', 'date', 'time')
+        self.tree_view.heading('#0', text='')
+        self.tree_view.column('#0', width=0)
+        self.tree_view.heading('waqt', text='Waqt')
+        self.tree_view.column('waqt', anchor='center', width=75)
+        self.tree_view.heading('date', text='Date')
+        self.tree_view.column('date', anchor='center', width=75)
+        self.tree_view.heading('time', text='Time')
+        self.tree_view.column('time', anchor='center', width=75)
+        self.tree_view.bind("<Double-1>", self.edit_row)
+
+        tree_view_frame.grid(sticky = tk.E)
+
+        btn_frame = ttk.Frame(frame)
+        bn_back = ttk.Button(btn_frame, text="Back", command=lambda: self.controller.show_frame(WaqtSetupPage), style="form.TButton")
+        bn_back.pack(side = "left", padx=5)
+        bn_apply = ttk.Button(btn_frame, text="Apply", command=lambda: self.apply(cal.get_date()), style="form.TButton")
+        bn_apply.pack(side = "left", padx=5)
+        btn_frame.grid(row=3, column=0, sticky = tk.E, pady=5, columnspan=2)
+
+        frame.pack(pady=(10, 0))
+
+    def save_row(self):
+        time = join_time((self.cmb_waqt_hour.current() + 1, self.cmb_waqt_min.current()))
+        values = (self.waqt, self.cal.selection_get().strftime(self.DT_FMT), time)
+        if self.selected_id is None:
+            self.tree_view.insert("", tk.END, text="", values=values)
+        else:
+            self.tree_view.item(self.selected_id, text=self.selected_id, values=values)
+            self.selected_id = None
+            self.bn_save['text'] = "Add"
+
+    def edit_row(self, event):
+        self.selected_id = self.tree_view.identify('item', event.x, event.y)
+        row = self.tree_view.item(self.selected_id)
+        values = row['values']
+        dt = datetime.datetime.strptime(values[1], self.DT_FMT)
+        time = split_time(values[2])
+        self.load(dt, time)
+        self.bn_save['text'] = "Save"
+
+    def load(self, dt, time):
+        self.cal.selection_set(dt)
+        self.cmb_waqt_hour.current(time[0] - 1)
+        self.cmb_waqt_min.current(time[1])
+
+    def apply(self, date_txt):
+        self.controller.frames[WaqtSetupPage].data["date"] = date_txt
+        self.controller.show_frame(WaqtSetupPage)
+
+

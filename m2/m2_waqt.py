@@ -1,5 +1,5 @@
 from pickletools import int4
-from waqt_utils import set_waqt, time_str
+from waqt_utils import set_waqt, join_time
 from bs4 import BeautifulSoup
 import copy
 import datetime
