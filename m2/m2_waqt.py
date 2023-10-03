@@ -18,7 +18,7 @@ def get_m2_waqt_xml(waqt_data):
     if len(changes):
         first_change = changes[0]
         base_date = strip_time(get_apply_date(first_change[0], 0, [0, 0])) - datetime.timedelta(days=30)
-    base = waqt_data["times"]
+    base = waqt_data["times"].copy()
     times = []
     times.append([base_date] + base)
     for (dt, w_idx, w_time) in changes:
