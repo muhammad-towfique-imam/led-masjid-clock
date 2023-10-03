@@ -336,7 +336,6 @@ class WaqtSetupPage(tk.Frame):
 
   
 class WaqtSchedulePage(tk.Frame):
-    
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.title = "Schedule Waqt Change"
@@ -401,7 +400,7 @@ class WaqtSchedulePage(tk.Frame):
             self.tree_view.insert("", tk.END, text="", values=[waqt, dt, time])
 
         btn_frame = ttk.Frame(frame)
-        bn_back = ttk.Button(btn_frame, text="Back", command=lambda: self.controller.show_frame(WaqtSetupPage), style="form.TButton")
+        bn_back = ttk.Button(btn_frame, text="Done", command=lambda: self.controller.show_frame(WaqtSetupPage), style="form.TButton")
         bn_back.pack(side = "left", padx=5)
         btn_frame.grid(row=3, column=0, sticky = tk.E, pady=5, columnspan=2)
 
