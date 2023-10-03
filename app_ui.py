@@ -17,7 +17,7 @@ from hd2020_helper import hd_register, load_waqt_data, save_waqt_data
 import bangladatetime
 import tkinter.messagebox as msg
 
-from waqt_utils import join_time, split_time
+from waqt_utils import get_apply_date, join_time, split_time
   
 class AppUI(tk.Tk):
      
@@ -33,7 +33,7 @@ class AppUI(tk.Tk):
         style.configure('form.TButton', font=(None, 11))
 
         self.title("Matrix Clock")
-        self.geometry("350x650")
+        self.geometry("400x650")
         self.resizable(0, 0)
          
         # creating a container
@@ -266,24 +266,29 @@ class WaqtSetupPage(tk.Frame):
 
         frame = ttk.Frame(self)
 
-        (cmb1_hour, cmb1_min) = self.build_waqt_row(frame, "Fazr", times[0], 0)
-        (cmb2_hour, cmb2_min) = self.build_waqt_row(frame, "Duhr", times[1], 1)
-        (cmb3_hour, cmb3_min) = self.build_waqt_row(frame, "Asr", times[2], 2)
-        (cmb4_hour, cmb4_min) = self.build_waqt_row(frame, "Magrib", times[3], 3)
-        (cmb5_hour, cmb5_min) = self.build_waqt_row(frame, "Isha", times[4], 4)
+        (self.cmb1_hour, self.cmb1_min) = self.build_waqt_row(frame, "Fazr", times[0], 0)
+        (self.cmb2_hour, self.cmb2_min) = self.build_waqt_row(frame, "Duhr", times[1], 1)
+        (self.cmb3_hour, self.cmb3_min) = self.build_waqt_row(frame, "Asr", times[2], 2)
+        (self.cmb4_hour, self.cmb4_min) = self.build_waqt_row(frame, "Magrib", times[3], 3)
+        (self.cmb5_hour, self.cmb5_min) = self.build_waqt_row(frame, "Isha", times[4], 4)
+
+
+        reset_btn_frame = ttk.Frame(frame)
+        lbl_reset = ttk.Label(reset_btn_frame, style="form.TLabel", text="Reset")
+        lbl_reset.pack(side = "left", padx=5)
+
+        reset_icon = tk.PhotoImage(file="images/reset.png")
+        bn_reset = ttk.Button(reset_btn_frame, image=reset_icon, command=lambda: self.reset())
+        bn_reset.image = reset_icon
+        bn_reset.pack(side = "left", padx=5)
+        reset_btn_frame.grid(row=5, column=0, sticky = tk.E, pady=5, padx=16, columnspan=2)
 
         btn_frame = ttk.Frame(frame)
         bn_back = ttk.Button(btn_frame, text="Back", command=lambda: self.controller.show_frame(StartPage), style="form.TButton")
         bn_back.pack(side = "left", padx=5)
-        bn_apply = ttk.Button(btn_frame, text="Apply", style="form.TButton", command=lambda: self.apply([
-            (int(cmb1_hour.get()), int(cmb1_min.get())),
-            (int(cmb2_hour.get()), int(cmb2_min.get())),
-            (int(cmb3_hour.get()), int(cmb3_min.get())),
-            (int(cmb4_hour.get()), int(cmb4_min.get())),
-            (int(cmb5_hour.get()), int(cmb5_min.get())),
-        ]))
+        bn_apply = ttk.Button(btn_frame, text="Apply", style="form.TButton", command=lambda: self.apply())
         bn_apply.pack(side = "left", padx=5)
-        btn_frame.grid(row=5, column=0, sticky = tk.E, pady=5, columnspan=2)
+        btn_frame.grid(row=6, column=0, sticky = tk.E, pady=5, columnspan=2)
 
         frame.pack(pady=(10, 0))
 
@@ -298,7 +303,7 @@ class WaqtSetupPage(tk.Frame):
         cmb_waqt_min.current(time[1])
         cmb_waqt_min.pack(padx=5, pady=5, side=tk.LEFT)
 
-        schedule_icon = tk.PhotoImage(file="schedule.png")
+        schedule_icon = tk.PhotoImage(file="images/schedule.png")
         bn_schedule = ttk.Button(waqt_frame, image=schedule_icon, command=lambda: self.goto_schedule_page(name, time))
         bn_schedule.image = schedule_icon
         bn_schedule.pack(side = "left", padx=5)
@@ -306,14 +311,59 @@ class WaqtSetupPage(tk.Frame):
         waqt_frame.grid(row=row, column=0, sticky=tk.E)
         return (cmb_waqt_hour, cmb_waqt_min)
 
+    def reset(self):
+        page = self.controller.get_page(WaqtSchedulePage)
+        changes = []           
+        for child in page.tree_view.get_children():
+            values = page.tree_view.item(child)["values"]
+            waqt = values[0]
+            dt = values[1]
+            time = values[2]
+            widx = page.cmb_waqt_name['values'].index(waqt)
+            changes.append([dt, widx, list(split_time(time))])
+
+        changes.sort(key=lambda x:get_apply_date(x[0], x[1], x[2]))
+        base = self.get_times_data()
+        for (dt, w_idx, w_time) in changes:
+            base[w_idx] = w_time
+        self.set_times_data(base)
+        for row in page.tree_view.get_children():
+            page.tree_view.delete(row)        
+
     def goto_schedule_page(self, name, time):
         now = datetime.datetime.today()
         page = self.controller.frames[WaqtSchedulePage]
         page.load(name, now, time)
         self.controller.show_frame(WaqtSchedulePage)
 
-    def apply(self, times):
+    def get_times_data(self):
+        return [
+            (int(self.cmb1_hour.get()), int(self.cmb1_min.get())),
+            (int(self.cmb2_hour.get()), int(self.cmb2_min.get())),
+            (int(self.cmb3_hour.get()), int(self.cmb3_min.get())),
+            (int(self.cmb4_hour.get()), int(self.cmb4_min.get())),
+            (int(self.cmb5_hour.get()), int(self.cmb5_min.get())),
+        ]
+
+    def set_times_data(self, times):
+        self.cmb1_hour.set(times[0][0])
+        self.cmb1_min.set(times[0][1])
+
+        self.cmb2_hour.set(times[1][0])
+        self.cmb2_min.set(times[1][1])
+
+        self.cmb3_hour.set(times[2][0])
+        self.cmb3_min.set(times[2][1])
+
+        self.cmb4_hour.set(times[3][0])
+        self.cmb4_min.set(times[3][1])
+
+        self.cmb5_hour.set(times[4][0])
+        self.cmb5_min.set(times[4][1])
+
+    def apply(self):
         if self.controller.model == 'm2':
+            times = self.get_times_data()
             page = self.controller.get_page(WaqtSchedulePage)
             changes = []           
             for child in page.tree_view.get_children():
@@ -356,8 +406,8 @@ class WaqtSchedulePage(tk.Frame):
         self.cmb_waqt_hour.pack(padx=5, pady=5, side=tk.LEFT)
         self.cmb_waqt_min = ttk.Combobox(waqt_frame, width=2, font=(None, 11), values=list(range(60)))
         self.cmb_waqt_min.pack(padx=5, pady=5, side=tk.LEFT)
-        save_icon = tk.PhotoImage(file="save.png")
-        delete_icon = tk.PhotoImage(file="delete.png")
+        save_icon = tk.PhotoImage(file="images/save.png")
+        delete_icon = tk.PhotoImage(file="images/delete.png")
 
 
         self.bn_add = ttk.Button(waqt_frame, image=save_icon, command=lambda: self.add_row(), style="form.TButton")

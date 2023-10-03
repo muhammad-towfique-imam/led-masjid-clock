@@ -1,9 +1,8 @@
 from pickletools import int4
-from waqt_utils import set_waqt, join_time
+from waqt_utils import get_apply_date, set_waqt, join_time
 from bs4 import BeautifulSoup
 import copy
 import datetime
-DT_FMT = '%d/%m/%y %H:%M'
 LABEL_DT_FMT = '%d.%m/%H:%M'
 WHOLE_DAY_IN_SEC = 86340
 
@@ -45,13 +44,6 @@ def get_m2_waqt_xml(waqt_data):
     tmpl.decompose()
 
     return bs_data.prettify()
-
-def get_apply_date(dt_str, widx, w_time):
-    h, m = w_time
-    if widx > 0:
-        h = h + 12
-    dt = datetime.datetime.strptime(dt_str + " " + str(h) + ":" + str(m), DT_FMT)
-    return dt - datetime.timedelta(days=1) + datetime.timedelta(minutes=30)
 
 def break_date(dt):
     return strip_time(dt), get_time_as_seconds(dt)

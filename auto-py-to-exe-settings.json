@@ -19,7 +19,7 @@
   },
   {
    "optionDest": "icon_file",
-   "value": "C:/Users/towfique/Documents/workspace/matrix-clock/icon.ico"
+   "value": "C:/Users/towfique/Documents/workspace/matrix-clock/images/icon.ico"
   },
   {
    "optionDest": "ascii",
@@ -76,6 +76,10 @@
   {
    "optionDest": "datas",
    "value": "C:/Users/towfique/Documents/workspace/matrix-clock/settings.json;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/towfique/Documents/workspace/matrix-clock/images;images/"
   }
  ],
  "nonPyinstallerOptions": {

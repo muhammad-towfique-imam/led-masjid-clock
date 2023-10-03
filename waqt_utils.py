@@ -1,6 +1,8 @@
 from hijri_converter import Gregorian
 
 import base64
+import datetime
+DT_FMT = '%d/%m/%y %H:%M'
 
 def replace_edit_data(data, s, d):
     edit_data = data.encode("utf-8")
@@ -40,4 +42,11 @@ def split_time(s):
     h = int(a[0])
     m = int(a[1])
     return (h, m)
+
+def get_apply_date(dt_str, widx, w_time):
+    h, m = w_time
+    if widx > 0:
+        h = h + 12
+    dt = datetime.datetime.strptime(dt_str + " " + str(h) + ":" + str(m), DT_FMT)
+    return dt - datetime.timedelta(days=1) + datetime.timedelta(minutes=30)
 
