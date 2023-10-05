@@ -3,7 +3,8 @@ from waqt_utils import set_waqt
 from bs4 import BeautifulSoup
 import copy
 import datetime
-DT_FMT = '%d/%m/%y'
+DT_FMT = '%d/%m/%y %H:%M'
+WHOLE_DAY_IN_SEC = 86340
 
 def get_m2_waqt_xml(times):
     with open('templates/m2/m2-waqt.xml', 'r') as f:
@@ -16,28 +17,50 @@ def get_m2_waqt_xml(times):
     for i in range(len(times)):
         time = times[i]
         ts_str = time[0]
-        start_date = datetime.datetime.strptime(ts_str, DT_FMT)
-        end_date = get_end_date(times, i+1)
         waqt_times = time[1:]
-        new_program(bs_data, tmpl,  ts_str, start_date, end_date, waqt_times)
+        date_start, time_start = break_date(datetime.datetime.strptime(ts_str, DT_FMT))
+        date_end, time_end = break_date(get_end_date(times, i+1))
+        if date_start == date_end:
+            new_program(bs_data, tmpl,  ts_str, date_start, date_end, time_start, time_end, waqt_times)
+        else:
+            new_program(bs_data, tmpl,  ts_str, date_start, date_start, time_start, WHOLE_DAY_IN_SEC, waqt_times)
+            if (date_end - date_start).days > 1:
+                new_program(bs_data, tmpl,  ts_str, date_start + datetime.timedelta(days=1), date_end - datetime.timedelta(days=1), None, None, waqt_times)
+            new_program(bs_data, tmpl,  ts_str, date_end, date_end, 0, time_end, waqt_times)
 
     tmpl.decompose()
 
     return bs_data.prettify()
 
+def break_date(dt):
+    return strip_time(dt), get_time_as_seconds(dt)
+
+def strip_time(d):
+    return datetime.datetime(d.year, d.month, d.day)
+
+def get_time_as_seconds(d):
+    return d.hour * 60 *60 + d.minute * 60 + d.second
+
 def get_end_date(times, idx):
     if idx < len(times):
         time = times[idx]
         ts_str = time[0]
-        start_date = datetime.datetime.strptime(ts_str, DT_FMT)
-        prev_end_date = start_date - datetime.timedelta(days=1)
-        return prev_end_date
+        date_start = datetime.datetime.strptime(ts_str, DT_FMT)
+        prev_date_end = date_start - datetime.timedelta(seconds=1)
+        return prev_date_end
     return datetime.datetime.today() + datetime.timedelta(days=365)
 
-def new_program(bs_data, tmpl, name, start_date, end_date, times):
+def new_program(bs_data, tmpl, name, date_start, date_end, time_start, time_end, times):
     tmpl_copy = copy.copy(tmpl)
-    tmpl_copy['nodeName'] = name
-    tmpl_copy['dateStart'] = int(start_date.timestamp())
-    tmpl_copy['dateEnd'] = int(end_date.timestamp())
+    time_in_sec = 0 if time_start is None else time_start
+    dt = date_start + datetime.timedelta(seconds=time_in_sec)
+    tmpl_copy['nodeName'] = dt.strftime(DT_FMT)
+    tmpl_copy['specifedDateEnabled'] = 1
+    tmpl_copy['dateStart'] = int(date_start.timestamp())
+    tmpl_copy['dateEnd'] = int(date_end.timestamp())
+    if time_start is not None:
+        tmpl_copy['specifedTimeEnabled'] = 1
+        tmpl_copy['timeStart'] = time_start
+        tmpl_copy['timeEnd'] = time_end
     set_waqt(tmpl_copy, times)
     bs_data.screen.append(tmpl_copy)
