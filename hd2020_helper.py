@@ -53,44 +53,18 @@ def load_settings():
     with open("settings.json") as f:
         return json.load(f)
 
-def load_waqt_times():
+def load_waqt_data():
     settings = load_settings()
-    settings = {
-            "waqt": {
-                "times": [
-                    [
-                        1,
-                        7
-                    ],
-                    [
-                        2,
-                        8
-                    ],
-                    [
-                        3,
-                        9
-                    ],
-                    [
-                        4,
-                        10
-                    ],
-                    [
-                        5,
-                        11
-                    ]
-                ]
-            }
-        }
-    return settings["waqt"]["times"]
+    return settings["waqt"]
 
-def save_waqt_times(times):
+def save_waqt_data(waqt_data):
     settings = load_settings()
-    settings["waqt"]["times"] = times
+    settings["waqt"] = waqt_data
     with open('settings.json', 'w') as f:
         json.dump(settings, f, indent=2)    
 
 if __name__ == "__main__":
-    waqt = load_waqt_times();
+    waqt = load_waqt_data();
     print(waqt)
 
 

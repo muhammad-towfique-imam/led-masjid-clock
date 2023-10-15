@@ -13,7 +13,7 @@ from m2.m2_bangla import get_m2_bangla_xml
 from m2.m2_hijri import get_m2_hijri_xml
 from m2.m2_english import get_m2_english_xml
 from m2.m2_waqt import get_m2_waqt_xml
-from hd2020_helper import hd_register, load_waqt_times, save_waqt_times
+from hd2020_helper import hd_register, load_waqt_data, save_waqt_data
 import bangladatetime
 import tkinter.messagebox as msg
 
@@ -78,6 +78,9 @@ class AppUI(tk.Tk):
   
     # to display the current frame passed as
     # parameter
+    def get_page(self, cont):
+        return self.frames[cont]
+
     def show_frame(self, cont):
         frame = self.frames[cont]
         self.sub_heading.set(frame.title)
@@ -257,7 +260,9 @@ class WaqtSetupPage(tk.Frame):
         self.controller = controller
         self.title = "Waqt Setup"
 
-        times = load_waqt_times()
+        self.waqt_data = load_waqt_data()
+        
+        times = self.waqt_data["times"]
 
         frame = ttk.Frame(self)
 
@@ -304,50 +309,37 @@ class WaqtSetupPage(tk.Frame):
     def goto_schedule_page(self, name, time):
         now = datetime.datetime.today()
         page = self.controller.frames[WaqtSchedulePage]
-        page.title = "Schedule Waqt Change: " + name
-        page.waqt = name
-        page.load(now, time)
+        page.load(name, now, time)
         self.controller.show_frame(WaqtSchedulePage)
 
     def apply(self, times):
-        str_times = [
-            f'{times[0][0]}:{times[0][1]:02}',
-            f'{times[1][0]}:{times[1][1]:02}',
-            f'{times[2][0]}:{times[2][1]:02}',
-            f'{times[3][0]}:{times[3][1]:02}',
-            f'{times[4][0]}:{times[4][1]:02}',
-        ]
         if self.controller.model == 'm2':
-            waqt = {
-                "times": [
-                    [5,20],
-                    [1,15],
-                    [5,0],
-                    [6,46],
-                    [8,15]
-                ],
-                "changes": [
-                    ["28/09/23", 0, [5, 15]],
-                    ["05/10/23", 0, [5, 10]],
-                    ["10/10/23", 0, [5, 0]],
-                    ["01/10/23", 2, [4, 30]],
-                    ["01/10/23", 3, [6, 35]],
-                    ["02/10/23", 4, [8, 0]],
-                    ["04/10/23", 3, [6, 30]]        
-                ]
-            }            
-            xml = get_m2_waqt_xml(waqt)
-        if xml:
-            hd_register(xml)
-            save_waqt_times(times)
-            msg.showinfo("Success", "Waqt program written successfully")
-        self.controller.show_frame(StartPage)
+            page = self.controller.get_page(WaqtSchedulePage)
+            changes = []           
+            for child in page.tree_view.get_children():
+                values = page.tree_view.item(child)["values"]
+                waqt = values[0]
+                dt = values[1]
+                time = values[2]
+                widx = page.cmb_waqt_name['values'].index(waqt)
+                changes.append([dt, widx, list(split_time(time))])
+            waqt_data = {
+                "times": times,
+                "changes": changes
+            }
+            xml = get_m2_waqt_xml(waqt_data)
+            if xml:
+                hd_register(xml)
+                save_waqt_data(waqt_data)
+                msg.showinfo("Success", "Waqt program written successfully")
+            self.controller.show_frame(StartPage)
 
   
 class WaqtSchedulePage(tk.Frame):
     
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.title = "Schedule Waqt Change"
         self.controller = controller
         self.DT_FMT = '%d/%m/%y'
         self.selected_id = None
@@ -358,8 +350,9 @@ class WaqtSchedulePage(tk.Frame):
         self.cal.grid(row=0, column=0, columnspan=2, sticky = tk.E, pady=5)
 
         waqt_frame = ttk.Frame(frame)
-        lbl_waqt = ttk.Label(waqt_frame, text="Time :", style="form.TLabel")
-        lbl_waqt.pack(pady=5, side=tk.LEFT)
+        self.cmb_waqt_name = ttk.Combobox(waqt_frame, width=6, font=(None, 11), values=["Fazr", "Duhr", "Asr", "Magrib", "Isha"])
+        self.cmb_waqt_name.current(3)
+        self.cmb_waqt_name.pack(padx=5, pady=5, side=tk.LEFT)
         self.cmb_waqt_hour = ttk.Combobox(waqt_frame, width=2, font=(None, 11), values=list(range(1, 13)))
         self.cmb_waqt_hour.pack(padx=5, pady=5, side=tk.LEFT)
         self.cmb_waqt_min = ttk.Combobox(waqt_frame, width=2, font=(None, 11), values=list(range(60)))
@@ -400,12 +393,16 @@ class WaqtSchedulePage(tk.Frame):
         self.tree_view.bind("<Double-1>", self.load_edit_row)
 
         tree_view_frame.grid(sticky = tk.E)
+        changes = self.controller.get_page(WaqtSetupPage).waqt_data["changes"]
+        for change in changes:
+            waqt = self.cmb_waqt_name['values'][change[1]]
+            dt = change[0]
+            time = join_time(change[2])
+            self.tree_view.insert("", tk.END, text="", values=[waqt, dt, time])
 
         btn_frame = ttk.Frame(frame)
         bn_back = ttk.Button(btn_frame, text="Back", command=lambda: self.controller.show_frame(WaqtSetupPage), style="form.TButton")
         bn_back.pack(side = "left", padx=5)
-        bn_apply = ttk.Button(btn_frame, text="Apply", command=lambda: self.apply(cal.get_date()), style="form.TButton")
-        bn_apply.pack(side = "left", padx=5)
         btn_frame.grid(row=3, column=0, sticky = tk.E, pady=5, columnspan=2)
 
         frame.pack(pady=(10, 0))
@@ -416,12 +413,16 @@ class WaqtSchedulePage(tk.Frame):
 
     def add_row(self):
         time = join_time((self.cmb_waqt_hour.current() + 1, self.cmb_waqt_min.current()))
-        values = (self.waqt, self.cal.selection_get().strftime(self.DT_FMT), time)
+        widx = self.cmb_waqt_name.current()
+        waqt_name = self.cmb_waqt_name['values'][widx]
+        values = (waqt_name, self.cal.selection_get().strftime(self.DT_FMT), time)
         self.tree_view.insert("", tk.END, text="", values=values)
 
     def edit_row(self):
         time = join_time((self.cmb_waqt_hour.current() + 1, self.cmb_waqt_min.current()))
-        values = (self.waqt, self.cal.selection_get().strftime(self.DT_FMT), time)
+        widx = self.cmb_waqt_name.current()
+        waqt_name = self.cmb_waqt_name['values'][widx]
+        values = (waqt_name, self.cal.selection_get().strftime(self.DT_FMT), time)
         self.tree_view.item(self.selected_id, text=self.selected_id, values=values)
         self.enable_add_mode()
 
@@ -441,13 +442,15 @@ class WaqtSchedulePage(tk.Frame):
         id = self.tree_view.identify('item', event.x, event.y)
         row = self.tree_view.item(id)
         values = row['values']
+        waqt = values[0]
         dt = datetime.datetime.strptime(values[1], self.DT_FMT)
         time = split_time(values[2])
-        self.load(dt, time)
-        self.bn_add['text'] = "Save"
+        self.load(waqt, dt, time)
         self.enable_edit_mode(id)
 
-    def load(self, dt, time):
+    def load(self, waqt, dt, time):
+        widx = self.cmb_waqt_name['values'].index(waqt)
+        self.cmb_waqt_name.current(widx)
         self.cal.selection_set(dt)
         self.cmb_waqt_hour.current(time[0] - 1)
         self.cmb_waqt_min.current(time[1])
