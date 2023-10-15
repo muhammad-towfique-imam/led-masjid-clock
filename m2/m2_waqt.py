@@ -13,17 +13,16 @@ def get_m2_waqt_xml(waqt_data):
     
     bs_data = BeautifulSoup(data, "xml")
     changes = waqt_data["changes"]
-    changes.sort(key=lambda x:get_apply_date(x[0], x[2]))
+    changes.sort(key=lambda x:get_apply_date(x[0], x[1], x[2]))
     base_date = datetime.datetime.today() - datetime.timedelta(days=30)
     if len(changes):
         first_change = changes[0]
-        base_date = strip_time(get_apply_date(first_change[0], [0, 0])) - datetime.timedelta(days=30)
+        base_date = strip_time(get_apply_date(first_change[0], 0, [0, 0])) - datetime.timedelta(days=30)
     base = waqt_data["times"]
     times = []
     times.append([base_date] + base)
     for (dt, w_idx, w_time) in changes:
-        time = (w_time[0] + 12, w_time[1]) if w_idx > 0 else w_time
-        apply_date = get_apply_date(dt, time)
+        apply_date = get_apply_date(dt, w_idx, w_time)
         base[w_idx] = w_time
         times.append([apply_date] + base)
 
@@ -47,8 +46,10 @@ def get_m2_waqt_xml(waqt_data):
 
     return bs_data.prettify()
 
-def get_apply_date(dt_str, w_time):
+def get_apply_date(dt_str, widx, w_time):
     h, m = w_time
+    if widx > 0:
+        h = h + 12
     dt = datetime.datetime.strptime(dt_str + " " + str(h) + ":" + str(m), DT_FMT)
     return dt - datetime.timedelta(days=1) + datetime.timedelta(minutes=30)
 
