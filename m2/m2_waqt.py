@@ -3,6 +3,8 @@ from waqt_utils import get_apply_date, set_waqt, join_time
 from bs4 import BeautifulSoup
 import copy
 import datetime
+import uuid
+
 LABEL_DT_FMT = '%d.%m/%H:%M'
 WHOLE_DAY_IN_SEC = 86340
 
@@ -42,6 +44,10 @@ def get_m2_waqt_xml(waqt_data):
             new_program(bs_data, tmpl, date_end, date_end, 0, time_end, waqt_times)
 
     tmpl.decompose()
+    areas = bs_data.find_all('area')
+    for area in areas:
+        guid = '{' + str(uuid.uuid4()) + '}'
+        area['tempGuid'] = guid
 
     return bs_data.prettify()
 
