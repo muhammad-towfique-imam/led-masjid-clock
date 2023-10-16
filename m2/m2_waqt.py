@@ -1,4 +1,5 @@
 from pickletools import int4
+from common_utils import fix_temp_guid
 from waqt_utils import get_apply_date, set_waqt, join_time
 from bs4 import BeautifulSoup
 import copy
@@ -44,11 +45,7 @@ def get_m2_waqt_xml(waqt_data):
             new_program(bs_data, tmpl, date_end, date_end, 0, time_end, waqt_times)
 
     tmpl.decompose()
-    areas = bs_data.find_all('area')
-    for area in areas:
-        guid = '{' + str(uuid.uuid4()) + '}'
-        area['tempGuid'] = guid
-
+    fix_temp_guid(bs_data)
     return bs_data.prettify()
 
 def break_date(dt):

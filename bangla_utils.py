@@ -68,9 +68,4 @@ def set_month(bn_year, programs):
             timing['day_'] = counter_date.day
             timing['cumulative_'] = "1"
 
-        areas = program.find_all('area')
-        for area in areas:
-            guid = '{' + str(uuid.uuid4()) + '}'
-            area['tempGuid'] = guid
-
         i = i + 1
