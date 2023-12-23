@@ -28,6 +28,7 @@ def set_waqt(tmpl, times):
     set_waqt_time(tmpl, "asr-time", "3:33", join_time(times[2]))
     set_waqt_time(tmpl, "magrib-time", "4:44", join_time(times[3]))
     set_waqt_time(tmpl, "isha-time", "5:55", join_time(times[4]))
+    set_waqt_time(tmpl, "jumma-time", "6:66", join_time(times[5]))
 
 def set_waqt_time(tmpl, waqt, find_txt, replace_txt):
     area = tmpl.find('area', {"nodeName" : waqt})

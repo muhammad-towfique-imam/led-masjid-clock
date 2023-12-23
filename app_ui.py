@@ -281,7 +281,7 @@ class WaqtSetupPage(tk.Frame):
         (self.cmb3_hour, self.cmb3_min) = self.build_waqt_row(frame, "Asr", times[2], 2)
         (self.cmb4_hour, self.cmb4_min) = self.build_waqt_row(frame, "Magrib", times[3], 3)
         (self.cmb5_hour, self.cmb5_min) = self.build_waqt_row(frame, "Isha", times[4], 4)
-
+        (self.cmb6_hour, self.cmb6_min) = self.build_waqt_row(frame, "Jumma", times[5], 5)
 
         reset_btn_frame = ttk.Frame(frame)
         lbl_reset = ttk.Label(reset_btn_frame, style="form.TLabel", text="Reset")
@@ -291,14 +291,14 @@ class WaqtSetupPage(tk.Frame):
         bn_reset = ttk.Button(reset_btn_frame, image=reset_icon, command=lambda: self.reset())
         bn_reset.image = reset_icon
         bn_reset.pack(side = "left", padx=5)
-        reset_btn_frame.grid(row=5, column=0, sticky = tk.E, pady=5, padx=16, columnspan=2)
+        reset_btn_frame.grid(row=6, column=0, sticky = tk.E, pady=5, padx=16, columnspan=2)
 
         btn_frame = ttk.Frame(frame)
         bn_back = ttk.Button(btn_frame, text="Back", command=lambda: self.controller.show_frame(StartPage), style="form.TButton")
         bn_back.pack(side = "left", padx=5)
         bn_apply = ttk.Button(btn_frame, text="Apply", style="form.TButton", command=lambda: self.apply())
         bn_apply.pack(side = "left", padx=5)
-        btn_frame.grid(row=6, column=0, sticky = tk.E, pady=5, columnspan=2)
+        btn_frame.grid(row=7, column=0, sticky = tk.E, pady=5, columnspan=2)
 
         frame.pack(pady=(10, 0))
 
@@ -353,6 +353,7 @@ class WaqtSetupPage(tk.Frame):
             (int(self.cmb3_hour.get()), int(self.cmb3_min.get())),
             (int(self.cmb4_hour.get()), int(self.cmb4_min.get())),
             (int(self.cmb5_hour.get()), int(self.cmb5_min.get())),
+            (int(self.cmb6_hour.get()), int(self.cmb6_min.get())),
         ]
 
     def set_times_data(self, times):
@@ -370,6 +371,9 @@ class WaqtSetupPage(tk.Frame):
 
         self.cmb5_hour.set(times[4][0])
         self.cmb5_min.set(times[4][1])
+
+        self.cmb6_hour.set(times[5][0])
+        self.cmb6_min.set(times[5][1])
 
     def apply(self):
         if self.controller.model in ('m2','m3'):
@@ -412,7 +416,7 @@ class WaqtSchedulePage(tk.Frame):
         self.cal.grid(row=0, column=0, columnspan=2, sticky = tk.E, pady=5)
 
         waqt_frame = ttk.Frame(frame)
-        self.cmb_waqt_name = ttk.Combobox(waqt_frame, width=6, font=(None, 11), values=["Fazr", "Duhr", "Asr", "Magrib", "Isha"])
+        self.cmb_waqt_name = ttk.Combobox(waqt_frame, width=6, font=(None, 11), values=["Fazr", "Duhr", "Asr", "Magrib", "Isha", "Jumma"])
         self.cmb_waqt_name.current(3)
         self.cmb_waqt_name.pack(padx=5, pady=5, side=tk.LEFT)
         self.cmb_waqt_hour = ttk.Combobox(waqt_frame, width=2, font=(None, 11), values=list(range(1, 13)))
