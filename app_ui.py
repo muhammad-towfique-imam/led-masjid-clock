@@ -16,6 +16,10 @@ from m2.m2_waqt import get_m2_waqt_xml
 from hd2020_helper import hd_register, load_waqt_data, save_waqt_data
 import bangladatetime
 import tkinter.messagebox as msg
+from m3.m3_bangla import get_m3_bangla_xml
+from m3.m3_english import get_m3_english_xml
+from m3.m3_hijri import get_m3_hijri_xml
+from m3.m3_waqt import get_m3_waqt_xml
 
 from waqt_utils import get_apply_date, join_time, split_time
   
@@ -104,7 +108,7 @@ class SelectModelPage(tk.Frame):
         lbl_year = ttk.Label(frame, text="Clock model :", style="form.TLabel")
         lbl_year.grid(row=0, column=0, sticky = tk.W, pady=5)
 
-        cmb_model = ttk.Combobox(frame, font=(None, 11), state = "readonly", values=list(["m1", "m2"]))
+        cmb_model = ttk.Combobox(frame, font=(None, 11), state = "readonly", values=list(["m1", "m2", "m3"]))
         cmb_model.current(0)
         cmb_model.grid(row=0, column=1, padx=10, sticky = tk.W, pady=5)
         
@@ -162,6 +166,8 @@ class EnglishSetupPage(tk.Frame):
             xml = get_m1_english_xml()
         elif self.controller.model == 'm2':
             xml = get_m2_english_xml()
+        elif self.controller.model == 'm3':
+            xml = get_m3_english_xml()
         if xml:
             hd_register(xml)
             msg.showinfo("Success", "English program written successfully")
@@ -199,6 +205,8 @@ class BanglaSetupPage(tk.Frame):
             xml = get_m1_bangla_xml(int(bn_year))
         elif self.controller.model == 'm2':
             xml = get_m2_bangla_xml(int(bn_year))
+        elif self.controller.model == 'm3':
+            xml = get_m3_bangla_xml(int(bn_year))
         if xml:
             hd_register(xml)
             msg.showinfo("Success", "Bangla program written successfully")
@@ -249,6 +257,8 @@ class HijriSetupPage(tk.Frame):
             xml = get_m1_hijri_xml(int(year), month, h, m, start_date)
         elif self.controller.model == 'm2':
             xml = get_m2_hijri_xml(int(year), month, h, m, start_date)
+        elif self.controller.model == 'm3':
+            xml = get_m3_hijri_xml(int(year), month, h, m, start_date)
         if xml:
             hd_register(xml)
             msg.showinfo("Success", "Hijri program written successfully")
@@ -362,7 +372,7 @@ class WaqtSetupPage(tk.Frame):
         self.cmb5_min.set(times[4][1])
 
     def apply(self):
-        if self.controller.model == 'm2':
+        if self.controller.model in ('m2','m3'):
             times = self.get_times_data()
             page = self.controller.get_page(WaqtSchedulePage)
             changes = []           
@@ -377,7 +387,10 @@ class WaqtSetupPage(tk.Frame):
                 "times": times,
                 "changes": changes
             }
-            xml = get_m2_waqt_xml(waqt_data)
+            if self.controller.model == 'm2':
+                xml = get_m2_waqt_xml(waqt_data)
+            elif self.controller.model == 'm3':
+                xml = get_m3_waqt_xml(waqt_data)
             if xml:
                 hd_register(xml)
                 save_waqt_data(waqt_data)
