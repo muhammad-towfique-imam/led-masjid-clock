@@ -473,6 +473,17 @@ class WaqtSchedulePage(tk.Frame):
 
         frame.pack(pady=(10, 0))
 
+    def has_duplicate_changes(self, new_values):
+        page = self.controller.get_page(WaqtSchedulePage)
+        for id in page.tree_view.get_children():
+            item = page.tree_view.item(id)
+            values = item["values"]
+            if new_values[0] == values[0] and new_values[1] == values[1]:
+                if self.selected_id is None:
+                    return True
+                elif self.selected_id != id:
+                    return True
+
     def delete_row(self):
         self.tree_view.delete(self.selected_id)
         self.enable_add_mode()
@@ -482,15 +493,21 @@ class WaqtSchedulePage(tk.Frame):
         widx = self.cmb_waqt_name.current()
         waqt_name = self.cmb_waqt_name['values'][widx]
         values = (waqt_name, self.cal.selection_get().strftime(self.DT_FMT), time)
-        self.tree_view.insert("", tk.END, text="", values=values)
+        if self.has_duplicate_changes(values):
+            msg.showerror("Error", "Duplicate entry")
+        else:
+            self.tree_view.insert("", tk.END, text="", values=values)
 
     def edit_row(self):
         time = join_time((self.cmb_waqt_hour.current() + 1, self.cmb_waqt_min.current()))
         widx = self.cmb_waqt_name.current()
         waqt_name = self.cmb_waqt_name['values'][widx]
         values = (waqt_name, self.cal.selection_get().strftime(self.DT_FMT), time)
-        self.tree_view.item(self.selected_id, text=self.selected_id, values=values)
-        self.enable_add_mode()
+        if self.has_duplicate_changes(values):
+            msg.showerror("Error", "Duplicate entry")
+        else:
+            self.tree_view.item(self.selected_id, text=self.selected_id, values=values)
+            self.enable_add_mode()
 
     def enable_add_mode(self):
         self.selected_id = None
