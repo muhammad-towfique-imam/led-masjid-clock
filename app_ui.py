@@ -459,7 +459,8 @@ class WaqtSchedulePage(tk.Frame):
         self.tree_view.bind("<Double-1>", self.load_edit_row)
 
         tree_view_frame.grid(sticky = tk.E)
-        changes = self.controller.get_page(WaqtSetupPage).waqt_data["changes"]
+        now = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+        changes = list(filter(lambda x:datetime.datetime.strptime(x[0], self.DT_FMT) >= now, self.controller.get_page(WaqtSetupPage).waqt_data["changes"]))
         for change in changes:
             waqt = self.cmb_waqt_name['values'][change[1]]
             dt = change[0]
