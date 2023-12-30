@@ -277,11 +277,11 @@ class WaqtSetupPage(tk.Frame):
         frame = ttk.Frame(self)
 
         (self.cmb1_hour, self.cmb1_min) = self.build_waqt_row(frame, "Fazr", times[0], 0)
-        (self.cmb2_hour, self.cmb2_min) = self.build_waqt_row(frame, "Duhr", times[1], 1)
+        (self.cmb2_hour, self.cmb2_min) = self.build_waqt_row(frame, "Zuhr", times[1], 1)
         (self.cmb3_hour, self.cmb3_min) = self.build_waqt_row(frame, "Asr", times[2], 2)
         (self.cmb4_hour, self.cmb4_min) = self.build_waqt_row(frame, "Magrib", times[3], 3)
         (self.cmb5_hour, self.cmb5_min) = self.build_waqt_row(frame, "Isha", times[4], 4)
-        (self.cmb6_hour, self.cmb6_min) = self.build_waqt_row(frame, "Jumma", times[5], 5)
+        (self.cmb6_hour, self.cmb6_min) = self.build_waqt_row(frame, "Jumu'ah", times[5], 5)
 
         reset_btn_frame = ttk.Frame(frame)
         lbl_reset = ttk.Label(reset_btn_frame, style="form.TLabel", text="Reset")
@@ -416,7 +416,7 @@ class WaqtSchedulePage(tk.Frame):
         self.cal.grid(row=0, column=0, columnspan=2, sticky = tk.E, pady=5)
 
         waqt_frame = ttk.Frame(frame)
-        self.cmb_waqt_name = ttk.Combobox(waqt_frame, width=6, font=(None, 11), values=["Fazr", "Duhr", "Asr", "Magrib", "Isha", "Jumma"])
+        self.cmb_waqt_name = ttk.Combobox(waqt_frame, width=8, font=(None, 11), values=["Fazr", "Zuhr", "Asr", "Magrib", "Isha", "Jumu'ah"])
         self.cmb_waqt_name.current(3)
         self.cmb_waqt_name.pack(padx=5, pady=5, side=tk.LEFT)
         self.cmb_waqt_hour = ttk.Combobox(waqt_frame, width=2, font=(None, 11), values=list(range(1, 13)))
