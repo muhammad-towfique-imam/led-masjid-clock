@@ -13,12 +13,12 @@ def replace_edit_data(data, year):
     decoded = base64.decodebytes(edit_data)
     y = str(year)
     updated = '\x00{}\x00{}\x00{}\x00{}\x00'.format(y[0], y[1], y[2], y[3])
-    decoded = decoded.replace(b'\x001\x004\x002\x009\x00', str.encode(updated))
+    decoded = decoded.replace(b'\x001\x004\x003\x000\x00', str.encode(updated))
     return base64.b64encode(decoded).decode("utf-8")
 
 def replace_rtf_data(data, year):
     decoded = base64.b64decode(data).decode('utf-8')
-    decoded = decoded.replace('1429', str(year))
+    decoded = decoded.replace('1430', str(year))
     return base64.b64encode(decoded.encode('utf-8')).decode('utf-8')
 
 def set_year(bs_data, year, nodes):
