@@ -1,4 +1,5 @@
 from pickletools import int4
+from common_utils import fix_temp_guid
 from hijri_utils import set_year, set_month
 
 from bs4 import BeautifulSoup
@@ -14,5 +15,7 @@ def get_m1_hijri_xml(hijri_year, hijri_month, hour, min, start_date):
     set_month(hijri_month, start_date, programs, hour, min)
 
     set_year(bs_data, hijri_year, ['s1-month-year', 's2-month-year'])
+
+    fix_temp_guid(bs_data)
 
     return bs_data.prettify()
