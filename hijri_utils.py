@@ -132,5 +132,5 @@ def set_month(hijri_month, start_date, programs, hour, min):
 
 
 if __name__ == "__main__":
-    m = get_hijri_months()
-    print (m)
+    t = get_prayer_times(datetime.date.today())
+    print (t)

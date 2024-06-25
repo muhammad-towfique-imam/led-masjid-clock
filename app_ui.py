@@ -21,6 +21,10 @@ from m3.m3_english import get_m3_english_xml
 from m3.m3_hijri import get_m3_hijri_xml
 from m3.m3_waqt import get_m3_waqt_xml
 
+from m4.m4_bangla import get_m4_bangla_xml
+from m4.m4_english import get_m4_english_xml
+from m4.m4_hijri import get_m4_hijri_xml
+from m4.m4_waqt import get_m4_waqt_xml
 from waqt_utils import get_apply_date, join_time, split_time
   
 class AppUI(tk.Tk):
@@ -108,7 +112,7 @@ class SelectModelPage(tk.Frame):
         lbl_year = ttk.Label(frame, text="Clock model :", style="form.TLabel")
         lbl_year.grid(row=0, column=0, sticky = tk.W, pady=5)
 
-        cmb_model = ttk.Combobox(frame, font=(None, 11), state = "readonly", values=list(["m1", "m2", "m3"]))
+        cmb_model = ttk.Combobox(frame, font=(None, 11), state = "readonly", values=list(["m1", "m2", "m3", "m4"]))
         cmb_model.current(0)
         cmb_model.grid(row=0, column=1, padx=10, sticky = tk.W, pady=5)
         
@@ -168,6 +172,8 @@ class EnglishSetupPage(tk.Frame):
             xml = get_m2_english_xml()
         elif self.controller.model == 'm3':
             xml = get_m3_english_xml()
+        elif self.controller.model == 'm4':
+            xml = get_m4_english_xml()
         if xml:
             hd_register(xml)
             msg.showinfo("Success", "English program written successfully")
@@ -207,6 +213,8 @@ class BanglaSetupPage(tk.Frame):
             xml = get_m2_bangla_xml(int(bn_year))
         elif self.controller.model == 'm3':
             xml = get_m3_bangla_xml(int(bn_year))
+        elif self.controller.model == 'm4':
+            xml = get_m4_bangla_xml(int(bn_year))
         if xml:
             hd_register(xml)
             msg.showinfo("Success", "Bangla program written successfully")
@@ -259,6 +267,8 @@ class HijriSetupPage(tk.Frame):
             xml = get_m2_hijri_xml(int(year), month, h, m, start_date)
         elif self.controller.model == 'm3':
             xml = get_m3_hijri_xml(int(year), month, h, m, start_date)
+        elif self.controller.model == 'm4':
+            xml = get_m4_hijri_xml(int(year), month, h, m, start_date)
         if xml:
             hd_register(xml)
             msg.showinfo("Success", "Hijri program written successfully")
@@ -282,6 +292,8 @@ class WaqtSetupPage(tk.Frame):
         (self.cmb4_hour, self.cmb4_min) = self.build_waqt_row(frame, "Magrib", times[3], 3)
         (self.cmb5_hour, self.cmb5_min) = self.build_waqt_row(frame, "Isha", times[4], 4)
         (self.cmb6_hour, self.cmb6_min) = self.build_waqt_row(frame, "Jumu'ah", times[5], 5)
+        (self.cmb7_hour, self.cmb7_min) = self.build_waqt_row(frame, "Sunrise", times[6], 6)
+        (self.cmb8_hour, self.cmb8_min) = self.build_waqt_row(frame, "Sunset", times[7], 7)        
 
         reset_btn_frame = ttk.Frame(frame)
         lbl_reset = ttk.Label(reset_btn_frame, style="form.TLabel", text="Reset")
@@ -291,14 +303,14 @@ class WaqtSetupPage(tk.Frame):
         bn_reset = ttk.Button(reset_btn_frame, image=reset_icon, command=lambda: self.reset())
         bn_reset.image = reset_icon
         bn_reset.pack(side = "left", padx=5)
-        reset_btn_frame.grid(row=6, column=0, sticky = tk.E, pady=5, padx=16, columnspan=2)
+        reset_btn_frame.grid(row=8, column=0, sticky = tk.E, pady=5, padx=16, columnspan=2)
 
         btn_frame = ttk.Frame(frame)
         bn_back = ttk.Button(btn_frame, text="Back", command=lambda: self.controller.show_frame(StartPage), style="form.TButton")
         bn_back.pack(side = "left", padx=5)
         bn_apply = ttk.Button(btn_frame, text="Apply", style="form.TButton", command=lambda: self.apply())
         bn_apply.pack(side = "left", padx=5)
-        btn_frame.grid(row=7, column=0, sticky = tk.E, pady=5, columnspan=2)
+        btn_frame.grid(row=9, column=0, sticky = tk.E, pady=5, columnspan=2)
 
         frame.pack(pady=(10, 0))
 
@@ -354,6 +366,8 @@ class WaqtSetupPage(tk.Frame):
             (int(self.cmb4_hour.get()), int(self.cmb4_min.get())),
             (int(self.cmb5_hour.get()), int(self.cmb5_min.get())),
             (int(self.cmb6_hour.get()), int(self.cmb6_min.get())),
+            (int(self.cmb7_hour.get()), int(self.cmb7_min.get())),            
+            (int(self.cmb8_hour.get()), int(self.cmb8_min.get())),
         ]
 
     def set_times_data(self, times):
@@ -376,7 +390,7 @@ class WaqtSetupPage(tk.Frame):
         self.cmb6_min.set(times[5][1])
 
     def apply(self):
-        if self.controller.model in ('m2','m3'):
+        if self.controller.model in ('m2','m3', 'm4'):
             times = self.get_times_data()
             page = self.controller.get_page(WaqtSchedulePage)
             changes = []           
@@ -395,6 +409,8 @@ class WaqtSetupPage(tk.Frame):
                 xml = get_m2_waqt_xml(waqt_data)
             elif self.controller.model == 'm3':
                 xml = get_m3_waqt_xml(waqt_data)
+            elif self.controller.model == 'm4':
+                xml = get_m4_waqt_xml(waqt_data)
             if xml:
                 hd_register(xml)
                 save_waqt_data(waqt_data)
@@ -416,7 +432,7 @@ class WaqtSchedulePage(tk.Frame):
         self.cal.grid(row=0, column=0, columnspan=2, sticky = tk.E, pady=5)
 
         waqt_frame = ttk.Frame(frame)
-        self.cmb_waqt_name = ttk.Combobox(waqt_frame, width=8, font=(None, 11), values=["Fazr", "Zuhr", "Asr", "Magrib", "Isha", "Jumu'ah"])
+        self.cmb_waqt_name = ttk.Combobox(waqt_frame, width=8, font=(None, 11), values=["Fazr", "Zuhr", "Asr", "Magrib", "Isha", "Jumu'ah", "Sunrise", "Sunset"])
         self.cmb_waqt_name.current(3)
         self.cmb_waqt_name.pack(padx=5, pady=5, side=tk.LEFT)
         self.cmb_waqt_hour = ttk.Combobox(waqt_frame, width=2, font=(None, 11), values=list(range(1, 13)))
