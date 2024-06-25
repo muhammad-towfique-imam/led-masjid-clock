@@ -7,7 +7,7 @@
   },
   {
    "optionDest": "filenames",
-   "value": "C:/Users/towfique/Documents/workspace/matrix-clock/mc.py"
+   "value": "C:/Users/DOHS CENTRAL MASJID/Documents/python/matrix-clock/mc.py"
   },
   {
    "optionDest": "onefile",
@@ -19,11 +19,7 @@
   },
   {
    "optionDest": "icon_file",
-   "value": "C:/Users/towfique/Documents/workspace/matrix-clock/images/icon.ico"
-  },
-  {
-   "optionDest": "ascii",
-   "value": false
+   "value": "C:/Users/DOHS CENTRAL MASJID/Documents/python/matrix-clock/images/icon.ico"
   },
   {
    "optionDest": "clean_build",
@@ -42,10 +38,6 @@
    "value": false
   },
   {
-   "optionDest": "embed_manifest",
-   "value": true
-  },
-  {
    "optionDest": "uac_admin",
    "value": false
   },
@@ -54,11 +46,7 @@
    "value": false
   },
   {
-   "optionDest": "win_private_assemblies",
-   "value": false
-  },
-  {
-   "optionDest": "win_no_prefer_redirects",
+   "optionDest": "argv_emulation",
    "value": false
   },
   {
@@ -66,20 +54,16 @@
    "value": false
   },
   {
-   "optionDest": "argv_emulation",
-   "value": false
+   "optionDest": "datas",
+   "value": "C:/Users/DOHS CENTRAL MASJID/Documents/python/matrix-clock/settings.json;."
   },
   {
    "optionDest": "datas",
-   "value": "C:/Users/towfique/Documents/workspace/matrix-clock/templates;templates/"
+   "value": "C:/Users/DOHS CENTRAL MASJID/Documents/python/matrix-clock/templates;templates/"
   },
   {
    "optionDest": "datas",
-   "value": "C:/Users/towfique/Documents/workspace/matrix-clock/settings.json;."
-  },
-  {
-   "optionDest": "datas",
-   "value": "C:/Users/towfique/Documents/workspace/matrix-clock/images;images/"
+   "value": "C:/Users/DOHS CENTRAL MASJID/Documents/python/matrix-clock/images;images/"
   }
  ],
  "nonPyinstallerOptions": {
