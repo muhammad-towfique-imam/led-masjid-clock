@@ -4,6 +4,7 @@ import base64
 import datetime
 
 DT_FMT = '%d/%m/%y %H:%M'
+CHANGES_DATE_FMT = "%d/%m/%y"
 
 def replace_edit_data(data, s, d):
     edit_data = data.encode("utf-8")
@@ -54,3 +55,8 @@ def get_apply_date(dt_str, widx, w_time):
     dt = datetime.datetime.strptime(dt_str + " " + str(h) + ":" + str(m), DT_FMT)
     return dt - datetime.timedelta(days=1) + datetime.timedelta(minutes=30)
 
+def get_apply_date_from_array(a):
+    return get_apply_date(a[0], a[1], a[2]);
+    
+def changes_date_to_string(dt):
+    return dt.strftime(CHANGES_DATE_FMT);

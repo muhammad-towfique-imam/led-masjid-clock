@@ -1,6 +1,7 @@
 from pickletools import int4
 from common_utils import fix_temp_guid
-from waqt_utils import get_apply_date, set_waqt, join_time
+from hijri_utils import adjust_12_hour, convert_salah_time, get_prayer_times
+from waqt_utils import changes_date_to_string, get_apply_date, get_apply_date_from_array, set_waqt, join_time
 from bs4 import BeautifulSoup
 import copy
 import datetime
@@ -16,10 +17,25 @@ def get_m4_waqt_xml(waqt_data):
     bs_data = BeautifulSoup(data, "xml")
     changes = waqt_data["changes"]
     changes.sort(key=lambda x:get_apply_date(x[0], x[1], x[2]))
-    base_date = datetime.datetime.today() - datetime.timedelta(days=30)
+    base_date = datetime.datetime.today() - datetime.timedelta(days=1)
+    last_date = get_apply_date_from_array(changes[-1])
+    diff = last_date - base_date
+    p_sr = p_ss = None
+    for i in range(diff.days + 2):  # including base and last dates
+        dt = base_date + datetime.timedelta(days=i)
+        t = get_prayer_times(dt)
+        sr = convert_salah_time(t['sunrise'])
+        ss = adjust_12_hour(convert_salah_time(t['sunset']))
+        if sr != p_sr:
+            changes.append([changes_date_to_string(dt), 6, sr])
+            p_sr = sr
+        if ss != p_ss:
+            changes.append([changes_date_to_string(dt), 7, ss])
+            p_ss = ss
+    changes.sort(key=lambda x:get_apply_date(x[0], x[1], x[2]))
     if len(changes):
         first_change = changes[0]
-        base_date = strip_time(get_apply_date(first_change[0], 0, [0, 0])) - datetime.timedelta(days=30)
+        base_date = strip_time(get_apply_date(first_change[0], 0, [0, 0])) - datetime.timedelta(days=1)
     base = waqt_data["times"].copy()
     times = []
     times.append([base_date] + base)

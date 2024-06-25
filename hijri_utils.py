@@ -24,6 +24,12 @@ def str_to_time_delta(s):
     m = int(a[1])
     return datetime.timedelta(hours=h, minutes=m)
 
+def adjust_12_hour(a):
+    h = int(a[0]) - 12
+    m = int(a[1])
+    return [h, m]
+
+
 def adjust_salah_times(t, d):
     r0 = t[0] + d[0]
     r1 = t[1] + d[1]
@@ -46,7 +52,7 @@ def get_salah_times(start):
 
 def convert_salah_time(time):
     a = str(time).split(':')[:2]
-    return int(a[0]), int(a[1])
+    return [int(a[0]), int(a[1])]
 
 def get_maghrib_time(start):
     maghrib = str_to_time_delta(get_prayer_times(start)['maghrib'])
