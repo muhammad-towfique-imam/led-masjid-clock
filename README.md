@@ -15,5 +15,5 @@ Follow these steps to compile PyInstaller bootleader to avoid false positive vir
     ```
 
 # GENERATE EXE #
-
-Fix path in `auto-py-to-exe-settings.json` and load the file in auto-py-to-exe program and generate exe using it
+auto-py-to-exe
+Fix path in `auto-py-to-exe-settings.json` and load the file in  program and generate exe using it
