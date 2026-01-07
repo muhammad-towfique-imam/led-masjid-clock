@@ -9,8 +9,8 @@ CHANGES_DATE_FMT = "%d/%m/%y"
 def replace_edit_data(data, s, d):
     edit_data = data.encode("utf-8")
     decoded = base64.decodebytes(edit_data)
-    find = '{}\x00{}\x00{}\x00{}\x00'.format(s[0], s[1], s[2], s[3])
-    updated = '{}\x00{}\x00{}\x00{}\x00'.format(d[0], d[1], d[2], d[3])
+    find = '{}\x00{}\x00{}\x00{}\x00{}\x00'.format(s[0], s[1], s[2], s[3], s[4])
+    updated = '{}\x00{}\x00{}\x00{}\x00{}\x00'.format(d[0], d[1], d[2], d[3], d[4])
     decoded = decoded.replace(str.encode(find), str.encode(updated))
     return base64.b64encode(decoded).decode("utf-8")
 
@@ -23,15 +23,15 @@ def replace_data(text, s, d):
     text['editData'] = replace_edit_data(text['editData'], s, d)
     text['rtfData'] = replace_rtf_data(text['rtfData'], s, d)
 
-def set_waqt(tmpl, times):
-    set_waqt_time(tmpl, "fazr-time", "1:11", join_time(times[0]))
-    set_waqt_time(tmpl, "zuhr-time", "2:22", join_time(times[1]))
-    set_waqt_time(tmpl, "asr-time", "3:33", join_time(times[2]))
-    set_waqt_time(tmpl, "magrib-time", "4:44", join_time(times[3]))
-    set_waqt_time(tmpl, "isha-time", "5:55", join_time(times[4]))
-    set_waqt_time(tmpl, "jumu'ah-time", "6:66", join_time(times[5]))
-    set_waqt_time(tmpl, "sunrise-time", "7:77", join_time(times[6]))
-    set_waqt_time(tmpl, "sunset-time", "8:88", join_time(times[7]))
+def set_waqt(tmpl, times, section_prefix = ""):
+    set_waqt_time(tmpl, section_prefix + "fazr-time", "11:11", pad(join_time(times[0])))
+    set_waqt_time(tmpl, section_prefix + "zuhr-time", "22:22", pad(join_time(times[1])))
+    set_waqt_time(tmpl, section_prefix + "asr-time", "33:33", pad(join_time(times[2])))
+    set_waqt_time(tmpl, section_prefix + "magrib-time", "44:44", pad(join_time(times[3])))
+    set_waqt_time(tmpl, section_prefix + "isha-time", "55:55", pad(join_time(times[4])))
+    set_waqt_time(tmpl, section_prefix + "jumu'ah-time", "66:66", pad(join_time(times[5])))
+    set_waqt_time(tmpl, section_prefix + "sunrise-time", "77:77", pad(join_time(times[6])))
+    set_waqt_time(tmpl, section_prefix + "sunset-time", "88:88", pad(join_time(times[7])))
 
 def set_waqt_time(tmpl, waqt, find_txt, replace_txt):
     area = tmpl.find('area', {"nodeName" : waqt})
@@ -39,8 +39,11 @@ def set_waqt_time(tmpl, waqt, find_txt, replace_txt):
         text = area.find('text')
         replace_data(text, find_txt, replace_txt)
 
+def pad(s):
+    return s.rjust(5, " ")
+
 def join_time(time):
-    return f'{time[0]}:{time[1]:02}'    
+    return f'{time[0]}:{time[1]:02}'
 
 def split_time(s):
     a = s.split(':')
@@ -50,7 +53,7 @@ def split_time(s):
 
 def get_apply_date(dt_str, widx, w_time):
     h, m = w_time
-    if widx > 0:
+    if widx > 0 and h < 12:
         h = h + 12
     dt = datetime.datetime.strptime(dt_str + " " + str(h) + ":" + str(m), DT_FMT)
     return dt - datetime.timedelta(days=1) + datetime.timedelta(minutes=30)

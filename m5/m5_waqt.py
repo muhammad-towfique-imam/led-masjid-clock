@@ -98,5 +98,8 @@ def new_program(bs_data, tmpl, date_start, date_end, time_start, time_end, times
         tmpl_copy['specifedTimeEnabled'] = 1
         tmpl_copy['timeStart'] = time_start
         tmpl_copy['timeEnd'] = time_end
-    set_waqt(tmpl_copy, times)
+    set_waqt(tmpl_copy, times, "s1-")
+    set_waqt(tmpl_copy, times, "s2-")
+    set_waqt(tmpl_copy, times, "s3-")
+
     bs_data.screen.append(tmpl_copy)
