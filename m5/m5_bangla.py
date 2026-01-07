@@ -1,0 +1,21 @@
+from pickletools import int4
+
+from bs4 import BeautifulSoup
+from bangla_utils import set_year, set_month
+from common_utils import fix_temp_guid
+
+def get_m5_bangla_xml(bn_year):
+    with open('templates/m5/m5-bangla.xml', 'r') as f:
+        data = f.read()
+    
+    bs_data = BeautifulSoup(data, "xml")
+    
+    programs = bs_data.find_all('program')
+
+    set_month(bn_year, programs)
+
+    set_year(bs_data, bn_year, ['s1-month-year'])
+
+    fix_temp_guid(bs_data)
+    
+    return bs_data.prettify()
