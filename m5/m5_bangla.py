@@ -16,6 +16,10 @@ def get_m5_bangla_xml(bn_year):
 
     set_year(bs_data, bn_year, ['s1-month-year'])
 
+    set_year(bs_data, bn_year, ['s2-month-year'])
+
+    set_year(bs_data, bn_year, ['s3-month-year'])
+
     fix_temp_guid(bs_data)
     
     return bs_data.prettify()

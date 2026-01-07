@@ -16,6 +16,10 @@ def get_m5_hijri_xml(hijri_year, hijri_month, hour, min, start_date):
 
     set_year(bs_data, hijri_year, ['s1-month-year'])
 
+    set_year(bs_data, hijri_year, ['s2-month-year'])
+
+    set_year(bs_data, hijri_year, ['s3-month-year'])
+
     fix_temp_guid(bs_data)
     
     return bs_data.prettify()
