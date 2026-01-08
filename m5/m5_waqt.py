@@ -18,8 +18,11 @@ def get_m5_waqt_xml(waqt_data):
     changes = waqt_data["changes"]
     changes.sort(key=lambda x:get_apply_date(x[0], x[1], x[2]))
     base_date = datetime.datetime.today() - datetime.timedelta(days=1)
-    last_date = get_apply_date_from_array(changes[-1])
-    diff = last_date - base_date
+    if len(changes) > 0:
+        last_date = get_apply_date_from_array(changes[-1])
+        diff = last_date - base_date
+    else:
+        diff = datetime.timedelta(0)
     p_sr = p_ss = None
     for i in range(diff.days + 2):  # including base and last dates
         dt = base_date + datetime.timedelta(days=i)

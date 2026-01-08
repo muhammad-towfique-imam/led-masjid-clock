@@ -24,20 +24,20 @@ def replace_data(text, s, d):
     text['rtfData'] = replace_rtf_data(text['rtfData'], s, d)
 
 def set_waqt(tmpl, times, section_prefix = ""):
-    set_waqt_time(tmpl, section_prefix + "fazr-time", "11:11", pad(join_time(times[0])))
-    set_waqt_time(tmpl, section_prefix + "zuhr-time", "22:22", pad(join_time(times[1])))
-    set_waqt_time(tmpl, section_prefix + "asr-time", "33:33", pad(join_time(times[2])))
-    set_waqt_time(tmpl, section_prefix + "magrib-time", "44:44", pad(join_time(times[3])))
-    set_waqt_time(tmpl, section_prefix + "isha-time", "55:55", pad(join_time(times[4])))
-    set_waqt_time(tmpl, section_prefix + "jumu'ah-time", "66:66", pad(join_time(times[5])))
-    set_waqt_time(tmpl, section_prefix + "sunrise-time", "77:77", pad(join_time(times[6])))
-    set_waqt_time(tmpl, section_prefix + "sunset-time", "88:88", pad(join_time(times[7])))
+    set_waqt_time(tmpl, section_prefix + "waqt-time", times)
 
-def set_waqt_time(tmpl, waqt, find_txt, replace_txt):
-    area = tmpl.find('area', {"nodeName" : waqt})
+def set_waqt_time(tmpl, node, times):
+    area = tmpl.find('area', {"nodeName" : node})
     if area:
         text = area.find('text')
-        replace_data(text, find_txt, replace_txt)
+        replace_data(text, "11:11", pad(join_time(times[0])))
+        replace_data(text, "22:22", pad(join_time(times[1])))
+        replace_data(text, "33:33", pad(join_time(times[2])))
+        replace_data(text, "44:44", pad(join_time(times[3])))
+        replace_data(text, "55:55", pad(join_time(times[4])))
+        replace_data(text, "66:66", pad(join_time(times[5])))
+        replace_data(text, "77:77", pad(join_time(times[6])))
+        replace_data(text, "88:88", pad(join_time(times[7])))
 
 def pad(s):
     return s.rjust(5, " ")
