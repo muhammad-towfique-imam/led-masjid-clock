@@ -2,14 +2,19 @@ import kivy
 
 kivy.require("2.3.0")
 
-from kivy.app import App
+from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.stacklayout import StackLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
-from kivy.uix.textinput import TextInput
+from kivy.uix.textinput import TextInput as KivyTextInput
+from kivymd.uix.textfield import MDTextField as TextInput
 from kivy.uix.popup import Popup
+from kivy.uix.spinner import Spinner
+from kivy.uix.gridlayout import GridLayout
+from kivymd.uix.textfield import MDTextField
+from kivymd.uix.pickers import MDDockedDatePicker
 
 from datetime import datetime
 import bangladatetime
@@ -44,7 +49,7 @@ from m5.m5_waqt import get_m5_waqt_xml
 from waqt_utils import get_apply_date, join_time, split_time
 
 
-class AppUI(App):
+class AppUI(MDApp):
     def __init__(self, model=None, **kwargs):
         super().__init__(**kwargs)
         self.model = model
@@ -78,12 +83,11 @@ class SelectModelScreen(Screen):
         title = Label(text="Matrix Clock", font_size=32, halign="center")
         subtitle = Label(text="Select clock model", font_size=18, halign="center")
 
-        self.model_input = TextInput(
-            hint_text="Model (m1-m5)",
+        self.model_spinner = Spinner(
             text="m1",
-            multiline=False,
+            values=("m1", "m2", "m3", "m4", "m5"),
             size_hint_y=None,
-            height=40,
+            height=50,
         )
 
         btn = Button(text="Select", size_hint_y=None, height=50)
@@ -91,18 +95,21 @@ class SelectModelScreen(Screen):
 
         layout.add_widget(title)
         layout.add_widget(subtitle)
-        layout.add_widget(self.model_input)
+        layout.add_widget(self.model_spinner)
         layout.add_widget(btn)
 
         self.add_widget(layout)
 
     def select(self, *args):
-        model = self.model_input.text.strip().lower()
+        model = self.model_spinner.text.strip().lower()
         if model in ["m1", "m2", "m3", "m4", "m5"]:
             self.app.model = model
+            # Rebuild start screen with new model
+            self.manager.remove_widget(self.manager.get_screen("start"))
+            self.manager.add_widget(StartScreen(name="start", app=self.app))
             self.manager.current = "start"
         else:
-            self.show_popup("Error", "Please enter m1, m2, m3, m4, or m5")
+            self.show_popup("Error", "Please select m1, m2, m3, m4, or m5")
 
     def show_popup(self, title, text):
         popup = Popup(
@@ -133,7 +140,7 @@ class StartScreen(Screen):
             ("Hijri Setup", "hijri_setup"),
         ]
 
-        if self.app.model and self.app.model not in ("m1",):
+        if self.app.model and self.app.model != "m1":
             btns.append(("Waqt Setup", "waqt_setup"))
 
         for text, screen in btns:
@@ -213,7 +220,7 @@ class BanglaSetupScreen(Screen):
         now = datetime.today()
         now_bn = bangladatetime.date.fromgregorian(now.year, now.month, now.day)
 
-        self.year_input = TextInput(
+        self.year_input = MDTextField(
             hint_text="Bangla Year",
             text=str(now_bn.year + 2),
             multiline=False,
@@ -277,33 +284,35 @@ class HijriSetupScreen(Screen):
 
         now = datetime.today()
         hz_year, hz_month = get_next_hijri_month()
+        self.hijri_months = get_hijri_months()
 
-        self.year_input = TextInput(
-            hint_text="Hijri Year",
+        self.year_spinner = Spinner(
             text=str(hz_year),
-            multiline=False,
+            values=[str(y) for y in range(hz_year - 2, hz_year + 3)],
             size_hint_y=None,
             height=40,
         )
-        layout.add_widget(self.year_input)
+        layout.add_widget(Label(text="Hijri Year:"))
+        layout.add_widget(self.year_spinner)
 
-        self.month_input = TextInput(
-            hint_text="Hijri Month (1-12)",
-            text=str(hz_month),
-            multiline=False,
+        self.month_spinner = Spinner(
+            text=self.hijri_months[hz_month - 1],
+            values=self.hijri_months,
             size_hint_y=None,
             height=40,
         )
-        layout.add_widget(self.month_input)
+        layout.add_widget(Label(text="Hijri Month:"))
+        layout.add_widget(self.month_spinner)
 
-        self.date_input = TextInput(
-            hint_text="Start Date (YYYY-MM-DD)",
+        layout.add_widget(Label(text="Start Date:"))
+        self.date_btn = Button(
             text=now.strftime("%Y-%m-%d"),
-            multiline=False,
             size_hint_y=None,
-            height=40,
+            height=50,
         )
-        layout.add_widget(self.date_input)
+        self.date_btn.bind(on_release=self.show_date_picker)
+        layout.add_widget(self.date_btn)
+        self.selected_date = now
 
         btn_layout = BoxLayout(spacing=10, size_hint_y=None, height=50)
         back_btn = Button(text="Back")
@@ -319,14 +328,20 @@ class HijriSetupScreen(Screen):
     def back(self, *args):
         self.manager.current = "start"
 
+    def show_date_picker(self, *args):
+        date_picker = MDDockedDatePicker()
+        date_picker.bind(on_save=self.on_date_save)
+        date_picker.open()
+
+    def on_date_save(self, instance, value, *args):
+        self.selected_date = value
+        self.date_btn.text = value.strftime("%Y-%m-%d")
+
     def apply(self, *args):
-        year = int(self.year_input.text)
-        month = int(self.month_input.text)
-        try:
-            start_date = datetime.strptime(self.date_input.text, "%Y-%m-%d")
-        except ValueError:
-            self.show_popup("Error", "Invalid date format. Use YYYY-MM-DD")
-            return
+        year = int(self.year_spinner.text)
+        month = self.hijri_months.index(self.month_spinner.text) + 1
+        start_date = self.selected_date
+
         h, m = get_min_margib_time(start_date)
         model = self.app.model
 
@@ -375,13 +390,13 @@ class WaqtSetupScreen(Screen):
             row = BoxLayout(spacing=10, size_hint_y=None, height=40)
             row.add_widget(Label(text=f"{name}:", size_hint_x=0.3))
 
-            hour_input = TextInput(
+            hour_input = MDTextField(
                 text=str(times[i][0]),
                 input_filter="int",
                 size_hint_x=0.3,
                 multiline=False,
             )
-            min_input = TextInput(
+            min_input = MDTextField(
                 text=str(times[i][1]),
                 input_filter="int",
                 size_hint_x=0.3,
@@ -462,13 +477,13 @@ class WaqtScheduleScreen(Screen):
         self.app = app
         self.changes = []
         self.selected_idx = None
-        self.waqt_names = ["Fazr", "Zuhr", "Asr", "Magrib", "Isha", "Jumu'ah"]
+        self.waqt_names = ["Fazr", "Duhr", "Asr", "Magrib", "Isha", "Jumu'ah"]
 
         layout = BoxLayout(orientation="vertical", padding=40, spacing=20)
         title = Label(text="Schedule Waqt Change", font_size=24, halign="center")
         layout.add_widget(title)
 
-        self.date_input = TextInput(
+        self.date_input = MDTextField(
             hint_text="Date (YYYY-MM-DD)",
             text=datetime.today().strftime("%Y-%m-%d"),
             multiline=False,
@@ -478,24 +493,26 @@ class WaqtScheduleScreen(Screen):
         layout.add_widget(self.date_input)
 
         row = BoxLayout(spacing=10, size_hint_y=None, height=40)
-        self.waqt_input = TextInput(
-            hint_text="Waqt", text="Magrib", size_hint_x=0.3, multiline=False
+        self.waqt_spinner = Spinner(
+            text="Magrib",
+            values=self.waqt_names,
+            size_hint_x=0.4,
         )
-        self.hour_input = TextInput(
+        self.hour_input = MDTextField(
             hint_text="Hour",
             text="12",
             size_hint_x=0.3,
             input_filter="int",
             multiline=False,
         )
-        self.min_input = TextInput(
+        self.min_input = MDTextField(
             hint_text="Min",
             text="0",
             size_hint_x=0.3,
             input_filter="int",
             multiline=False,
         )
-        row.add_widget(self.waqt_input)
+        row.add_widget(self.waqt_spinner)
         row.add_widget(self.hour_input)
         row.add_widget(self.min_input)
         layout.add_widget(row)
@@ -534,7 +551,7 @@ class WaqtScheduleScreen(Screen):
             return
 
         time = join_time((int(self.hour_input.text), int(self.min_input.text)))
-        waqt = self.waqt_input.text
+        waqt = self.waqt_spinner.text
         dt = selected_date.strftime("%d/%m/%y")
 
         for change in self.changes:
@@ -548,7 +565,7 @@ class WaqtScheduleScreen(Screen):
     def edit_change(self, *args):
         if self.selected_idx is not None:
             time = join_time((int(self.hour_input.text), int(self.min_input.text)))
-            self.changes[self.selected_idx]["waqt"] = self.waqt_input.text
+            self.changes[self.selected_idx]["waqt"] = self.waqt_spinner.text
             self.changes[self.selected_idx]["date"] = datetime.strptime(
                 self.date_input.text, "%Y-%m-%d"
             ).strftime("%d/%m/%y")
@@ -576,7 +593,7 @@ class WaqtScheduleScreen(Screen):
     def load_change(self, idx):
         self.selected_idx = idx
         change = self.changes[idx]
-        self.waqt_input.text = change["waqt"]
+        self.waqt_spinner.text = change["waqt"]
         self.date_input.text = change["date"]
         time = split_time(change["time"])
         self.hour_input.text = str(time[0])
