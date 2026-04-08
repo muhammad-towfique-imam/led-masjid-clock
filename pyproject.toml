@@ -2,13 +2,15 @@
 name = "matrix-clock"
 version = "0.1.0"
 description = "Matrix Clock - Islamic prayer times display"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
     "tkcalendar",
     "hijri_converter",
     "bangladatetime",
     "beautifulsoup4",
     "lxml",
-    "pyinstaller==5.13.2",
-    "auto-py-to-exe",
+    "pyinstaller>=6",
 ]
+
+[project.scripts]
+matrix-clock = "mp:main"

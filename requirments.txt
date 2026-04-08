@@ -1,7 +1,0 @@
-tkcalendar
-hijri_converter
-bangladatetime
-beautifulsoup4
-lxml
-pyinstaller==5.13.2
-auto-py-to-exe

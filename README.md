@@ -1,19 +1,49 @@
-# REQUIRMENTS #
+# Matrix Clock
 
-Run all the command from `requirments.txt`  before working on the project
+Islamic prayer times display application.
 
-# COMPILE PyInstaller
+## Requirements
 
-Follow these steps to compile PyInstaller bootleader to avoid false positive virus detection. 
+- [uv](https://github.com/astral-sh/uv) - Fast Python package manager
 
-1. Download `Microsoft Build Tools 2015` and install.
-2. Download PyInstaller source code from: https://github.com/pyinstaller/pyinstaller/archive/refs/tags/v5.13.2.zip
-3. Execute the following from the root folder of pyInstaller source code.
+## Setup
 
-    ```
-    pip install .
-    ```
+Install dependencies using uv:
 
-# GENERATE EXE #
-auto-py-to-exe
-Fix path in `auto-py-to-exe-settings.json` and load the file in  program and generate exe using it
+```bash
+uv sync
+```
+
+Or manually:
+
+```bash
+uv venv .venv
+uv pip install -e .
+```
+
+## Run
+
+```bash
+source .venv/bin/activate
+python mp.py
+```
+
+Or without activating the venv:
+
+```bash
+uv run python mp.py
+```
+
+## Build .exe
+
+Using uvx (no venv required):
+
+```bash
+uvx pyinstaller mp.py --onefile --windowed --icon images/icon.ico --add-data settings.json:. --add-data templates:templates --add-data images:images
+```
+
+Output will be in `dist/mc`.
+
+## Build .exe (Windows)
+
+For Windows .exe, run the build command on Windows. The icon will only work on Windows/macOS.
