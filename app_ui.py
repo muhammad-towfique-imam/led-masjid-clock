@@ -1,11 +1,26 @@
-import tkinter as tk
-from tkinter import ttk
-from tkinter.font import BOLD
-from datetime import date
-from tkcalendar import Calendar
-import babel.numbers    # Do not remove, required to generate .exe as Calendar dependency
-from hijri_utils import get_next_hijri_month, get_hijri_months, get_min_margib_time, str_to_date, get_salah_times
-import datetime
+import kivy
+
+kivy.require("2.3.0")
+
+from kivy.app import App
+from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.stacklayout import StackLayout
+from kivy.uix.button import Button
+from kivy.uix.label import Label
+from kivy.uix.textinput import TextInput
+from kivy.uix.popup import Popup
+
+from datetime import datetime
+import bangladatetime
+
+from hijri_utils import (
+    get_next_hijri_month,
+    get_hijri_months,
+    get_min_margib_time,
+    str_to_date,
+    get_salah_times,
+)
 from m1.m1_bangla import get_m1_bangla_xml
 from m1.m1_hijri import get_m1_hijri_xml
 from m1.m1_english import get_m1_english_xml
@@ -14,13 +29,10 @@ from m2.m2_hijri import get_m2_hijri_xml
 from m2.m2_english import get_m2_english_xml
 from m2.m2_waqt import get_m2_waqt_xml
 from hd2020_helper import hd_register, load_waqt_data, save_waqt_data
-import bangladatetime
-import tkinter.messagebox as msg
 from m3.m3_bangla import get_m3_bangla_xml
 from m3.m3_english import get_m3_english_xml
 from m3.m3_hijri import get_m3_hijri_xml
 from m3.m3_waqt import get_m3_waqt_xml
-
 from m4.m4_bangla import get_m4_bangla_xml
 from m5.m5_bangla import get_m5_bangla_xml
 from m4.m4_english import get_m4_english_xml
@@ -30,545 +42,574 @@ from m5.m5_hijri import get_m5_hijri_xml
 from m4.m4_waqt import get_m4_waqt_xml
 from m5.m5_waqt import get_m5_waqt_xml
 from waqt_utils import get_apply_date, join_time, split_time
-  
-class AppUI(tk.Tk):
-     
-    # __init__ function for class tkinterApp
-    def __init__(self, model = None, *args, **kwargs):
-        # __init__ function for class Tk
-        tk.Tk.__init__(self, *args, **kwargs)
 
-        style = ttk.Style(self)
-        style.configure('heading.TLabel', font=(None, 16, BOLD))
-        style.configure('subheading.TLabel', font=(None, 11))
-        style.configure('form.TLabel', font=(None, 11))
-        style.configure('form.TButton', font=(None, 11))
 
-        self.title("Matrix Clock")
-        self.geometry("400x650")
-        self.resizable(0, 0)
-         
-        # creating a container
-        container = tk.Frame(self) 
-        container.pack(side = "top", fill = "both", expand = True)
-  
-        container.grid_columnconfigure(0, weight = 1)
-        container.grid_rowconfigure(0, weight = 1)
-        container.grid_rowconfigure(1, weight = 1)
-        container.grid_rowconfigure(2, weight = 8)
-  
-        # initializing frames to an empty array
-        self.frames = {} 
-  
-        # iterating through a tuple consisting
-        # of the different page layouts
-
-        self.heading = tk.StringVar()
-        lbl_heading = ttk.Label(container, style="heading.TLabel", textvariable=self.heading)
-        lbl_heading.grid(row=0, column=0, pady=5)
-
-        self.sub_heading = tk.StringVar()
-        lbl_sub_heading = ttk.Label(container, style="subheading.TLabel", textvariable=self.sub_heading)
-        lbl_sub_heading.grid(row=1, column=0, pady=(0, 20))
-
-        self.set_heading(model)
-
-        for F in (SelectModelPage, StartPage, EnglishSetupPage, BanglaSetupPage, HijriSetupPage, WaqtSetupPage, WaqtSchedulePage):
-  
-            frame = F(container, self)
-  
-            # initializing frame of that object from
-            # startpage, page1, page2 respectively with
-            # for loop
-            self.frames[F] = frame
-  
-            frame.grid(row = 2, column = 0, sticky ="nsew")
-        if model:
-            self.show_frame(StartPage)
-        else:
-            self.show_frame(SelectModelPage)
-  
-    # to display the current frame passed as
-    # parameter
-    def get_page(self, cont):
-        return self.frames[cont]
-
-    def show_frame(self, cont):
-        frame = self.frames[cont]
-        self.sub_heading.set(frame.title)
-        frame.tkraise()
-
-    def set_heading(self, model):
+class AppUI(App):
+    def __init__(self, model=None, **kwargs):
+        super().__init__(**kwargs)
         self.model = model
-        if model:
-            self.heading.set("Matrix Clock - " + model.upper())
+
+    def build(self):
+        sm = ScreenManager()
+
+        sm.add_widget(SelectModelScreen(name="select_model", app=self))
+        sm.add_widget(StartScreen(name="start", app=self))
+        sm.add_widget(EnglishSetupScreen(name="english_setup", app=self))
+        sm.add_widget(BanglaSetupScreen(name="bangla_setup", app=self))
+        sm.add_widget(HijriSetupScreen(name="hijri_setup", app=self))
+        sm.add_widget(WaqtSetupScreen(name="waqt_setup", app=self))
+        sm.add_widget(WaqtScheduleScreen(name="waqt_schedule", app=self))
+
+        if self.model:
+            sm.current = "start"
         else:
-            self.heading.set("Matrix Clock")
+            sm.current = "select_model"
 
-class SelectModelPage(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.title = "Select clock model"
-        self.controller = controller
-
-        frame = ttk.Frame(self)
-
-        lbl_year = ttk.Label(frame, text="Clock model :", style="form.TLabel")
-        lbl_year.grid(row=0, column=0, sticky = tk.W, pady=5)
-
-        cmb_model = ttk.Combobox(frame, font=(None, 11), state = "readonly", values=list(["m1", "m2", "m3", "m4", "m5"]))
-        cmb_model.current(0)
-        cmb_model.grid(row=0, column=1, padx=10, sticky = tk.W, pady=5)
-        
-        btn_apply = ttk.Button(frame, text="Select", command=lambda: self.select(cmb_model.get()), style="form.TButton")
-        btn_apply.grid(row=1, column=0, columnspan=2, padx=10, sticky = tk.E, pady=5)
-
-        frame.pack()
-
-    def select(self, model):
-        self.controller.set_heading(model)
-        if model == "m1":
-            self.controller.frames[StartPage].wqt_btn.grid_forget()
-        self.controller.show_frame(StartPage)
-
-class StartPage(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.title = ""
-
-        frame = ttk.Frame(self)
-
-        en_btn = ttk.Button(frame, text="English Setup", style="form.TButton", width=25, command=lambda: controller.show_frame(EnglishSetupPage))
-        en_btn.grid(row=0, column=0, padx=20, pady=5)
-
-        bn_btn = ttk.Button(frame, text="Bangla Setup", style="form.TButton", width=25, command=lambda: controller.show_frame(BanglaSetupPage))
-        bn_btn.grid(row=1, column=0, padx=20, pady=5)
-
-        hz_btn = ttk.Button(frame, text="Hijri Setup", style="form.TButton", width=25, command=lambda: controller.show_frame(HijriSetupPage))
-        hz_btn.grid(row=2, column=0, padx=20, pady=5)
-
-        self.wqt_btn = ttk.Button(frame, text="Waqt Setup", style="form.TButton", width=25, command=lambda: controller.show_frame(WaqtSetupPage))
-        self.wqt_btn.grid(row=3, column=0, padx=20, pady=5)
-
-        frame.pack()
-  
-class EnglishSetupPage(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-        self.title = "English Setup"
-
-        frame = ttk.Frame(self)
-
-        btn_frame = ttk.Frame(frame)
-        btn_back = ttk.Button(btn_frame, text="Back", command=lambda: self.controller.show_frame(StartPage), style="form.TButton")
-        btn_back.pack(side = "left", padx=5)
-        btn_apply = ttk.Button(btn_frame, text="Apply", command=lambda: self.apply(), style="form.TButton")
-        btn_apply.pack(side = "left", padx=5)
-        btn_frame.grid(row=0, column=0, sticky = tk.E, pady=5, columnspan=2)
-
-        frame.pack(pady=(10, 0))
-
-    def apply(self):
-        if self.controller.model == 'm1':
-            xml = get_m1_english_xml()
-        elif self.controller.model == 'm2':
-            xml = get_m2_english_xml()
-        elif self.controller.model == 'm3':
-            xml = get_m3_english_xml()
-        elif self.controller.model == 'm4':
-            xml = get_m4_english_xml()
-        elif self.controller.model == 'm5':
-            xml = get_m5_english_xml()
-        if xml:
-            hd_register(xml)
-            msg.showinfo("Success", "English program written successfully")
-        self.controller.show_frame(StartPage)
+        return sm
 
 
-class BanglaSetupPage(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-        self.title = "Bangla Setup"
+class SelectModelScreen(Screen):
+    def __init__(self, name, app, **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.app = app
 
-        frame = ttk.Frame(self)
-        lbl_year = ttk.Label(frame, text="Bangla Year:", style="form.TLabel")
-        lbl_year.grid(row=1, column=0, sticky = tk.W, pady=5)
-        
-        now = datetime.datetime.today()
-        now_bn = bangladatetime.date.fromgregorian(now.year, now.month, now.day)
+        layout = BoxLayout(orientation="vertical", padding=40, spacing=20)
 
-        cmb_bn_year = ttk.Combobox(frame, font=(None, 11), values=list(range(now_bn.year-1, now_bn.year+4)))
-        cmb_bn_year.current(2)
-        cmb_bn_year.grid(row=1, column=1, padx=10, sticky = tk.W, pady=5)
+        title = Label(text="Matrix Clock", font_size=32, halign="center")
+        subtitle = Label(text="Select clock model", font_size=18, halign="center")
 
-        btn_frame = ttk.Frame(frame)
-        bn_back = ttk.Button(btn_frame, text="Back", command=lambda: self.controller.show_frame(StartPage), style="form.TButton")
-        bn_back.pack(side = "left", padx=5)
-        bn_apply = ttk.Button(btn_frame, text="Apply", command=lambda: self.apply(cmb_bn_year.get()), style="form.TButton")
-        bn_apply.pack(side = "left", padx=5)
-        btn_frame.grid(row=2, column=0, sticky = tk.E, pady=5, columnspan=2)
+        self.model_input = TextInput(
+            hint_text="Model (m1-m5)",
+            text="m1",
+            multiline=False,
+            size_hint_y=None,
+            height=40,
+        )
 
-        frame.pack(pady=(10, 0))
+        btn = Button(text="Select", size_hint_y=None, height=50)
+        btn.bind(on_release=self.select)
 
-    def apply(self, bn_year):
-        if self.controller.model == 'm1':
-            xml = get_m1_bangla_xml(int(bn_year))
-        elif self.controller.model == 'm2':
-            xml = get_m2_bangla_xml(int(bn_year))
-        elif self.controller.model == 'm3':
-            xml = get_m3_bangla_xml(int(bn_year))
-        elif self.controller.model == 'm4':
-            xml = get_m4_bangla_xml(int(bn_year))
-        elif self.controller.model == 'm5':
-            xml = get_m5_bangla_xml(int(bn_year))
-        if xml:
-            hd_register(xml)
-            msg.showinfo("Success", "Bangla program written successfully")
-        self.controller.show_frame(StartPage)
+        layout.add_widget(title)
+        layout.add_widget(subtitle)
+        layout.add_widget(self.model_input)
+        layout.add_widget(btn)
+
+        self.add_widget(layout)
+
+    def select(self, *args):
+        model = self.model_input.text.strip().lower()
+        if model in ["m1", "m2", "m3", "m4", "m5"]:
+            self.app.model = model
+            self.manager.current = "start"
+        else:
+            self.show_popup("Error", "Please enter m1, m2, m3, m4, or m5")
+
+    def show_popup(self, title, text):
+        popup = Popup(
+            title=title,
+            content=Label(text=text),
+            size_hint=(None, None),
+            size=(300, 150),
+        )
+        popup.open()
 
 
-class HijriSetupPage(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-        self.title = "Hijri Setup"
+class StartScreen(Screen):
+    def __init__(self, name, app, **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.app = app
 
-        now = datetime.datetime.today()
-        hz_year, hz_month = get_next_hijri_month()
+        layout = BoxLayout(orientation="vertical", padding=40, spacing=15)
 
-        frame = ttk.Frame(self)
-        lbl_year = ttk.Label(frame, text="Hijri Year:", style="form.TLabel")
-        lbl_year.grid(row=0, column=0, sticky = tk.W, pady=5)
-        cmb_hz_year = ttk.Combobox(frame, font=(None, 11), values=list(range(hz_year-2, hz_year+3)))
-        cmb_hz_year.current(2)
-        cmb_hz_year.grid(row=0, column=1, padx=10, sticky = tk.W, pady=5)
+        model_name = self.app.model.upper() if self.app.model else ""
+        title = Label(
+            text=f"Matrix Clock - {model_name}", font_size=24, halign="center"
+        )
+        layout.add_widget(title)
 
-        lbl_month = ttk.Label(frame, text="Hijri Month:", style="form.TLabel")
-        lbl_month.grid(row=1, column=0, sticky = tk.W, pady=5)
-        cmb_hz_month = ttk.Combobox(frame, font=(None, 11),  state = "readonly", values=get_hijri_months())
-        cmb_hz_month.current(hz_month - 1)   # 1 based month
-        cmb_hz_month.grid(row=1, column=1, padx=10, sticky = tk.W, pady=5)
-
-        lbl_start_date = ttk.Label(frame, text="Select start date of Hijri month:", style="form.TLabel")
-        lbl_start_date.grid(row=2, column=0, columnspan=2, padx=0, sticky = tk.W, pady=5)
-
-        cal = Calendar(frame, selectmode = 'day', year = now.year, month = now.month, day = now.day)
-        cal.grid(row=3, column=0, columnspan=2, sticky = tk.E, pady=5)
-
-        btn_frame = ttk.Frame(frame)
-        bn_back = ttk.Button(btn_frame, text="Back", command=lambda: self.controller.show_frame(StartPage), style="form.TButton")
-        bn_back.pack(side = "left", padx=5)
-        bn_apply = ttk.Button(btn_frame, text="Apply", command=lambda: self.apply(cmb_hz_year.get(), cmb_hz_month.current() + 1, cal.get_date()), style="form.TButton")
-        bn_apply.pack(side = "left", padx=5)
-        btn_frame.grid(row=4, column=0, sticky = tk.E, pady=5, columnspan=2)
-
-        frame.pack(pady=(10, 0))
-
-    def apply(self, year, month, start_date_txt):
-        start_date = str_to_date(start_date_txt)
-        h, m = get_min_margib_time(start_date)
-        if self.controller.model == 'm1':
-            xml = get_m1_hijri_xml(int(year), month, h, m, start_date)
-        elif self.controller.model == 'm2':
-            xml = get_m2_hijri_xml(int(year), month, h, m, start_date)
-        elif self.controller.model == 'm3':
-            xml = get_m3_hijri_xml(int(year), month, h, m, start_date)
-        elif self.controller.model == 'm4':
-            xml = get_m4_hijri_xml(int(year), month, h, m, start_date)
-        elif self.controller.model == 'm5':
-            xml = get_m5_hijri_xml(int(year), month, h, m, start_date)
-        if xml:
-            hd_register(xml)
-            msg.showinfo("Success", "Hijri program written successfully")
-        self.controller.show_frame(StartPage)
-
-class WaqtSetupPage(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-        self.title = "Waqt Setup"
-
-        self.waqt_data = load_waqt_data()
-        
-        times = self.waqt_data["times"]
-
-        frame = ttk.Frame(self)
-
-        (self.cmb1_hour, self.cmb1_min) = self.build_waqt_row(frame, "Fazr", times[0], 0)
-        (self.cmb2_hour, self.cmb2_min) = self.build_waqt_row(frame, "Zuhr", times[1], 1)
-        (self.cmb3_hour, self.cmb3_min) = self.build_waqt_row(frame, "Asr", times[2], 2)
-        (self.cmb4_hour, self.cmb4_min) = self.build_waqt_row(frame, "Magrib", times[3], 3)
-        (self.cmb5_hour, self.cmb5_min) = self.build_waqt_row(frame, "Isha", times[4], 4)
-        (self.cmb6_hour, self.cmb6_min) = self.build_waqt_row(frame, "Jumu'ah", times[5], 5)
-
-        reset_btn_frame = ttk.Frame(frame)
-        lbl_reset = ttk.Label(reset_btn_frame, style="form.TLabel", text="Reset")
-        lbl_reset.pack(side = "left", padx=5)
-
-        reset_icon = tk.PhotoImage(file="images/reset.png")
-        bn_reset = ttk.Button(reset_btn_frame, image=reset_icon, command=lambda: self.reset())
-        bn_reset.image = reset_icon
-        bn_reset.pack(side = "left", padx=5)
-        reset_btn_frame.grid(row=6, column=0, sticky = tk.E, pady=5, padx=16, columnspan=2)
-
-        btn_frame = ttk.Frame(frame)
-        bn_back = ttk.Button(btn_frame, text="Back", command=lambda: self.controller.show_frame(StartPage), style="form.TButton")
-        bn_back.pack(side = "left", padx=5)
-        bn_apply = ttk.Button(btn_frame, text="Apply", style="form.TButton", command=lambda: self.apply())
-        bn_apply.pack(side = "left", padx=5)
-        btn_frame.grid(row=7, column=0, sticky = tk.E, pady=5, columnspan=2)
-
-        frame.pack(pady=(10, 0))
-
-    def build_waqt_row(self, frame, name, time, row):
-        waqt_frame = ttk.Frame(frame)
-        lbl_waqt = ttk.Label(waqt_frame, text=name+":", style="form.TLabel")
-        lbl_waqt.pack(pady=5, side=tk.LEFT)
-        cmb_waqt_hour = ttk.Combobox(waqt_frame, width=2, font=(None, 11), values=list(range(1, 13)))
-        cmb_waqt_hour.current(time[0] -1)
-        cmb_waqt_hour.pack(padx=5, pady=5, side=tk.LEFT)
-        cmb_waqt_min = ttk.Combobox(waqt_frame, width=2, font=(None, 11), values=list(range(60)))
-        cmb_waqt_min.current(time[1])
-        cmb_waqt_min.pack(padx=5, pady=5, side=tk.LEFT)
-
-        schedule_icon = tk.PhotoImage(file="images/schedule.png")
-        bn_schedule = ttk.Button(waqt_frame, image=schedule_icon, command=lambda: self.goto_schedule_page(name, time))
-        bn_schedule.image = schedule_icon
-        bn_schedule.pack(side = "left", padx=5)
-
-        waqt_frame.grid(row=row, column=0, sticky=tk.E)
-        return (cmb_waqt_hour, cmb_waqt_min)
-
-    def reset(self):
-        page = self.controller.get_page(WaqtSchedulePage)
-        changes = []           
-        for child in page.tree_view.get_children():
-            values = page.tree_view.item(child)["values"]
-            waqt = values[0]
-            dt = values[1]
-            time = values[2]
-            widx = page.cmb_waqt_name['values'].index(waqt)
-            changes.append([dt, widx, list(split_time(time))])
-
-        changes.sort(key=lambda x:get_apply_date(x[0], x[1], x[2]))
-        base = self.get_times_data()
-        for (dt, w_idx, w_time) in changes:
-            base[w_idx] = w_time
-        self.set_times_data(base)
-        for row in page.tree_view.get_children():
-            page.tree_view.delete(row)        
-
-    def goto_schedule_page(self, name, time):
-        now = datetime.datetime.today()
-        page = self.controller.frames[WaqtSchedulePage]
-        page.load(name, now, time)
-        self.controller.show_frame(WaqtSchedulePage)
-
-    def get_times_data(self):
-        return [
-            (int(self.cmb1_hour.get()), int(self.cmb1_min.get())),
-            (int(self.cmb2_hour.get()), int(self.cmb2_min.get())),
-            (int(self.cmb3_hour.get()), int(self.cmb3_min.get())),
-            (int(self.cmb4_hour.get()), int(self.cmb4_min.get())),
-            (int(self.cmb5_hour.get()), int(self.cmb5_min.get())),
-            (int(self.cmb6_hour.get()), int(self.cmb6_min.get())),
-            (0, 0),
-            (0, 0)
+        btns = [
+            ("English Setup", "english_setup"),
+            ("Bangla Setup", "bangla_setup"),
+            ("Hijri Setup", "hijri_setup"),
         ]
 
-    def set_times_data(self, times):
-        self.cmb1_hour.set(times[0][0])
-        self.cmb1_min.set(times[0][1])
+        if self.app.model and self.app.model not in ("m1",):
+            btns.append(("Waqt Setup", "waqt_setup"))
 
-        self.cmb2_hour.set(times[1][0])
-        self.cmb2_min.set(times[1][1])
+        for text, screen in btns:
+            btn = Button(text=text, size_hint_y=None, height=50)
+            btn.bind(on_release=self.goto(screen))
+            layout.add_widget(btn)
 
-        self.cmb3_hour.set(times[2][0])
-        self.cmb3_min.set(times[2][1])
+        self.add_widget(layout)
 
-        self.cmb4_hour.set(times[3][0])
-        self.cmb4_min.set(times[3][1])
+    def goto(self, screen_name):
+        def callback(*args):
+            self.manager.current = screen_name
 
-        self.cmb5_hour.set(times[4][0])
-        self.cmb5_min.set(times[4][1])
+        return callback
 
-        self.cmb6_hour.set(times[5][0])
-        self.cmb6_min.set(times[5][1])
 
-    def apply(self):
-        if self.controller.model in ('m2','m3', 'm4',  'm5'):
+class EnglishSetupScreen(Screen):
+    def __init__(self, name, app, **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.app = app
+
+        layout = BoxLayout(orientation="vertical", padding=40, spacing=20)
+        title = Label(text="English Setup", font_size=24, halign="center")
+        layout.add_widget(title)
+
+        btn_layout = BoxLayout(spacing=10, size_hint_y=None, height=50)
+        back_btn = Button(text="Back")
+        apply_btn = Button(text="Apply")
+        btn_layout.add_widget(back_btn)
+        btn_layout.add_widget(apply_btn)
+        back_btn.bind(on_release=self.back)
+        apply_btn.bind(on_release=self.apply)
+        layout.add_widget(btn_layout)
+
+        self.add_widget(layout)
+
+    def back(self, *args):
+        self.manager.current = "start"
+
+    def apply(self, *args):
+        model = self.app.model
+        if model == "m1":
+            xml = get_m1_english_xml()
+        elif model == "m2":
+            xml = get_m2_english_xml()
+        elif model == "m3":
+            xml = get_m3_english_xml()
+        elif model == "m4":
+            xml = get_m4_english_xml()
+        elif model == "m5":
+            xml = get_m5_english_xml()
+
+        if xml:
+            hd_register(xml)
+            self.show_popup("Success", "English program written successfully")
+
+    def show_popup(self, title, text):
+        popup = Popup(
+            title=title,
+            content=Label(text=text),
+            size_hint=(None, None),
+            size=(300, 150),
+        )
+        popup.bind(on_dismiss=lambda *a: setattr(self.manager, "current", "start"))
+        popup.open()
+
+
+class BanglaSetupScreen(Screen):
+    def __init__(self, name, app, **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.app = app
+
+        layout = BoxLayout(orientation="vertical", padding=40, spacing=20)
+        title = Label(text="Bangla Setup", font_size=24, halign="center")
+        layout.add_widget(title)
+
+        now = datetime.today()
+        now_bn = bangladatetime.date.fromgregorian(now.year, now.month, now.day)
+
+        self.year_input = TextInput(
+            hint_text="Bangla Year",
+            text=str(now_bn.year + 2),
+            multiline=False,
+            size_hint_y=None,
+            height=40,
+        )
+        layout.add_widget(self.year_input)
+
+        btn_layout = BoxLayout(spacing=10, size_hint_y=None, height=50)
+        back_btn = Button(text="Back")
+        apply_btn = Button(text="Apply")
+        btn_layout.add_widget(back_btn)
+        btn_layout.add_widget(apply_btn)
+        back_btn.bind(on_release=self.back)
+        apply_btn.bind(on_release=self.apply)
+        layout.add_widget(btn_layout)
+
+        self.add_widget(layout)
+
+    def back(self, *args):
+        self.manager.current = "start"
+
+    def apply(self, *args):
+        bn_year = int(self.year_input.text)
+        model = self.app.model
+
+        if model == "m1":
+            xml = get_m1_bangla_xml(bn_year)
+        elif model == "m2":
+            xml = get_m2_bangla_xml(bn_year)
+        elif model == "m3":
+            xml = get_m3_bangla_xml(bn_year)
+        elif model == "m4":
+            xml = get_m4_bangla_xml(bn_year)
+        elif model == "m5":
+            xml = get_m5_bangla_xml(bn_year)
+
+        if xml:
+            hd_register(xml)
+            self.show_popup("Success", "Bangla program written successfully")
+
+    def show_popup(self, title, text):
+        popup = Popup(
+            title=title,
+            content=Label(text=text),
+            size_hint=(None, None),
+            size=(300, 150),
+        )
+        popup.bind(on_dismiss=lambda *a: setattr(self.manager, "current", "start"))
+        popup.open()
+
+
+class HijriSetupScreen(Screen):
+    def __init__(self, name, app, **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.app = app
+
+        layout = BoxLayout(orientation="vertical", padding=40, spacing=20)
+        title = Label(text="Hijri Setup", font_size=24, halign="center")
+        layout.add_widget(title)
+
+        now = datetime.today()
+        hz_year, hz_month = get_next_hijri_month()
+
+        self.year_input = TextInput(
+            hint_text="Hijri Year",
+            text=str(hz_year),
+            multiline=False,
+            size_hint_y=None,
+            height=40,
+        )
+        layout.add_widget(self.year_input)
+
+        self.month_input = TextInput(
+            hint_text="Hijri Month (1-12)",
+            text=str(hz_month),
+            multiline=False,
+            size_hint_y=None,
+            height=40,
+        )
+        layout.add_widget(self.month_input)
+
+        self.date_input = TextInput(
+            hint_text="Start Date (YYYY-MM-DD)",
+            text=now.strftime("%Y-%m-%d"),
+            multiline=False,
+            size_hint_y=None,
+            height=40,
+        )
+        layout.add_widget(self.date_input)
+
+        btn_layout = BoxLayout(spacing=10, size_hint_y=None, height=50)
+        back_btn = Button(text="Back")
+        apply_btn = Button(text="Apply")
+        btn_layout.add_widget(back_btn)
+        btn_layout.add_widget(apply_btn)
+        back_btn.bind(on_release=self.back)
+        apply_btn.bind(on_release=self.apply)
+        layout.add_widget(btn_layout)
+
+        self.add_widget(layout)
+
+    def back(self, *args):
+        self.manager.current = "start"
+
+    def apply(self, *args):
+        year = int(self.year_input.text)
+        month = int(self.month_input.text)
+        try:
+            start_date = datetime.strptime(self.date_input.text, "%Y-%m-%d")
+        except ValueError:
+            self.show_popup("Error", "Invalid date format. Use YYYY-MM-DD")
+            return
+        h, m = get_min_margib_time(start_date)
+        model = self.app.model
+
+        if model == "m1":
+            xml = get_m1_hijri_xml(year, month, h, m, start_date)
+        elif model == "m2":
+            xml = get_m2_hijri_xml(year, month, h, m, start_date)
+        elif model == "m3":
+            xml = get_m3_hijri_xml(year, month, h, m, start_date)
+        elif model == "m4":
+            xml = get_m4_hijri_xml(year, month, h, m, start_date)
+        elif model == "m5":
+            xml = get_m5_hijri_xml(year, month, h, m, start_date)
+
+        if xml:
+            hd_register(xml)
+            self.show_popup("Success", "Hijri program written successfully")
+
+    def show_popup(self, title, text):
+        popup = Popup(
+            title=title,
+            content=Label(text=text),
+            size_hint=(None, None),
+            size=(300, 150),
+        )
+        popup.bind(on_dismiss=lambda *a: setattr(self.manager, "current", "start"))
+        popup.open()
+
+
+class WaqtSetupScreen(Screen):
+    def __init__(self, name, app, **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.app = app
+
+        layout = BoxLayout(orientation="vertical", padding=40, spacing=15)
+        title = Label(text="Waqt Setup", font_size=24, halign="center")
+        layout.add_widget(title)
+
+        self.waqt_data = load_waqt_data()
+        times = self.waqt_data["times"]
+
+        waqt_names = ["Fazr", "Zuhr", "Asr", "Magrib", "Isha", "Jumu'ah"]
+        self.time_fields = []
+
+        for i, name in enumerate(waqt_names):
+            row = BoxLayout(spacing=10, size_hint_y=None, height=40)
+            row.add_widget(Label(text=f"{name}:", size_hint_x=0.3))
+
+            hour_input = TextInput(
+                text=str(times[i][0]),
+                input_filter="int",
+                size_hint_x=0.3,
+                multiline=False,
+            )
+            min_input = TextInput(
+                text=str(times[i][1]),
+                input_filter="int",
+                size_hint_x=0.3,
+                multiline=False,
+            )
+
+            row.add_widget(hour_input)
+            row.add_widget(min_input)
+            self.time_fields.append((hour_input, min_input))
+            layout.add_widget(row)
+
+        btn_layout = BoxLayout(spacing=10, size_hint_y=None, height=50)
+        back_btn = Button(text="Back")
+        sched_btn = Button(text="Schedule")
+        apply_btn = Button(text="Apply")
+        btn_layout.add_widget(back_btn)
+        btn_layout.add_widget(sched_btn)
+        btn_layout.add_widget(apply_btn)
+        back_btn.bind(on_release=self.back)
+        sched_btn.bind(on_release=self.goto_schedule)
+        apply_btn.bind(on_release=self.apply)
+        layout.add_widget(btn_layout)
+
+        self.add_widget(layout)
+
+    def back(self, *args):
+        self.manager.current = "start"
+
+    def get_times_data(self):
+        times = []
+        for hour_field, min_field in self.time_fields:
+            h = int(hour_field.text) if hour_field.text else 0
+            m = int(min_field.text) if min_field.text else 0
+            times.append((h, m))
+        times.extend([(0, 0), (0, 0)])
+        return times
+
+    def goto_schedule(self, *args):
+        self.manager.current = "waqt_schedule"
+
+    def apply(self, *args):
+        model = self.app.model
+        if model in ("m2", "m3", "m4", "m5"):
             times = self.get_times_data()
-            page = self.controller.get_page(WaqtSchedulePage)
-            changes = []           
-            for child in page.tree_view.get_children():
-                values = page.tree_view.item(child)["values"]
-                waqt = values[0]
-                dt = values[1]
-                time = values[2]
-                widx = page.cmb_waqt_name['values'].index(waqt)
-                changes.append([dt, widx, list(split_time(time))])
-            waqt_data = {
-                "times": times,
-                "changes": changes
-            }
-            if self.controller.model == 'm2':
+            schedule_screen = self.manager.get_screen("waqt_schedule")
+            changes = schedule_screen.get_changes()
+
+            waqt_data = {"times": times, "changes": changes}
+
+            if model == "m2":
                 xml = get_m2_waqt_xml(waqt_data)
-            elif self.controller.model == 'm3':
+            elif model == "m3":
                 xml = get_m3_waqt_xml(waqt_data)
-            elif self.controller.model == 'm4':
+            elif model == "m4":
                 xml = get_m4_waqt_xml(waqt_data)
-            elif self.controller.model == 'm5':
+            elif model == "m5":
                 xml = get_m5_waqt_xml(waqt_data)
+
             if xml:
                 hd_register(xml)
                 save_waqt_data(waqt_data)
-                msg.showinfo("Success", "Waqt program written successfully")
-            self.controller.show_frame(StartPage)
+                self.show_popup("Success", "Waqt program written successfully")
 
-  
-class WaqtSchedulePage(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.title = "Schedule Waqt Change"
-        self.controller = controller
-        self.DT_FMT = '%d/%m/%y'
-        self.selected_id = None
-
-        frame = ttk.Frame(self)
-
-        self.cal = Calendar(frame, selectmode = 'day')
-        self.cal.grid(row=0, column=0, columnspan=2, sticky = tk.E, pady=5)
-
-        waqt_frame = ttk.Frame(frame)
-        self.cmb_waqt_name = ttk.Combobox(waqt_frame, width=8, font=(None, 11), values=["Fazr", "Zuhr", "Asr", "Magrib", "Isha", "Jumu'ah"])
-        self.cmb_waqt_name.current(3)
-        self.cmb_waqt_name.pack(padx=5, pady=5, side=tk.LEFT)
-        self.cmb_waqt_hour = ttk.Combobox(waqt_frame, width=2, font=(None, 11), values=list(range(1, 13)))
-        self.cmb_waqt_hour.pack(padx=5, pady=5, side=tk.LEFT)
-        self.cmb_waqt_min = ttk.Combobox(waqt_frame, width=2, font=(None, 11), values=list(range(60)))
-        self.cmb_waqt_min.pack(padx=5, pady=5, side=tk.LEFT)
-        save_icon = tk.PhotoImage(file="images/save.png")
-        delete_icon = tk.PhotoImage(file="images/delete.png")
+    def show_popup(self, title, text):
+        popup = Popup(
+            title=title,
+            content=Label(text=text),
+            size_hint=(None, None),
+            size=(300, 150),
+        )
+        popup.bind(on_dismiss=lambda *a: setattr(self.manager, "current", "start"))
+        popup.open()
 
 
-        self.bn_add = ttk.Button(waqt_frame, image=save_icon, command=lambda: self.add_row(), style="form.TButton")
-        self.bn_add.image = save_icon
-        self.bn_save = ttk.Button(waqt_frame, image=save_icon, command=lambda: self.edit_row(), style="form.TButton")
-        self.bn_save.image = save_icon
-        self.bn_delete = ttk.Button(waqt_frame, image=delete_icon, command=lambda: self.delete_row(), style="form.TButton")
-        self.bn_delete.image = delete_icon
+class WaqtScheduleScreen(Screen):
+    def __init__(self, name, app, **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.app = app
+        self.changes = []
+        self.selected_idx = None
+        self.waqt_names = ["Fazr", "Zuhr", "Asr", "Magrib", "Isha", "Jumu'ah"]
+
+        layout = BoxLayout(orientation="vertical", padding=40, spacing=20)
+        title = Label(text="Schedule Waqt Change", font_size=24, halign="center")
+        layout.add_widget(title)
+
+        self.date_input = TextInput(
+            hint_text="Date (YYYY-MM-DD)",
+            text=datetime.today().strftime("%Y-%m-%d"),
+            multiline=False,
+            size_hint_y=None,
+            height=40,
+        )
+        layout.add_widget(self.date_input)
+
+        row = BoxLayout(spacing=10, size_hint_y=None, height=40)
+        self.waqt_input = TextInput(
+            hint_text="Waqt", text="Magrib", size_hint_x=0.3, multiline=False
+        )
+        self.hour_input = TextInput(
+            hint_text="Hour",
+            text="12",
+            size_hint_x=0.3,
+            input_filter="int",
+            multiline=False,
+        )
+        self.min_input = TextInput(
+            hint_text="Min",
+            text="0",
+            size_hint_x=0.3,
+            input_filter="int",
+            multiline=False,
+        )
+        row.add_widget(self.waqt_input)
+        row.add_widget(self.hour_input)
+        row.add_widget(self.min_input)
+        layout.add_widget(row)
+
+        btn_row = BoxLayout(spacing=10, size_hint_y=None, height=50)
+        add_btn = Button(text="Add")
+        self.save_btn = Button(text="Save")
+        self.delete_btn = Button(text="Delete")
+        self.save_btn.disabled = True
+        self.delete_btn.disabled = True
+        btn_row.add_widget(add_btn)
+        btn_row.add_widget(self.save_btn)
+        btn_row.add_widget(self.delete_btn)
+        add_btn.bind(on_release=self.add_change)
+        self.save_btn.bind(on_release=self.edit_change)
+        self.delete_btn.bind(on_release=self.delete_change)
+        layout.add_widget(btn_row)
+
+        self.changes_layout = StackLayout(spacing=5, padding=10)
+        layout.add_widget(self.changes_layout)
+
+        btn_layout = BoxLayout(spacing=10, size_hint_y=None, height=50)
+        done_btn = Button(text="Done")
+        done_btn.bind(on_release=self.done)
+        btn_layout.add_widget(done_btn)
+        layout.add_widget(btn_layout)
+
+        self.add_widget(layout)
         self.enable_add_mode()
 
-        waqt_frame.grid(row=1, column=0, sticky=tk.E)
+    def add_change(self, *args):
+        try:
+            selected_date = datetime.strptime(self.date_input.text, "%Y-%m-%d")
+        except ValueError:
+            self.show_popup("Error", "Invalid date format. Use YYYY-MM-DD")
+            return
 
-        tree_view_frame = ttk.Frame(frame)
+        time = join_time((int(self.hour_input.text), int(self.min_input.text)))
+        waqt = self.waqt_input.text
+        dt = selected_date.strftime("%d/%m/%y")
 
-        self.tree_view = ttk.Treeview(tree_view_frame, height = 10, selectmode='browse')
+        for change in self.changes:
+            if change["waqt"] == waqt and change["date"] == dt:
+                self.show_popup("Error", "Duplicate entry")
+                return
 
-        treeScroll = ttk.Scrollbar(tree_view_frame)
-        treeScroll.configure(command=self.tree_view.yview)
-        self.tree_view.configure(yscrollcommand=treeScroll.set)
-        treeScroll.pack(side= tk.LEFT, fill = tk.BOTH)
-        self.tree_view.pack()
+        self.changes.append({"waqt": waqt, "date": dt, "time": time})
+        self.refresh_changes()
 
-        self.tree_view['columns'] = ('waqt', 'date', 'time')
-        self.tree_view.heading('#0', text='')
-        self.tree_view.column('#0', width=0)
-        self.tree_view.heading('waqt', text='Waqt')
-        self.tree_view.column('waqt', anchor='center', width=75)
-        self.tree_view.heading('date', text='Date')
-        self.tree_view.column('date', anchor='center', width=75)
-        self.tree_view.heading('time', text='Time')
-        self.tree_view.column('time', anchor='center', width=75)
-        self.tree_view.bind("<Double-1>", self.load_edit_row)
-
-        tree_view_frame.grid(sticky = tk.E)
-        now = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
-        changes = list(filter(lambda x:datetime.datetime.strptime(x[0], self.DT_FMT) >= now, self.controller.get_page(WaqtSetupPage).waqt_data["changes"]))
-        for change in changes:
-            waqt_idx = change[1]
-            if waqt_idx < 6:
-                waqt = self.cmb_waqt_name['values'][change[1]]
-                dt = change[0]
-                time = join_time(change[2])
-                self.tree_view.insert("", tk.END, text="", values=[waqt, dt, time])
-
-        btn_frame = ttk.Frame(frame)
-        bn_back = ttk.Button(btn_frame, text="Done", command=lambda: self.controller.show_frame(WaqtSetupPage), style="form.TButton")
-        bn_back.pack(side = "left", padx=5)
-        btn_frame.grid(row=3, column=0, sticky = tk.E, pady=5, columnspan=2)
-
-        frame.pack(pady=(10, 0))
-
-    def has_duplicate_changes(self, new_values):
-        page = self.controller.get_page(WaqtSchedulePage)
-        for id in page.tree_view.get_children():
-            item = page.tree_view.item(id)
-            values = item["values"]
-            if new_values[0] == values[0] and new_values[1] == values[1]:
-                if self.selected_id is None:
-                    return True
-                elif self.selected_id != id:
-                    return True
-
-    def delete_row(self):
-        self.tree_view.delete(self.selected_id)
-        self.enable_add_mode()
-
-    def add_row(self):
-        time = join_time((self.cmb_waqt_hour.current() + 1, self.cmb_waqt_min.current()))
-        widx = self.cmb_waqt_name.current()
-        waqt_name = self.cmb_waqt_name['values'][widx]
-        values = (waqt_name, self.cal.selection_get().strftime(self.DT_FMT), time)
-        if self.has_duplicate_changes(values):
-            msg.showerror("Error", "Duplicate entry")
-        else:
-            self.tree_view.insert("", tk.END, text="", values=values)
-
-    def edit_row(self):
-        time = join_time((self.cmb_waqt_hour.current() + 1, self.cmb_waqt_min.current()))
-        widx = self.cmb_waqt_name.current()
-        waqt_name = self.cmb_waqt_name['values'][widx]
-        values = (waqt_name, self.cal.selection_get().strftime(self.DT_FMT), time)
-        if self.has_duplicate_changes(values):
-            msg.showerror("Error", "Duplicate entry")
-        else:
-            self.tree_view.item(self.selected_id, text=self.selected_id, values=values)
+    def edit_change(self, *args):
+        if self.selected_idx is not None:
+            time = join_time((int(self.hour_input.text), int(self.min_input.text)))
+            self.changes[self.selected_idx]["waqt"] = self.waqt_input.text
+            self.changes[self.selected_idx]["date"] = datetime.strptime(
+                self.date_input.text, "%Y-%m-%d"
+            ).strftime("%d/%m/%y")
+            self.changes[self.selected_idx]["time"] = time
+            self.refresh_changes()
             self.enable_add_mode()
 
+    def delete_change(self, *args):
+        if self.selected_idx is not None:
+            del self.changes[self.selected_idx]
+            self.refresh_changes()
+            self.enable_add_mode()
+
+    def refresh_changes(self):
+        self.changes_layout.clear_widgets()
+        for idx, change in enumerate(self.changes):
+            btn = Button(
+                text=f"{change['waqt']} - {change['date']} - {change['time']}",
+                size_hint_y=None,
+                height=40,
+            )
+            btn.bind(on_release=lambda x, i=idx: self.load_change(i))
+            self.changes_layout.add_widget(btn)
+
+    def load_change(self, idx):
+        self.selected_idx = idx
+        change = self.changes[idx]
+        self.waqt_input.text = change["waqt"]
+        self.date_input.text = change["date"]
+        time = split_time(change["time"])
+        self.hour_input.text = str(time[0])
+        self.min_input.text = str(time[1])
+        self.enable_edit_mode()
+
     def enable_add_mode(self):
-        self.selected_id = None
-        self.bn_add.pack(side = "right", padx=5)
-        self.bn_save.pack_forget()
-        self.bn_delete.pack_forget()
+        self.selected_idx = None
+        self.save_btn.disabled = True
+        self.delete_btn.disabled = True
 
-    def enable_edit_mode(self, selected_id):
-        self.selected_id = selected_id
-        self.bn_add.pack_forget()
-        self.bn_save.pack(side = "right", padx=5)
-        self.bn_delete.pack(side = "right", padx=5)
+    def enable_edit_mode(self):
+        self.save_btn.disabled = False
+        self.delete_btn.disabled = False
 
-    def load_edit_row(self, event):
-        id = self.tree_view.identify('item', event.x, event.y)
-        row = self.tree_view.item(id)
-        values = row['values']
-        waqt = values[0]
-        dt = datetime.datetime.strptime(values[1], self.DT_FMT)
-        time = split_time(values[2])
-        self.load(waqt, dt, time)
-        self.enable_edit_mode(id)
+    def get_changes(self):
+        return [
+            [
+                c["date"],
+                self.waqt_names.index(c["waqt"]) if c["waqt"] in self.waqt_names else 0,
+                split_time(c["time"]),
+            ]
+            for c in self.changes
+        ]
 
-    def load(self, waqt, dt, time):
-        widx = self.cmb_waqt_name['values'].index(waqt)
-        self.cmb_waqt_name.current(widx)
-        self.cal.selection_set(dt)
-        self.cmb_waqt_hour.current(time[0] - 1)
-        self.cmb_waqt_min.current(time[1])
+    def done(self, *args):
+        self.manager.current = "waqt_setup"
 
-    def apply(self, date_txt):
-        self.controller.frames[WaqtSetupPage].data["date"] = date_txt
-        self.controller.show_frame(WaqtSetupPage)
-
-
+    def show_popup(self, title, text):
+        popup = Popup(
+            title=title,
+            content=Label(text=text),
+            size_hint=(None, None),
+            size=(300, 150),
+        )
+        popup.open()

@@ -4,7 +4,8 @@ version = "0.1.0"
 description = "Matrix Clock - Islamic prayer times display"
 requires-python = ">=3.10"
 dependencies = [
-    "tkcalendar",
+    "kivy>=2.3.0",
+    "kivymd>=1.2.0",
     "hijri_converter",
     "bangladatetime",
     "beautifulsoup4",
@@ -13,4 +14,4 @@ dependencies = [
 ]
 
 [project.scripts]
-matrix-clock = "mp:main"
+matrix-clock = "mc:main"
