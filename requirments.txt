@@ -1,7 +1,7 @@
-pip install tkcalendar
-pip install hijri_converter
-pip install bangladatetime
-pip install bs4
-pip install lxml
-pip install --force-reinstall -v "pyinstaller==5.13.2"
-pip install auto-py-to-exe
+tkcalendar
+hijri_converter
+bangladatetime
+beautifulsoup4
+lxml
+pyinstaller==5.13.2
+auto-py-to-exe
