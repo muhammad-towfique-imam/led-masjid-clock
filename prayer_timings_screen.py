@@ -93,7 +93,7 @@ class ScheduleRow(MDBoxLayout):
             return str(time_val) if time_val else ""
 
         hour, minute = time_val
-        period = "AM" if hour < 12 else "PM"
+        period = "am" if hour < 12 else "pm"
         adj_hour = hour if 0 < hour <= 12 else abs(hour - 12)
         if adj_hour == 0:
             adj_hour = 12
