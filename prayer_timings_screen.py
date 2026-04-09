@@ -98,7 +98,7 @@ class ScheduleRow(MDBoxLayout):
         if adj_hour == 0:
             adj_hour = 12
 
-        return f"{adj_hour}:{minute:02d} {period}"
+        return f"{adj_hour}:{int(minute):02d} {period}"
 
     def on_remove(self, *args):
         """Removes this row from the parent layout."""
@@ -134,7 +134,7 @@ class ScheduleRow(MDBoxLayout):
             picker.open()
 
     def set_time(self, picker):
-        self.time_field.text = f"{picker.hour}:{picker.minute:02d} {picker.am_pm}"
+        self.time_field.text = f"{picker.hour}:{int(picker.minute):02d} {picker.am_pm}"
         self.clear_focus(self.time_field, picker)
 
     def clear_focus(self, field, picker):
