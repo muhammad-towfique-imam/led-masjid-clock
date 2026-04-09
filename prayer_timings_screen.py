@@ -27,18 +27,13 @@ from m3.m3_waqt import get_m3_waqt_xml
 from m4.m4_waqt import get_m4_waqt_xml
 from m5.m5_waqt import get_m5_waqt_xml
 
-
 class ScheduleRow(MDBoxLayout):
-    """
-    A single row containing a Date picker, a Time picker, and a delete button.
-    Used within a PrayerCard to manage specific timing changes.
-    """
-
-    def __init__(self, initial_time=None, initial_date=None, is_first=False, **kwargs):
+    def __init__(self, initial_time=None, initial_date=None, is_first=False, is_am=False, **kwargs):
         super().__init__(**kwargs)
         self.adaptive_height = True
         self.spacing = dp(16)
         self.padding = [0, dp(8)]
+        self.is_am = is_am  # Force am/pm based on prayer index logic
 
         # Initialize default values
         formatted_date = self._format_initial_date(initial_date)
@@ -65,7 +60,6 @@ class ScheduleRow(MDBoxLayout):
         )
         self.time_field.bind(focus=self.open_time_picker)
 
-        # Disable remove button for the primary (first) schedule row
         self.remove_btn = MDIconButton(
             icon="close", pos_hint={"center_y": 0.5}, disabled=is_first
         )
@@ -77,57 +71,52 @@ class ScheduleRow(MDBoxLayout):
         self.add_widget(self.remove_btn)
 
     def _format_initial_date(self, date_val):
-        """Standardizes input date string to 'MM / DD / YYYY' format."""
         if not date_val:
             return ""
         try:
-            # Handle DD/MM/YY input
+            # Handle DD/MM/YY input from XML/Storage
             dt = datetime.datetime.strptime(date_val, "%d/%m/%y")
             return dt.strftime("%m / %d / %Y")
         except (ValueError, TypeError):
             return str(date_val)
 
     def _format_initial_time(self, time_val):
-        """Converts (hour, min) tuple to AM/PM string."""
+        """Converts (hour, min) tuple where hour is < 12 into UI string."""
         if not time_val or not isinstance(time_val, (list, tuple)):
-            return str(time_val) if time_val else ""
+            return ""
 
         hour, minute = time_val
-        period = "am" if hour < 12 else "pm"
-        adj_hour = hour if 0 < hour <= 12 else abs(hour - 12)
-        if adj_hour == 0:
-            adj_hour = 12
+        period = "am" if self.is_am else "pm"
 
-        return f"{adj_hour}:{int(minute):02d} {period}"
+        # UI usually shows 12:00 instead of 0:00
+        display_hour = 12 if hour == 0 else hour
+        return f"{display_hour}:{int(minute):02d} {period}"
 
     def on_remove(self, *args):
-        """Removes this row from the parent layout."""
         if self.parent:
             self.parent.remove_widget(self)
 
     def get_values(self):
-        """Returns the current raw text of the date and time fields."""
         return self.date_field.text, self.time_field.text
 
     def get_parsed_values(self):
-        """Returns (date_str_short, time_tuple) for XML processing."""
+        """Returns (date_str_short, time_tuple) ensuring hour < 12."""
         date_str, time_str = self.get_values()
 
-        # Convert "MM / DD / YYYY" back to "DD/MM/YY"
         try:
             dt_obj = datetime.datetime.strptime(date_str, "%m / %d / %Y")
             formatted_date = dt_obj.strftime("%d/%m/%y")
         except ValueError:
             formatted_date = date_str
 
-        # Convert "H:MM am/pm" to (hour, minute) tuple
         try:
-            # Splitting "1:30 pm"
-            time_part, period = time_str.split(" ")
+            # Split "1:30 pm"
+            time_part, _ = time_str.split(" ")
             h, m = map(int, time_part.split(":"))
-            if period.lower() == "pm" and h < 12:
-                h += 12
-            if period.lower() == "am" and h == 12:
+
+            # Reverse logic: always store hour < 12
+            # If UI says 12, store as 0.
+            if h == 12:
                 h = 0
             time_tuple = (h, m)
         except (ValueError, IndexError):
@@ -135,7 +124,6 @@ class ScheduleRow(MDBoxLayout):
 
         return formatted_date, time_tuple
 
-    # Picker Logic
     def open_date_picker(self, instance, focus):
         if focus:
             picker = MDModalDatePicker()
@@ -152,19 +140,15 @@ class ScheduleRow(MDBoxLayout):
     def open_time_picker(self, instance, focus):
         if focus:
             picker = MDTimePickerDialVertical()
-
             current_time = self.time_field.text
             if current_time:
                 try:
-                    import datetime
-
                     time_part, period = current_time.split(" ")
                     h, m = map(int, time_part.split(":"))
-                    if period.lower() == "pm" and h < 12:
-                        h += 12
-                    if period.lower() == "am" and h == 12:
-                        h = 0
-                    picker.set_time(datetime.time(h, m))
+                    # Map 12 to 0 for the picker's internal 12-hour logic
+                    picker_h = 0 if h == 12 else h
+                    picker.set_time(datetime.time(picker_h, m))
+                    picker.am_pm = period.lower()
                 except (ValueError, IndexError):
                     pass
 
@@ -175,23 +159,18 @@ class ScheduleRow(MDBoxLayout):
             picker.open()
 
     def set_time(self, picker):
-        self.time_field.text = f"{picker.hour}:{int(picker.minute):02d} {picker.am_pm}"
+        # We force the period based on prayer type regardless of picker selection
+        period = "am" if self.is_am else "pm"
+        self.time_field.text = f"{picker.hour}:{int(picker.minute):02d} {period}"
         self.clear_focus(self.time_field, picker)
 
     def clear_focus(self, field, picker):
         picker.dismiss()
         field.focus = False
 
-
 class PrayerCard(MDCard):
-    def __init__(
-        self,
-        title="PRAYER",
-        initial_time=None,
-        initial_date=None,
-        scheduled_changes=None,
-        **kwargs,
-    ):
+    def __init__(self, title="PRAYER", initial_time=None, initial_date=None,
+                 scheduled_changes=None, is_am=False, **kwargs):
         super().__init__(**kwargs)
         self.orientation = "vertical"
         self.adaptive_height = True
@@ -199,30 +178,23 @@ class PrayerCard(MDCard):
         self.spacing = dp(10)
         self.style = "filled"
         self.radius = [dp(12)]
+        self.is_am = is_am
 
-        self.add_widget(
-            MDLabel(text=title, bold=True, font_style="Title", adaptive_height=True)
-        )
-
+        self.add_widget(MDLabel(text=title, bold=True, font_style="Title", adaptive_height=True))
         self.rows_box = MDBoxLayout(orientation="vertical", adaptive_height=True)
 
-        base_date = initial_date or datetime.date.today().strftime("%m / %d / %Y")
+        base_date = initial_date or datetime.date.today().strftime("%d/%m/%y")
         self.rows_box.add_widget(
-            ScheduleRow(
-                initial_time=initial_time, initial_date=base_date, is_first=True
-            )
+            ScheduleRow(initial_time=initial_time, initial_date=base_date, is_first=True, is_am=self.is_am)
         )
 
         if scheduled_changes:
             for change in scheduled_changes:
                 self.rows_box.add_widget(
-                    ScheduleRow(
-                        initial_time=change[2], initial_date=change[0], is_first=False
-                    )
+                    ScheduleRow(initial_time=change[2], initial_date=change[0], is_first=False, is_am=self.is_am)
                 )
 
         self.add_widget(self.rows_box)
-
         self.add_widget(
             MDButton(
                 MDButtonText(text="+ Add Schedule"),
@@ -232,8 +204,6 @@ class PrayerCard(MDCard):
         )
 
     def add_new_schedule_row(self, *args):
-        # In Kivy, children[0] is the last added widget.
-        # But we want the bottom-most row in the box layout.
         last_row = self.rows_box.children[0]
         last_date_str, last_time_str = last_row.get_values()
 
@@ -243,10 +213,9 @@ class PrayerCard(MDCard):
         except (ValueError, TypeError):
             next_date_raw = datetime.date.today().strftime("%d/%m/%y")
 
-        new_row = ScheduleRow(initial_date=next_date_raw, is_first=False)
+        new_row = ScheduleRow(initial_date=next_date_raw, is_first=False, is_am=self.is_am)
         new_row.time_field.text = last_time_str
         self.rows_box.add_widget(new_row)
-
 
 class PrayerTimingsScreen(MDScreen):
     def __init__(self, **kwargs):
@@ -257,28 +226,17 @@ class PrayerTimingsScreen(MDScreen):
             from hd2020_helper import load_waqt_data
             from waqt_utils import get_apply_date
         except ImportError:
-            print("Warning: Helper modules not found.")
             return
 
         self.waqt_data = load_waqt_data()
         today = datetime.date.today()
 
         layout = MDBoxLayout(orientation="vertical")
-
         self.title_widget = MDTopAppBarTitle(halign="center")
-        layout.add_widget(
-            MDTopAppBar(
-                self.title_widget,
-                type="small",
-                size_hint_x=0.9,
-                pos_hint={"center_x": 0.5},
-            )
-        )
+        layout.add_widget(MDTopAppBar(self.title_widget, type="small", size_hint_x=0.9, pos_hint={"center_x": 0.5}))
 
         scroll = MDScrollView(bar_width=dp(8))
-        self.main_list = MDBoxLayout(
-            orientation="vertical", adaptive_height=True, padding=dp(20), spacing=dp(20)
-        )
+        self.main_list = MDBoxLayout(orientation="vertical", adaptive_height=True, padding=dp(20), spacing=dp(20))
 
         prayer_names = ["FAZR", "ZUHR", "ASR", "MAGRIB", "ISHA", "JUMMA"]
         for idx, name in enumerate(prayer_names):
@@ -289,17 +247,14 @@ class PrayerTimingsScreen(MDScreen):
                     initial_time=card_data["current_time"],
                     initial_date=card_data["current_date"],
                     scheduled_changes=card_data["future_changes"],
+                    is_am=(idx == 0) # Only Fazr is AM
                 )
             )
 
         scroll.add_widget(self.main_list)
-        btn_container = self._build_action_buttons()
-
-        content_layout = MDBoxLayout(
-            orientation="vertical", spacing=dp(10), padding=dp(20)
-        )
+        content_layout = MDBoxLayout(orientation="vertical", spacing=dp(10), padding=dp(20))
         content_layout.add_widget(scroll)
-        content_layout.add_widget(btn_container)
+        content_layout.add_widget(self._build_action_buttons())
 
         layout.add_widget(content_layout)
         self.add_widget(layout)
@@ -313,7 +268,8 @@ class PrayerTimingsScreen(MDScreen):
         changes = self.waqt_data.get("changes", [])
         relevant = sorted([c for c in changes if c[1] == waqt_idx], key=lambda x: x[0])
 
-        current_time = times[waqt_idx] if waqt_idx < len(times) else None
+        # Times are already stored as hour < 12 from _extract_ui_data
+        current_time = times[waqt_idx] if waqt_idx < len(times) else (0, 0)
         current_date = today.strftime("%d/%m/%y")
         future_changes = []
 
@@ -325,81 +281,51 @@ class PrayerTimingsScreen(MDScreen):
             else:
                 future_changes.append(change)
 
-        return {
-            "current_time": current_time,
-            "current_date": current_date,
-            "future_changes": future_changes,
-        }
+        return {"current_time": current_time, "current_date": current_date, "future_changes": future_changes}
 
     def _build_action_buttons(self):
         container = MDRelativeLayout(size_hint_y=None, height=dp(50))
         btn_row = MDBoxLayout(
-            MDButton(
-                MDButtonText(text="Back"), style="outlined", on_release=self.on_back
-            ),
-            MDButton(
-                MDButtonText(text="Apply"), style="filled", on_release=self.on_apply
-            ),
-            orientation="horizontal",
-            spacing=dp(16),
-            adaptive_size=True,
-            pos_hint={"right": 1, "y": 0},
+            MDButton(MDButtonText(text="Back"), style="outlined", on_release=self.on_back),
+            MDButton(MDButtonText(text="Apply"), style="filled", on_release=self.on_apply),
+            orientation="horizontal", spacing=dp(16), adaptive_size=True, pos_hint={"right": 1, "y": 0},
         )
         container.add_widget(btn_row)
         return container
 
     def on_back(self, *args):
-        if self.manager:
-            self.manager.current = "start"
+        if self.manager: self.manager.current = "start"
 
     def _extract_ui_data(self):
-        """Scrapes the UI to build the data dictionary."""
         new_times = []
         new_changes = []
-
-        # main_list.children are in reverse order of addition (ISHA to FAZR)
         prayer_cards = list(reversed(self.main_list.children))
 
         for idx, card in enumerate(prayer_cards):
-            if not isinstance(card, PrayerCard):
-                continue
-
-            # rows_box.children are in reverse order (Newest to Oldest)
+            if not isinstance(card, PrayerCard): continue
             rows = list(reversed(card.rows_box.children))
-
             for i, row in enumerate(rows):
                 date_str, time_tuple = row.get_parsed_values()
-
                 if i == 0:
-                    # First row provides the primary timing
                     new_times.append(time_tuple)
                 else:
-                    # Additional rows provide scheduled changes
                     new_changes.append([date_str, idx, time_tuple])
 
         return new_times, new_changes
 
     def on_apply(self, *args):
         from hd2020_helper import hd_register, save_waqt_data
-
         model = state.model
         if model in ("m2", "m3", "m4", "m5"):
-            # Gather fresh data from UI
             times, changes = self._extract_ui_data()
-            # Sunrise and sunset times are not provided by the user, so we add dummy values
-            times.append((0, 0))
-            times.append((0, 0))
+            times.extend([(0, 0), (0, 0)]) # Dummy for sunrise/sunset
             waqt_data = {"times": times, "changes": changes}
 
             xml = None
-            if model == "m2":
-                xml = get_m2_waqt_xml(waqt_data)
-            elif model == "m3":
-                xml = get_m3_waqt_xml(waqt_data)
-            elif model == "m4":
-                xml = get_m4_waqt_xml(waqt_data)
-            elif model == "m5":
-                xml = get_m5_waqt_xml(waqt_data)
+            if model == "m2": xml = get_m2_waqt_xml(waqt_data)
+            elif model == "m3": xml = get_m3_waqt_xml(waqt_data)
+            elif model == "m4": xml = get_m4_waqt_xml(waqt_data)
+            elif model == "m5": xml = get_m5_waqt_xml(waqt_data)
 
             if xml:
                 try:
@@ -411,19 +337,11 @@ class PrayerTimingsScreen(MDScreen):
 
     def show_popup(self, title, text):
         dialog = MDDialog(
-            MDDialogHeadlineText(text=title, halign="left"),
-            MDDialogSupportingText(text=text, halign="left"),
+            MDDialogHeadlineText(text=title),
+            MDDialogSupportingText(text=text),
             MDDialogButtonContainer(
                 Widget(),
-                MDButton(
-                    MDButtonText(
-                        text="OK",
-                        theme_text_color="Custom",
-                        text_color=self.theme_cls.primaryColor,
-                    ),
-                    style="text",
-                    on_release=lambda x: dialog.dismiss(),
-                ),
+                MDButton(MDButtonText(text="OK"), style="text", on_release=lambda x: dialog.dismiss()),
             ),
         )
         dialog.open()
