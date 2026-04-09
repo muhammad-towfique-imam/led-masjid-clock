@@ -1,8 +1,9 @@
-from datetime import datetime
+from kivy.metrics import dp
 
 from kivymd.uix.appbar import MDTopAppBar, MDTopAppBarTitle
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.button import MDButton, MDButtonText
+from kivymd.uix.card import MDCard
 from kivymd.uix.dialog import (
     MDDialog,
     MDDialogButtonContainer,
@@ -61,14 +62,26 @@ class EnglishSetupScreen(MDScreen):
             pos_hint={"right": 1},
         )
         form_box = MDBoxLayout(
-            MDLabel(
-                text="Setup a large clock showing English date and time",
-                halign="center",
+            MDCard(
+                MDLabel(
+                    text="Setup a large clock showing English date and time. Click Apply to proceed.",
+                    halign="center",
+                    valign="center",
+                    adaptive_height=True,
+                    theme_text_color="Primary",
+                ),
+                orientation="vertical",
+                adaptive_height=True,
+                padding=dp(24),
+                spacing=dp(10),
+                style="filled",
+                radius=[dp(12)],
+                size_hint_x=1,
             ),
             button_row,
             orientation="vertical",
             adaptive_height=True,
-            spacing="16dp",
+            spacing="24dp",
             padding="24dp",
             size_hint_x=0.85,
             pos_hint={"center_x": 0.5, "center_y": 0.5},
