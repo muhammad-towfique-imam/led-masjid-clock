@@ -84,7 +84,7 @@ class StartScreen(MDScreen):
         return options
 
     def update(self):
-        self.title_widget.text = f"{state.model.upper()} - Matrix Clock"
+        self.title_widget.text = f"{state.model.upper()} - Masjid Clock"
 
         options = self._build_options()
 

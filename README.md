@@ -1,4 +1,4 @@
-# Matrix Clock
+# Masjid Clock
 
 Islamic prayer times display application.
 

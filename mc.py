@@ -50,7 +50,7 @@ class MainScreen(MDScreen):
         layout.add_widget(
             MDTopAppBar(
                 MDTopAppBarTitle(
-                    text="Matrix Clock",
+                    text="Masjid Clock",
                     halign="center",
                 ),
                 type="small",
@@ -105,6 +105,7 @@ class MainApp(MDApp):
     def build(self):
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "Green"
+        self.title = "Masjid Clock"
         sm = MDScreenManager()
         sm.add_widget(MainScreen(name="main"))
         sm.add_widget(StartScreen(name="start"))
