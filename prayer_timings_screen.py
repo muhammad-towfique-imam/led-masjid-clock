@@ -337,11 +337,19 @@ class PrayerTimingsScreen(MDScreen):
 
     def show_popup(self, title, text):
         dialog = MDDialog(
-            MDDialogHeadlineText(text=title),
-            MDDialogSupportingText(text=text),
+            MDDialogHeadlineText(text=title, halign="left"),
+            MDDialogSupportingText(text=text, halign="left"),
             MDDialogButtonContainer(
                 Widget(),
-                MDButton(MDButtonText(text="OK"), style="text", on_release=lambda x: dialog.dismiss()),
+                MDButton(
+                    MDButtonText(
+                        text="OK",
+                        theme_text_color="Custom",
+                        text_color=self.theme_cls.primaryColor,
+                    ),
+                    style="text",
+                    on_release=lambda x: dialog.dismiss(),
+                ),
             ),
         )
         dialog.open()
