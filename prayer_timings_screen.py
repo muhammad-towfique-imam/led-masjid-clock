@@ -152,6 +152,22 @@ class ScheduleRow(MDBoxLayout):
     def open_time_picker(self, instance, focus):
         if focus:
             picker = MDTimePickerDialVertical()
+
+            current_time = self.time_field.text
+            if current_time:
+                try:
+                    import datetime
+
+                    time_part, period = current_time.split(" ")
+                    h, m = map(int, time_part.split(":"))
+                    if period.lower() == "pm" and h < 12:
+                        h += 12
+                    if period.lower() == "am" and h == 12:
+                        h = 0
+                    picker.set_time(datetime.time(h, m))
+                except (ValueError, IndexError):
+                    pass
+
             picker.bind(
                 on_ok=self.set_time,
                 on_cancel=lambda x: self.clear_focus(self.time_field, x),
