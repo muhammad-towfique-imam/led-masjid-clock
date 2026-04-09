@@ -33,14 +33,15 @@ uv run python mc.py
 
 ## Build .exe
 
-Using uvx (no venv required):
+Build using the spec file:
 
 ```bash
-uvx pyinstaller mc.py --onefile --windowed --add-data settings.json:. --add-data templates:templates --add-data images:images --hidden-import kivy
+uv run pyinstaller mc.spec
 ```
 
-Output will be in `dist/mc`.
-
-## Build .exe (Windows)
-
-For Windows .exe, run the build command on Windows.
+Output will be in `dist/mc/`:
+- `mc.exe` - Main executable
+- `settings.json` - Configuration file
+- `templates/` - Display templates
+- `images/` - Image assets
+- `_internal/` - Required libraries and dependencies

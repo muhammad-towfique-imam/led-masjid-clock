@@ -2,7 +2,7 @@
 name = "matrix-clock"
 version = "0.1.0"
 description = "Masjid Clock - Islamic prayer times display"
-requires-python = ">=3.10"
+requires-python = "==3.13.13"
 dependencies = [
     "kivy>=2.3.0",
     "kivymd @ git+https://github.com/kivymd/KivyMD.git@master",
