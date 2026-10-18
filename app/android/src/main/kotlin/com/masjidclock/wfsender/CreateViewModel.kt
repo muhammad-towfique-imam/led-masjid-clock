@@ -17,6 +17,7 @@ import com.masjidclock.wfsender.usb.ExportSearch
 import com.masjidclock.wfsender.usb.FoundExport
 import com.masjidclock.wfsender.usb.RemovableVolumes
 import com.masjidclock.wfsender.usb.StorageAccess
+import com.masjidclock.wfsender.usb.StorageReport
 import com.masjidclock.wfsender.usb.UsbStatus
 import java.io.File
 import java.io.IOException
@@ -121,6 +122,10 @@ class CreateViewModel(app: Application) : AndroidViewModel(app) {
             }
         }
     }
+
+    /** A text report of the storage volumes, for remote support. */
+    suspend fun storageReport(): String =
+        withContext(Dispatchers.IO) { StorageReport.make(getApplication(), BuildConfig.VERSION_NAME) }
 
     override fun onCleared() {
         stopChecks()

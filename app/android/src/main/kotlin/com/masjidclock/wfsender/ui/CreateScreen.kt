@@ -113,6 +113,14 @@ private fun CreatePage(model: CreateViewModel, onBack: () -> Unit) {
             }
             result?.let { Text(it, fontWeight = FontWeight.Bold) }
         }
+        HorizontalDivider()
+        TextButton(onClick = {
+            scope.launch {
+                val report = model.storageReport()
+                val share = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, report)
+                context.startActivity(Intent.createChooser(share, "Share details"))
+            }
+        }) { Text("Share details (for support)") }
     }
 
     naming?.let { action ->
