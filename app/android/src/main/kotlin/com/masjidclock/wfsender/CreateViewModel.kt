@@ -13,11 +13,14 @@ import com.masjidclock.wfsender.pkg.PackageWriter
 import com.masjidclock.wfsender.protocol.HdsExport
 import com.masjidclock.wfsender.send.Messages
 import com.masjidclock.wfsender.usb.ExportFinder
+import com.masjidclock.wfsender.usb.ExportSearch
+import com.masjidclock.wfsender.usb.FoundExport
 import com.masjidclock.wfsender.usb.RemovableVolumes
 import com.masjidclock.wfsender.usb.StorageAccess
 import com.masjidclock.wfsender.usb.UsbStatus
 import java.io.File
 import java.io.IOException
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -34,6 +37,7 @@ class CreateViewModel(app: Application) : AndroidViewModel(app) {
 
     private val volumes = RemovableVolumes(app)
     private var checkJob: Job? = null
+    private var lastFound: FoundExport? = null
 
     private val _usb = MutableStateFlow(UsbState(UsbStatus.NO_PERMISSION))
     val usb: StateFlow<UsbState> = _usb
@@ -46,7 +50,14 @@ class CreateViewModel(app: Application) : AndroidViewModel(app) {
         checkJob?.cancel()
         checkJob = viewModelScope.launch {
             while (isActive) {
-                _usb.value = withContext(Dispatchers.IO) { check() }
+                _usb.value = try {
+                    withContext(Dispatchers.IO) { check() }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    // For example a storage API error while the drive is removed. Never crash the app.
+                    UsbState(UsbStatus.NO_DRIVE)
+                }
                 delay(2_000)
             }
         }
@@ -61,9 +72,15 @@ class CreateViewModel(app: Application) : AndroidViewModel(app) {
         if (!StorageAccess.granted(getApplication())) return UsbState(UsbStatus.NO_PERMISSION)
         val list = volumes.list()
         if (list.isEmpty()) return UsbState(UsbStatus.NO_DRIVE)
-        val found = ExportFinder.find(list.map { it.root }) ?: return UsbState(UsbStatus.NO_EXPORT)
-        val name = list.first { it.root == found.root }.name
-        return UsbState(UsbStatus.FOUND, name, found.export)
+        return when (val search = ExportFinder.find(list.map { it.root }, previous = lastFound)) {
+            ExportSearch.None -> UsbState(UsbStatus.NO_EXPORT)
+            is ExportSearch.TooLarge -> UsbState(UsbStatus.TOO_LARGE)
+            is ExportSearch.Found -> {
+                lastFound = search.found
+                val name = list.first { it.root == search.found.root }.name
+                UsbState(UsbStatus.FOUND, name, search.found.export)
+            }
+        }
     }
 
     /** [name] is a clean name (PackageName.clean). */

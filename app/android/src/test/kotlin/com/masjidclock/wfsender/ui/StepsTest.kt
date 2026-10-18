@@ -53,6 +53,7 @@ class StepsTest {
         assertEquals(CreateSteps(CURRENT, WAITING, WAITING, WAITING), createSteps(UsbStatus.NO_PERMISSION))
         assertEquals(CreateSteps(DONE, CURRENT, WAITING, WAITING), createSteps(UsbStatus.NO_DRIVE))
         assertEquals(CreateSteps(DONE, DONE, CURRENT, WAITING), createSteps(UsbStatus.NO_EXPORT))
+        assertEquals(CreateSteps(DONE, DONE, CURRENT, WAITING), createSteps(UsbStatus.TOO_LARGE))
         assertEquals(CreateSteps(DONE, DONE, DONE, CURRENT), createSteps(UsbStatus.FOUND))
     }
 }

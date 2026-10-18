@@ -30,7 +30,12 @@ object StorageAccess {
         try {
             context.startActivity(forApp)
         } catch (e: ActivityNotFoundException) {
-            context.startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION))
+            try {
+                context.startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION))
+            } catch (e: ActivityNotFoundException) {
+                // Some phones have no "All files access" screen: open the app settings instead.
+                context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}")))
+            }
         }
     }
 }

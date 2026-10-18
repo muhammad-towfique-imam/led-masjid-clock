@@ -16,7 +16,7 @@ data class Site(val name: String, val cards: List<Card>)
 class ImportException(message: String) : Exception(message)
 
 /** Unpacks a site ZIP with the program of 1 display into the private storage of the app (spec section 5.1). */
-class ZipImporter(private val maxUnpackedBytes: Long = 20L * 1024 * 1024) {
+class ZipImporter(private val maxUnpackedBytes: Long = MAX_UNPACKED_BYTES) {
 
     /** Replaces the site in [siteDir] with the cards in [zip]. On failure, [siteDir] does not change. */
     fun import(zip: InputStream, zipName: String, siteDir: File): Site {
@@ -96,6 +96,7 @@ class ZipImporter(private val maxUnpackedBytes: Long = 20L * 1024 * 1024) {
         path.startsWith("/") || DRIVE.containsMatchIn(path) || path.split('/').any { it == ".." }
 
     companion object {
+        const val MAX_UNPACKED_BYTES = 20L * 1024 * 1024
         const val NOT_PACKAGE = "This file is not an HD Sender package. Use a file that ends with .hdpkg."
         private const val NAME_FILE = ".site-name"
         private val DRIVE = Regex("^[A-Za-z]:")

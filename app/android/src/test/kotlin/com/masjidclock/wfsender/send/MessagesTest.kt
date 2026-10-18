@@ -55,6 +55,10 @@ class MessagesTest {
         assertEquals("Saved: Downloads/english (1).hdpkg", Messages.saved("english (1).hdpkg"))
         assertEquals("The USB drive has no HD2020 export. Use the U-disk export of HD2020.", Messages.NO_EXPORT)
         assertEquals(
+            "The HD2020 export is larger than 20 MB. The app cannot send a program of this size.",
+            Messages.TOO_LARGE,
+        )
+        assertEquals(
             "Connect the USB drive with the HD2020 export to the phone. Use a USB OTG adapter.",
             Messages.CONNECT_USB,
         )

@@ -87,6 +87,7 @@ fun CreateScreen(model: CreateViewModel, onBack: () -> Unit) {
         Step(3, "Check the files", steps.files) {
             when (usb.status) {
                 UsbStatus.NO_EXPORT -> Text(Messages.NO_EXPORT, color = RED)
+                UsbStatus.TOO_LARGE -> Text(Messages.TOO_LARGE, color = RED)
                 UsbStatus.FOUND -> {
                     val export = usb.export!!
                     Text(Messages.found(usb.volumeName, export.width, export.height), color = GREEN, fontWeight = FontWeight.Bold)

@@ -30,6 +30,7 @@ data class CreateSteps(val access: StepState, val drive: StepState, val files: S
 fun createSteps(status: UsbStatus): CreateSteps = when (status) {
     UsbStatus.NO_PERMISSION -> CreateSteps(StepState.CURRENT, StepState.WAITING, StepState.WAITING, StepState.WAITING)
     UsbStatus.NO_DRIVE -> CreateSteps(StepState.DONE, StepState.CURRENT, StepState.WAITING, StepState.WAITING)
-    UsbStatus.NO_EXPORT -> CreateSteps(StepState.DONE, StepState.DONE, StepState.CURRENT, StepState.WAITING)
+    UsbStatus.NO_EXPORT, UsbStatus.TOO_LARGE ->
+        CreateSteps(StepState.DONE, StepState.DONE, StepState.CURRENT, StepState.WAITING)
     UsbStatus.FOUND -> CreateSteps(StepState.DONE, StepState.DONE, StepState.DONE, StepState.CURRENT)
 }

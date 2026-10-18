@@ -22,6 +22,7 @@ object Messages {
     const val ALLOW_ACCESS = "HD Sender needs access to files to read the USB drive and to save packages."
     const val CONNECT_USB = "Connect the USB drive with the HD2020 export to the phone. Use a USB OTG adapter."
     const val NO_EXPORT = "The USB drive has no HD2020 export. Use the U-disk export of HD2020."
+    const val TOO_LARGE = "The HD2020 export is larger than 20 MB. The app cannot send a program of this size."
     const val SAVE_FAILED = "Could not save the file. Check that the phone has free space."
     const val NAME_RULE = "Use only English letters, numbers, spaces, - and _ (maximum 50 characters)."
 
