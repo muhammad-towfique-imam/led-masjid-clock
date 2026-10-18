@@ -2,12 +2,15 @@ package com.masjidclock.wfsender
 
 import android.app.Application
 import android.content.ContentResolver
+import android.net.Network
 import android.net.Uri
 import android.os.Build
 import android.provider.OpenableColumns
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.masjidclock.wfsender.net.CardNetwork
+import com.masjidclock.wfsender.net.ConnectionCheck
+import com.masjidclock.wfsender.net.ConnectionStatus
 import com.masjidclock.wfsender.protocol.CardSender
 import com.masjidclock.wfsender.protocol.SendListener
 import com.masjidclock.wfsender.protocol.SendResult
@@ -30,8 +33,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-enum class ConnectionStatus { NOT_CONNECTED, NO_DISPLAY, DISPLAY_FOUND }
-
 sealed interface SendState {
     data object Idle : SendState
     data class Sending(val sent: Int, val total: Int) : SendState
@@ -44,6 +45,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val importer = ZipImporter()
     private val network = CardNetwork(app).also { it.start() }
     private var checkJob: Job? = null
+    private var check: ConnectionCheck<Network>? = null
     private val gate = SendGate()
 
     private val _site = MutableStateFlow(ZipImporter.load(siteDir))
@@ -92,31 +94,36 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         if (gate.busy) return
         _selectedCard.value = card
         _sendState.value = SendState.Idle
-        checkJob?.cancel()
+        stopConnectionChecks()
         if (card != null) startConnectionChecks()
     }
 
     private fun startConnectionChecks() {
+        _connection.value = ConnectionStatus.NOT_CONNECTED
+        val newCheck = ConnectionCheck({ network.current }) { wifi -> CardSender(network.connectorFor(wifi)).probe() }
+        check = newCheck
         checkJob = viewModelScope.launch {
             while (isActive) {
-                if (!gate.busy) {
-                    _connection.value = withContext(Dispatchers.IO) { checkConnection() }
-                }
+                val status = withContext(Dispatchers.IO) { newCheck.next() } ?: break
+                _connection.value = status
                 delay(2_000)
             }
         }
     }
 
-    private fun checkConnection(): ConnectionStatus {
-        val wifi = network.current ?: return ConnectionStatus.NOT_CONNECTED
-        val found = CardSender(network.connectorFor(wifi)).probe()
-        return if (found) ConnectionStatus.DISPLAY_FOUND else ConnectionStatus.NO_DISPLAY
+    /** No more probes: after a send, each probe makes the display flicker. */
+    private fun stopConnectionChecks() {
+        check?.stop()
+        check = null
+        checkJob?.cancel()
+        checkJob = null
     }
 
     fun send() {
         val card = _selectedCard.value ?: return
         val wifi = network.current ?: return
         if (!gate.tryStart()) return
+        stopConnectionChecks()
         _sendState.value = SendState.Sending(0, 0)
         viewModelScope.launch {
             val log = SendLog(

@@ -189,16 +189,23 @@ The app keeps the last imported site after it closes.
 
 ### 5.3 Connection check
 
-The check runs every 2 seconds while the Send screen is open and no send is active.
+A card that has received a program reloads it, and the display flickers, each time it is probed.
+(Found in the first field test on 2026-10-18: probes every 2 seconds after a send made the display
+flicker until the phone left the card WiFi.) Thus the app probes the card as little as possible.
 
-1. `CardNetwork` looks for a connected network with WiFi transport. It does not require
-   internet access, because the card WiFi has none.
-2. If no WiFi network is found, the status is "Not connected to WiFi".
-3. If one is found, the app opens a TCP connection to `192.168.4.1:6101` through a socket
-   that is bound to that network. Connect timeout: 3 seconds.
-4. The app sends the probe and waits up to 3 seconds for a reply that starts with `HR`.
-5. If the reply arrives, the status is "Display found". If not, the status is
-   "No display found on this WiFi".
+1. When the Send screen opens, the check runs every 2 seconds.
+2. `CardNetwork` looks for a connected network with WiFi transport. It does not require
+   internet access, because the card WiFi has none. If no WiFi network is found,
+   the status is "Not connected to WiFi".
+3. If the card has not answered yet on this WiFi network, the app probes it:
+   it opens a TCP connection to `192.168.4.1:6101` through a socket that is bound to that network
+   (connect timeout: 3 seconds), sends the probe, and waits up to 3 seconds for a reply that starts
+   with `HR`. If the reply arrives, the status is "Display found". If not, the status is
+   "No display found on this WiFi", and the app probes again at the next check.
+4. After the card has answered, the app does not probe it again. It only checks that the phone
+   is still on the same WiFi network. If the WiFi network is lost or changes, the app starts at step 2 again.
+5. When a send starts, the check stops. After the send, the app does not probe the card again.
+   If the person selects a card again, the check starts again at step 1.
 
 All card traffic uses sockets that are bound to the WiFi network. Thus the traffic does not
 go over mobile data when the WiFi has no internet access.

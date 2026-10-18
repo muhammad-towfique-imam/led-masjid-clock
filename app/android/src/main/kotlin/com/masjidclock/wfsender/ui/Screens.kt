@@ -37,8 +37,8 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.masjidclock.wfsender.AppViewModel
-import com.masjidclock.wfsender.ConnectionStatus
 import com.masjidclock.wfsender.SendState
+import com.masjidclock.wfsender.net.ConnectionStatus
 import com.masjidclock.wfsender.send.Messages
 import com.masjidclock.wfsender.site.Card
 import com.masjidclock.wfsender.site.Site
