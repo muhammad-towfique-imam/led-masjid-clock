@@ -32,6 +32,15 @@ object Messages {
 
     fun saved(fileName: String): String = "Saved: Downloads/$fileName"
 
+    const val TIME_NO_ANSWER = "The display did not answer. Check the WiFi connection."
+    const val TIME_MANUAL = "The phone time is set by hand. Check that it is correct."
+
+    fun displayFound(cardName: String): String = "Display found: $cardName"
+
+    fun timeSet(time: String): String = "The display clock is set to $time."
+
+    fun timeRejected(status: Int): String = "The display rejected the time (code 0x%02X).".format(status)
+
     fun forResult(result: SendResult): String = when (result) {
         SendResult.Success -> SUCCESS
         is SendResult.Failed -> when (result.reason) {

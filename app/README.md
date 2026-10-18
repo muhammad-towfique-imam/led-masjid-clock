@@ -75,6 +75,14 @@ Open the **Send** tab (bottom bar). It has 3 steps.
 3. **Send:** tap "Send", and then "Yes, send". If the send fails, tap "Share log" and send the log
    to the person who sent you the package. Tap "Send again" to try again.
 
+## Set the display clock
+
+1. Open the **Time** tab (bottom bar).
+2. Connect the phone to the WiFi of the display. Wait until the status shows "Display found: …".
+3. Check the phone time on the screen, and tap **Set the time**.
+
+The display gets the phone's local time. Keep the phone's automatic time on.
+
 ## Manual tests before a release (spec section 7.2)
 
 1. Visible change: send a `TEST` text program from HD2020, then send the clock program from the app.
@@ -91,6 +99,10 @@ Open the **Send** tab (bottom bar). It has 3 steps.
 10. Save twice with the same name: Downloads has `name.hdpkg` and `name (1).hdpkg`.
 11. Share to WhatsApp, open the file with "Open with" → HD Sender, and send it to the display.
 12. Load a `.zip` file in Send: the app shows "This file is not an HD Sender package".
+13. Time: the display clock changes to the phone time. Test it once with the phone time set by hand
+    to a wrong value (for example 12:34), then with automatic time on again.
+14. Time without a display WiFi: the button stays disabled. With a WiFi that is not a display:
+    "No display found on this WiFi".
 
 If Create does not find a USB drive, tap the ⓘ icon at the top of the Create tab ("Share details")
 and send the text to support.

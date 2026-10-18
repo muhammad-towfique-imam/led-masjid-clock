@@ -6,7 +6,9 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import com.masjidclock.wfsender.protocol.CardConnector
+import com.masjidclock.wfsender.protocol.UdpConnector
 import java.io.IOException
+import java.net.DatagramSocket
 import java.net.InetSocketAddress
 import java.net.Socket
 
@@ -42,6 +44,18 @@ class CardNetwork(context: Context) {
 
     fun stop() {
         runCatching { connectivity.unregisterNetworkCallback(callback) }
+    }
+
+    /** A UDP socket that is bound to [network] (for the time sync). */
+    fun udpFor(network: Network) = UdpConnector {
+        val socket = DatagramSocket()
+        try {
+            network.bindSocket(socket)
+            socket
+        } catch (e: IOException) {
+            socket.close()
+            throw e
+        }
     }
 
     fun connectorFor(network: Network) = CardConnector { host, port, timeoutMs ->

@@ -67,4 +67,13 @@ class MessagesTest {
             Messages.CONNECT_USB,
         )
     }
+
+    @Test
+    fun timeMessages() {
+        assertEquals("Display found: WF2_e072a1efcde0", Messages.displayFound("WF2_e072a1efcde0"))
+        assertEquals("The display clock is set to 22:55:42.", Messages.timeSet("22:55:42"))
+        assertEquals("The display did not answer. Check the WiFi connection.", Messages.TIME_NO_ANSWER)
+        assertEquals("The display rejected the time (code 0x07).", Messages.timeRejected(7))
+        assertEquals("The phone time is set by hand. Check that it is correct.", Messages.TIME_MANUAL)
+    }
 }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -26,13 +27,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.masjidclock.wfsender.AppViewModel
 import com.masjidclock.wfsender.CreateViewModel
 import com.masjidclock.wfsender.Page
+import com.masjidclock.wfsender.TimeViewModel
 import com.masjidclock.wfsender.send.SendState
 import kotlinx.coroutines.launch
 
 /** The app frame: a top app bar, the page, and a bottom navigation bar with Send and Create. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WfSenderApp(model: AppViewModel, create: CreateViewModel) {
+fun WfSenderApp(model: AppViewModel, create: CreateViewModel, time: TimeViewModel) {
     val page by model.page.collectAsStateWithLifecycle()
     val sendState by model.sendState.collectAsStateWithLifecycle()
     val sending = sendState is SendState.Sending
@@ -43,7 +45,15 @@ fun WfSenderApp(model: AppViewModel, create: CreateViewModel) {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(if (page == Page.SEND) "Send" else "Create a package") },
+                    title = {
+                        Text(
+                            when (page) {
+                                Page.SEND -> "Send"
+                                Page.CREATE -> "Create a package"
+                                Page.TIME -> "Set the time"
+                            }
+                        )
+                    },
                     actions = {
                         if (page == Page.CREATE) {
                             IconButton(onClick = {
@@ -75,6 +85,13 @@ fun WfSenderApp(model: AppViewModel, create: CreateViewModel) {
                         icon = { Icon(Icons.Filled.Add, contentDescription = null) },
                         label = { Text("Create") },
                     )
+                    NavigationBarItem(
+                        selected = page == Page.TIME,
+                        onClick = model::openTime,
+                        enabled = !sending,
+                        icon = { Icon(Icons.Filled.DateRange, contentDescription = null) },
+                        label = { Text("Time") },
+                    )
                 }
             },
         ) { padding ->
@@ -82,6 +99,7 @@ fun WfSenderApp(model: AppViewModel, create: CreateViewModel) {
                 when (page) {
                     Page.SEND -> SendScreen(model)
                     Page.CREATE -> CreateScreen(create, onBack = model::openSend)
+                    Page.TIME -> TimeScreen(time, onBack = model::openSend)
                 }
             }
         }

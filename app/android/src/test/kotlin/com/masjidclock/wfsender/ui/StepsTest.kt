@@ -56,4 +56,11 @@ class StepsTest {
         assertEquals(CreateSteps(DONE, DONE, CURRENT, WAITING), createSteps(UsbStatus.TOO_LARGE))
         assertEquals(CreateSteps(DONE, DONE, DONE, CURRENT), createSteps(UsbStatus.FOUND))
     }
+
+    @Test
+    fun timeStepsFollowTheConnectionAndTheResult() {
+        assertEquals(TimeSteps(CURRENT, WAITING), timeSteps(found = false, timeSet = false))
+        assertEquals(TimeSteps(DONE, CURRENT), timeSteps(found = true, timeSet = false))
+        assertEquals(TimeSteps(DONE, DONE), timeSteps(found = true, timeSet = true))
+    }
 }

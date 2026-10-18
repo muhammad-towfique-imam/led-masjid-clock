@@ -34,3 +34,12 @@ fun createSteps(status: UsbStatus): CreateSteps = when (status) {
         CreateSteps(StepState.DONE, StepState.DONE, StepState.CURRENT, StepState.WAITING)
     UsbStatus.FOUND -> CreateSteps(StepState.DONE, StepState.DONE, StepState.DONE, StepState.CURRENT)
 }
+
+/** The state of the 2 steps of the Time tab: connect to the display WiFi, set the time. */
+data class TimeSteps(val connect: StepState, val set: StepState)
+
+fun timeSteps(found: Boolean, timeSet: Boolean): TimeSteps = when {
+    !found -> TimeSteps(StepState.CURRENT, StepState.WAITING)
+    timeSet -> TimeSteps(StepState.DONE, StepState.DONE)
+    else -> TimeSteps(StepState.DONE, StepState.CURRENT)
+}

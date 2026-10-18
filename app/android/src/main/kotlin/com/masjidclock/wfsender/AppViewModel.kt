@@ -35,7 +35,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /** The 2 tabs of the bottom navigation bar. */
-enum class Page { SEND, CREATE }
+enum class Page { SEND, CREATE, TIME }
 
 class AppViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -75,6 +75,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _page.value = Page.SEND
         // selectCard does nothing during a send, so an "Open with" during a send cannot change the card.
         _site.value?.cards?.firstOrNull()?.let(::selectCard)
+    }
+
+    fun openTime() {
+        if (gate.busy) return
+        stopConnectionChecks()
+        _page.value = Page.TIME
     }
 
     fun openCreate() {

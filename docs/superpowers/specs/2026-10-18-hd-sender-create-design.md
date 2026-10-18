@@ -202,3 +202,43 @@ The `ZipImporter` gets the `.hdpkg` name rule (section 5.4).
 - A choice between 2 USB drives or SD cards with exports.
 - Packages with more than 1 display.
 - Editing a package.
+
+## 9. Time tab (version 0.5.0)
+
+Approved in conversation on 2026-10-18. The protocol comes from the HD2020 captures `time.pcapng`
+and `hijri-full.pcapng`, and was confirmed on a WF2 card: the display showed a test time
+(12:34), continued (12:35), and then showed the correct time.
+
+### 9.1 Screen
+
+A third tab in the bottom bar, **Time** (title "Set the time"), with 2 step cards:
+
+1. **Connect to the display WiFi:** the WiFi text, "Open WiFi settings", and the status.
+   When the card answers, the status is "Display found: <card name>".
+2. **Set the time:** the phone's local time and date, updated every second, and a
+   "Set the time" button. The result is "The display clock is set to HH:MM:SS." or an error:
+   "The display did not answer. Check the WiFi connection." or
+   "The display rejected the time (code 0xNN)." If the phone's automatic time is off, the step
+   shows "The phone time is set by hand. Check that it is correct."
+
+The card is asked for its identity every 2 seconds only until it answers (the rule of base spec 5.3).
+
+### 9.2 Protocol
+
+- UDP to `192.168.4.1:6101`, through a socket bound to the card WiFi. Each request gets up to
+  3 tries of 2 seconds.
+- **Discover (`0x1b`):** a 27-byte header with a zero device ID, counter 1, and the data
+  `00 0a ff 2f ff 89 ff 06 00 0e`. The answer (235 or 287 bytes) gives the 15-byte device ID
+  (bytes 3–17) and the name (UTF-16LE at byte 92).
+- **Set the time (`0x14`):** an extended frame (31-byte header) with the device ID, the number 1,
+  and 22 bytes of command data: `16`, the time (big-endian), `01`, 14 zero bytes, `54 60`.
+  Then the fixed 17-byte block and the text `YYYY/MM/DD HH:MM:SS,,hd2020,<HD2020 installation ID>`
+  and a zero byte. Success = an `HR` answer for command `0x14` with status `00`.
+- **The time** is the phone's local wall-clock time as seconds since 1970, without a time zone
+  (21:09:41 in Dhaka is sent as 21:09:41 UTC).
+
+### 9.3 Not confirmed
+
+- WF1 cards with firmware V4.45: HD2020 used the same packet, but the app is not tested on them.
+- Cards with the older firmware (the first 128 × 64 card): not tested.
+
