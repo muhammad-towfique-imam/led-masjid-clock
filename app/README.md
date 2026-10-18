@@ -1,17 +1,20 @@
-# Masjid Clock Sender (Android)
+# HD Sender (Android)
 
 The app sends HD2020 programs to Huidu WF cards (WF1, WF2, WF4) over the card WiFi.
 It is for sites that have no laptop. Design: `docs/superpowers/specs/2026-10-18-android-wf-sender-design.md`.
 
-## Make a site ZIP
+## Make the ZIP file of a display
 
-1. In HD2020, export the program of each card with the U-disk option.
-2. Make 1 folder for each card. Copy `screen.hds` and `progam.hds` of that card into the folder.
-   Use a clear folder name, for example `english` or `hijri`. The app shows this name.
-3. Compress the folders into 1 ZIP file. Give the ZIP the name of the site, for example `masjid-north.zip`.
+Each ZIP file holds the program of exactly 1 display.
+
+1. In HD2020, export the program of the display with the U-disk option.
+2. Make 1 folder, for example `english`. Copy `screen.hds` and `progam.hds` into it.
+   The app shows the folder name. Use only English letters and numbers in the name.
+3. Compress the folder into 1 ZIP file. Give the ZIP a clear name, for example `masjid-north-english.zip`.
 4. Send the ZIP to the person at the site.
 
 The app ignores `set.hds`, `smart.ss`, and `font.hds`. It never sends them.
+A ZIP with 2 or more displays is rejected.
 
 ## Build
 
@@ -57,11 +60,13 @@ keyPassword=YOUR_KEY_PASSWORD
 
 ## Use
 
-1. Open the site ZIP with the app ("Open with" in WhatsApp), or tap "Open ZIP" in the app.
-2. Select the display.
-3. Connect the phone to the WiFi of the display in Android settings. The password is 88888888.
-4. When the app shows "Display found", tap "Send", and then "Yes, send".
-5. If the send fails, tap "Share log" and send the log to the person who sent you the ZIP.
+The app has 1 page with 3 steps.
+
+1. **Load file:** open the ZIP with the app ("Open with" in WhatsApp), or tap "Load file".
+2. **Connect to the display WiFi:** connect the phone to the WiFi of the display in Android settings.
+   The password is 88888888. Wait until the status shows "Display found".
+3. **Send:** tap "Send", and then "Yes, send". If the send fails, tap "Share log" and send the log
+   to the person who sent you the ZIP. Tap "Send again" to try again.
 
 ## Manual tests before a release (spec section 7.2)
 
@@ -70,7 +75,8 @@ keyPassword=YOUR_KEY_PASSWORD
 2. Weak signal: send from far away. The app must retry and then show the weak-signal message.
 3. Mobile data on: the send must be successful.
 4. No card WiFi, and a WiFi that is not a card: the status must not be "Display found".
-5. Import from WhatsApp: receive a site ZIP in WhatsApp and open it with the app.
+5. Import from WhatsApp: receive a ZIP in WhatsApp and open it with the app.
+6. After a send, the display must not flicker while the phone stays on the display WiFi.
 
 The protocol was confirmed only on a WF1 card with a 128 × 64 screen.
 Test WF2 and WF4 cards and other screen sizes before you use the app with them.

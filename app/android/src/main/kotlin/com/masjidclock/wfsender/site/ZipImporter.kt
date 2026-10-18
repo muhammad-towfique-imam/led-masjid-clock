@@ -14,7 +14,7 @@ data class Site(val name: String, val cards: List<Card>)
 /** The ZIP cannot be used. The message is shown to the person. */
 class ImportException(message: String) : Exception(message)
 
-/** Unpacks a site ZIP into the private storage of the app (spec section 5.1). */
+/** Unpacks a site ZIP with the program of 1 display into the private storage of the app (spec section 5.1). */
 class ZipImporter(private val maxUnpackedBytes: Long = 20L * 1024 * 1024) {
 
     /** Replaces the site in [siteDir] with the cards in [zip]. On failure, [siteDir] does not change. */
@@ -39,6 +39,11 @@ class ZipImporter(private val maxUnpackedBytes: Long = 20L * 1024 * 1024) {
             if (site.cards.isEmpty()) {
                 throw ImportException(
                     "The ZIP file has no display folders. Each folder must contain screen.hds and progam.hds."
+                )
+            }
+            if (site.cards.size > 1) {
+                throw ImportException(
+                    "The ZIP file contains more than 1 display. Each ZIP file must contain the program of 1 display."
                 )
             }
             siteDir.deleteRecursively()

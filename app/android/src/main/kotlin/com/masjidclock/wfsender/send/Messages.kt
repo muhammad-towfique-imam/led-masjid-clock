@@ -17,7 +17,7 @@ object Messages {
     const val DISPLAY_FOUND = "Display found"
     const val INVALID_EXPORT = "The program files on the phone are damaged. Open the ZIP file again."
     const val WAIT_FOR_SEND = "Wait until the send is complete. Then open the ZIP file again."
-    const val NO_SITE = "Open the ZIP file that you received. It contains the programs for the displays."
+    const val NO_SITE = "Load the ZIP file that you received. It contains the program for the display."
 
     fun forResult(result: SendResult): String = when (result) {
         SendResult.Success -> SUCCESS

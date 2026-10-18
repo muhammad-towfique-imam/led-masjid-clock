@@ -14,6 +14,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "wf-sender"
+rootProject.name = "hd-sender"
 include(":protocol")
 include(":android")

@@ -1,4 +1,4 @@
-# Android WF Sender: Design
+# HD Sender (Android WF Sender): Design
 
 - **Date:** 2026-10-18
 - **Branch:** `android-wf-sender`
@@ -12,8 +12,11 @@ Today, a person must use HD2020 on a Windows PC to send a program to a display.
 
 The Android app lets a person at the site send a program to a display with a phone.
 You make the program in HD2020 and export it with the U-disk option.
-You send the export to the person as a ZIP file. The person opens the ZIP in the app
-and sends each program to its card over the card WiFi.
+You send the export to the person as a ZIP file, 1 ZIP file for each display.
+The person loads the ZIP in the app and sends the program to the card over the card WiFi.
+
+**Change 2026-10-18 (version 0.2.0):** The app is named "HD Sender" (app ID `com.hdsender.app`).
+A ZIP file holds the program of exactly 1 display, and the app has 1 page with 3 steps.
 
 The app only relays files. It does not make or change programs.
 
@@ -34,8 +37,8 @@ All screens are in English.
 
 | Topic | Decision |
 |---|---|
-| Delivery of programs | 1 ZIP file for each site, with 1 folder for each card |
-| Card selection | The person connects to the card WiFi in Android settings and selects the folder in the app |
+| Delivery of programs | 1 ZIP file for each display (changed in 0.2.0; it was 1 ZIP for each site) |
+| Card selection | The person connects to the card WiFi in Android settings. The display in the ZIP is selected automatically |
 | Card check | Confirmation only: the app shows the folder name and the screen size, and the person confirms |
 | Distribution | A signed APK file, sent directly to the person (no Google Play) |
 | Language | English only |
@@ -139,7 +142,7 @@ bound to the card WiFi.
 
 | Unit | Purpose |
 |---|---|
-| `ZipImporter` | Receives the site ZIP and unpacks it into the private storage of the app (section 5.1). |
+| `ZipImporter` | Receives the ZIP of 1 display and unpacks it into the private storage of the app (section 5.1). |
 | `CardNetwork` | Finds the connected WiFi network and gives a socket factory that is bound to it (section 5.3). |
 | `SiteScreen` | Shows the list of cards in the imported ZIP. |
 | `SendScreen` | Shows the connection status, the confirmation, the progress, and the result. |
@@ -150,42 +153,43 @@ bound to the card WiFi.
 ### 5.1 ZIP import
 
 1. The person opens the ZIP with "Open with" (for example from WhatsApp) or with the
-   "Open ZIP" button (Android file picker).
+   "Load file" button (Android file picker).
 2. The app unpacks the ZIP into its private storage. A new import replaces the earlier site.
-3. Each folder that contains both `screen.hds` and `progam.hds` is 1 card.
-   The folder name is the card label. If these files are at the root of the ZIP,
-   the ZIP file name is the label.
+3. The folder that contains `screen.hds` and `progam.hds` is the card of the display.
+   Its path in the ZIP is the card label. If these files are at the root of the ZIP,
+   the ZIP file name is the label. A ZIP file must contain exactly 1 card.
 4. The app does not unpack or use `set.hds`, `smart.ss`, `font.hds`, or other files.
 
 The app rejects the ZIP and shows a message in these conditions:
 
 - An entry path is absolute, or contains `..`.
 - The ZIP contains no card folder.
+- The ZIP contains more than 1 card: "The ZIP file contains more than 1 display.
+  Each ZIP file must contain the program of 1 display."
 - A card folder fails the `HdsExport` checks.
 - The unpacked size is more than 20 MB.
 
 The app keeps the last imported site after it closes.
 
-### 5.2 Screens
+### 5.2 Screen
 
-**Site screen**
+The app has 1 page with the title "HD Sender" and 3 steps. Each step shows a mark:
+✔ done, ● current, or ○ waiting. The page starts below the Android status bar, and the
+status bar stays visible.
 
-- Shows the site name (the ZIP file name) and 1 row for each card:
-  label and screen size, for example "english — 128 × 64".
-- Has an "Open ZIP" button.
-- If no site is imported, it tells the person to open the ZIP that they received.
-
-**Send screen** (opens when the person selects a card)
-
-1. Shows the instructions: "Connect the phone to the WiFi of the display in Android settings.
-   The password is 88888888." It has a button that opens the Android WiFi settings.
-2. Shows the connection status (section 5.3). The "Send" button is available only when the
-   status is "Display found".
-3. When the person taps "Send", the app asks: "This program is for a 128 × 64 display
-   named 'english'. Is the phone connected to this display?" with "Yes, send" and "Cancel".
-4. During the send, the screen shows a progress bar (frames sent of total frames).
-   The screen stays on, and the back button is disabled.
-5. At the end, the screen shows the result message (section 6.2) and a "Share log" button.
+1. **Load file:** If no file is loaded, it tells the person to load the ZIP that they received.
+   After a load, it shows the ZIP file name and the display, for example "english — 128 × 64".
+   It has a "Load file" (or "Load another file") button.
+2. **Connect to the display WiFi:** "Connect the phone to the WiFi of the display in Android
+   settings. The password is 88888888.", an "Open WiFi settings" button, and the status
+   (section 5.3).
+3. **Send:** a "Send" button. It is available only when the status is "Display found".
+   - When the person taps "Send", the app asks: "This program is for a 128 × 64 display
+     named 'english'. Is the phone connected to this display?" with "Yes, send" and "Cancel".
+   - During the send, the step shows a progress bar (frames sent of total frames).
+     The screen stays on, all buttons are disabled, and the back button does nothing.
+   - At the end, the step shows the result message (section 6.2), a "Send again" button,
+     and a "Share log" button. "Send again" starts the connection check again (section 5.3).
 
 ### 5.3 Connection check
 
@@ -193,7 +197,7 @@ A card that has received a program reloads it, and the display flickers, each ti
 (Found in the first field test on 2026-10-18: probes every 2 seconds after a send made the display
 flicker until the phone left the card WiFi.) Thus the app probes the card as little as possible.
 
-1. When the Send screen opens, the check runs every 2 seconds.
+1. When a file is loaded (or "Send again" is tapped), the check runs every 2 seconds.
 2. `CardNetwork` looks for a connected network with WiFi transport. It does not require
    internet access, because the card WiFi has none. If no WiFi network is found,
    the status is "Not connected to WiFi".
@@ -205,7 +209,7 @@ flicker until the phone left the card WiFi.) Thus the app probes the card as lit
 4. After the card has answered, the app does not probe it again. It only checks that the phone
    is still on the same WiFi network. If the WiFi network is lost or changes, the app starts at step 2 again.
 5. When a send starts, the check stops. After the send, the app does not probe the card again.
-   If the person selects a card again, the check starts again at step 1.
+   If the person taps "Send again" or loads a file, the check starts again at step 1.
 
 All card traffic uses sockets that are bound to the WiFi network. Thus the traffic does not
 go over mobile data when the WiFi has no internet access.
@@ -272,7 +276,7 @@ The log of 1 send contains:
 | `ProgramTransfer` | With the transfer ID of the captured transfer, the app makes the same 16 frames, byte for byte. |
 | `CardSender` | With a local fake card: normal send; missing ACK then retry then success; 3 failed attempts; error status (no retry); connection closed during transfer; unexpected reply; progress reports. |
 | `CardSender` probe | `HR` reply; no reply; reply without `HR`. |
-| `ZipImporter` | Valid site ZIP with 2 cards. Files at the ZIP root. No card folder. Folder with only `screen.hds`. Path with `..`. Absolute path. Unpacked size more than 20 MB. `set.hds` and `smart.ss` are not unpacked. |
+| `ZipImporter` | Valid ZIP with 1 card. ZIP with 2 cards (rejected). Files at the ZIP root. No card folder. Folder with only `screen.hds`. Path with `..`. Absolute path. Unpacked size more than 20 MB. `set.hds` and `smart.ss` are not unpacked. |
 
 `ZipImporter` keeps its logic in plain Kotlin that works on `java.io` streams and files,
 so that it can run in JVM tests.
@@ -286,7 +290,7 @@ so that it can run in JVM tests.
 3. **Mobile data on:** Send with mobile data on. The send must be successful.
 4. **No card WiFi:** Open the Send screen with no WiFi, and with a WiFi that is not a card.
    The status must not be "Display found".
-5. **Import from WhatsApp:** Receive a site ZIP in WhatsApp and open it with the app.
+5. **Import from WhatsApp:** Receive a ZIP in WhatsApp and open it with the app.
 
 ## 8. Release
 

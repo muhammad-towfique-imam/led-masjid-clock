@@ -50,7 +50,7 @@ class ZipImporterTest {
         assertThrows(ImportException::class.java) { import(zip, importer = importer) }.message!!
 
     @Test
-    fun importsTwoCardFoldersAndIgnoresOtherFiles() {
+    fun importsOneDisplayFolderAndIgnoresOtherFiles() {
         val site = import(
             zipOf(
                 "english/screen.hds" to screen(128, 64),
@@ -58,12 +58,10 @@ class ZipImporterTest {
                 "english/set.hds" to ByteArray(1024),
                 "english/smart.ss" to ByteArray(118),
                 "english/font.hds" to ByteArray(10),
-                "hijri/screen.hds" to screen(128, 32),
-                "hijri/progam.hds" to program(),
             )
         )
         assertEquals("site-a", site.name)
-        assertEquals(listOf("english", "hijri"), site.cards.map { it.label })
+        assertEquals(listOf("english"), site.cards.map { it.label })
         val english = site.cards[0]
         assertEquals(128, english.width)
         assertEquals(64, english.height)
@@ -82,8 +80,24 @@ class ZipImporterTest {
     }
 
     @Test
-    fun labelsAreRelativePaths() {
-        val site = import(
+    fun rejectsZipWithTwoDisplays() {
+        val message = importError(
+            zipOf(
+                "english/screen.hds" to screen(128, 64),
+                "english/progam.hds" to program(),
+                "hijri/screen.hds" to screen(128, 32),
+                "hijri/progam.hds" to program(),
+            )
+        )
+        assertEquals(
+            "The ZIP file contains more than 1 display. Each ZIP file must contain the program of 1 display.",
+            message,
+        )
+    }
+
+    @Test
+    fun rejectsZipWithTwoDisplaysWithTheSameFolderName() {
+        val message = importError(
             zipOf(
                 "m2/english/screen.hds" to screen(128, 64),
                 "m2/english/progam.hds" to program(),
@@ -91,8 +105,13 @@ class ZipImporterTest {
                 "m3/english/progam.hds" to program(),
             )
         )
-        assertEquals(listOf("m2/english", "m3/english"), site.cards.map { it.label })
-        assertEquals(listOf(64, 32), site.cards.map { it.height })
+        assertTrue(message, message.contains("more than 1 display"))
+    }
+
+    @Test
+    fun keepsTheNestedFolderPathAsTheLabel() {
+        val site = import(zipOf("m2/english/screen.hds" to screen(128, 64), "m2/english/progam.hds" to program()))
+        assertEquals(listOf("m2/english"), site.cards.map { it.label })
     }
 
     @Test

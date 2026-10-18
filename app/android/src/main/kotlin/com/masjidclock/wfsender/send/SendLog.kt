@@ -21,7 +21,7 @@ class SendLog(
 
     init {
         val time = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(now())
-        add("Masjid Clock Sender $appVersion, Android $androidVersion")
+        add("HD Sender $appVersion, Android $androidVersion")
         add("Time: $time")
         add("Site: $siteName")
         add("Card: ${card.label}, ${card.width} × ${card.height}, progam.hds ${card.programSize} bytes")

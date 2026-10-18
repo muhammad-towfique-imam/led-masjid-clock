@@ -7,7 +7,7 @@
     <application
         android:allowBackup="false"
         android:icon="@android:drawable/sym_def_app_icon"
-        android:label="Masjid Clock Sender"
+        android:label="HD Sender"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
 
         <activity

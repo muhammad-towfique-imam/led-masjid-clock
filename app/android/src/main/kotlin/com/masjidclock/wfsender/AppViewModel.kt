@@ -17,6 +17,7 @@ import com.masjidclock.wfsender.protocol.SendResult
 import com.masjidclock.wfsender.send.Messages
 import com.masjidclock.wfsender.send.SendGate
 import com.masjidclock.wfsender.send.SendLog
+import com.masjidclock.wfsender.send.SendState
 import com.masjidclock.wfsender.send.sendCard
 import com.masjidclock.wfsender.site.Card
 import com.masjidclock.wfsender.site.ImportException
@@ -32,12 +33,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-sealed interface SendState {
-    data object Idle : SendState
-    data class Sending(val sent: Int, val total: Int) : SendState
-    data class Finished(val success: Boolean, val message: String, val log: String) : SendState
-}
 
 class AppViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -63,6 +58,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val _sendState = MutableStateFlow<SendState>(SendState.Idle)
     val sendState: StateFlow<SendState> = _sendState
 
+    init {
+        // A ZIP holds the program of 1 display, so the display is selected without an input.
+        _site.value?.cards?.firstOrNull()?.let(::selectCard)
+    }
+
     fun importZip(uri: Uri) {
         if (gate.busy) {
             _importError.value = Messages.WAIT_FOR_SEND
@@ -78,7 +78,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     input.use { importer.import(it, name, siteDir) }
                 }
                 _site.value = imported
-                selectCard(null)
+                selectCard(imported.cards.first())
             } catch (e: ImportException) {
                 _importError.value = e.message
             } catch (e: CancellationException) {
@@ -90,12 +90,17 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun selectCard(card: Card?) {
+    private fun selectCard(card: Card) {
         if (gate.busy) return
         _selectedCard.value = card
         _sendState.value = SendState.Idle
         stopConnectionChecks()
-        if (card != null) startConnectionChecks()
+        startConnectionChecks()
+    }
+
+    /** After a result: back to step 2 for the same display. The connection check starts again. */
+    fun sendAgain() {
+        _selectedCard.value?.let(::selectCard)
     }
 
     private fun startConnectionChecks() {
