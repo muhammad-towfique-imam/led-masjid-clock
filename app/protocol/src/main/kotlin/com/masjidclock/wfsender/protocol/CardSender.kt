@@ -79,6 +79,20 @@ class CardSender(
         return SendResult.Failed(FailureReason.NETWORK, null, lastError)
     }
 
+    /** Sends the harmless SDK version packet (spec section 3.4). True if the reply starts with HR. */
+    fun probe(): Boolean = try {
+        connector.connect(host, port, probeTimeoutMs).use { socket ->
+            socket.soTimeout = probeTimeoutMs
+            socket.getOutputStream().apply {
+                write(PROBE)
+                flush()
+            }
+            Ack.isHr(readExactly(socket.getInputStream(), 2))
+        }
+    } catch (e: IOException) {
+        false
+    }
+
     /**
      * Reads ACKs until one answers [command] or has an error status.
      * An ACK with status 0 for a different command is ignored.
@@ -97,6 +111,9 @@ class CardSender(
     companion object {
         const val DEFAULT_HOST = "192.168.4.1"
         const val DEFAULT_PORT = 6101
+
+        /** SDK version request: length 8, command 0x2001, version 0x01000005 (little-endian). */
+        val PROBE: ByteArray get() = byteArrayOf(0x08, 0x00, 0x01, 0x20, 0x05, 0x00, 0x00, 0x01)
 
         internal fun readExactly(input: InputStream, n: Int): ByteArray {
             val buffer = ByteArray(n)
