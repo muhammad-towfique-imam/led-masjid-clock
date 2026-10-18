@@ -43,7 +43,7 @@ class ZipImporterTest {
         return bytes.toByteArray()
     }
 
-    private fun import(zip: ByteArray, name: String = "site-a.zip", importer: ZipImporter = ZipImporter()) =
+    private fun import(zip: ByteArray, name: String = "site-a.hdpkg", importer: ZipImporter = ZipImporter()) =
         importer.import(ByteArrayInputStream(zip), name, siteDir)
 
     private fun importError(zip: ByteArray, importer: ZipImporter = ZipImporter()): String =
@@ -75,7 +75,7 @@ class ZipImporterTest {
 
     @Test
     fun filesAtTheZipRootUseTheZipName() {
-        val site = import(zipOf("screen.hds" to screen(128, 64), "progam.hds" to program()), name = "masjid-x.zip")
+        val site = import(zipOf("screen.hds" to screen(128, 64), "progam.hds" to program()), name = "masjid-x.hdpkg")
         assertEquals(listOf("masjid-x"), site.cards.map { it.label })
     }
 
@@ -180,14 +180,29 @@ class ZipImporterTest {
     }
 
     @Test
+    fun rejectsZipExtension() {
+        val zip = zipOf("screen.hds" to screen(128, 64), "progam.hds" to program())
+        val error = assertThrows(ImportException::class.java) { import(zip, name = "english.zip") }
+        assertEquals(ZipImporter.NOT_PACKAGE, error.message)
+        assertEquals("This file is not an HD Sender package. Use a file that ends with .hdpkg.", error.message)
+    }
+
+    @Test
+    fun acceptsUpperCaseExtension() {
+        val site = import(zipOf("screen.hds" to screen(128, 64), "progam.hds" to program()), name = "North-English.HDPKG")
+        assertEquals("North-English", site.name)
+        assertEquals(listOf("North-English"), site.cards.map { it.label })
+    }
+
+    @Test
     fun rejectsFileThatIsNotAZip() {
         importError(ByteArray(500) { 7 })
     }
 
     @Test
     fun newImportReplacesTheEarlierSite() {
-        import(zipOf("a/screen.hds" to screen(128, 64), "a/progam.hds" to program()), name = "one.zip")
-        import(zipOf("b/screen.hds" to screen(128, 64), "b/progam.hds" to program()), name = "two.zip")
+        import(zipOf("a/screen.hds" to screen(128, 64), "a/progam.hds" to program()), name = "one.hdpkg")
+        import(zipOf("b/screen.hds" to screen(128, 64), "b/progam.hds" to program()), name = "two.hdpkg")
         val loaded = ZipImporter.load(siteDir)!!
         assertEquals("two", loaded.name)
         assertEquals(listOf("b"), loaded.cards.map { it.label })
@@ -195,7 +210,7 @@ class ZipImporterTest {
 
     @Test
     fun failedImportKeepsTheEarlierSite() {
-        import(zipOf("a/screen.hds" to screen(128, 64), "a/progam.hds" to program()), name = "one.zip")
+        import(zipOf("a/screen.hds" to screen(128, 64), "a/progam.hds" to program()), name = "one.hdpkg")
         importError(zipOf("readme.txt" to ByteArray(3)))
         val loaded = ZipImporter.load(siteDir)!!
         assertEquals("one", loaded.name)

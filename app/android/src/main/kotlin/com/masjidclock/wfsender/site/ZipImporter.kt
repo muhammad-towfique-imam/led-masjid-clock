@@ -1,5 +1,6 @@
 package com.masjidclock.wfsender.site
 
+import com.masjidclock.wfsender.pkg.PackageName
 import com.masjidclock.wfsender.protocol.HdsExport
 import com.masjidclock.wfsender.protocol.InvalidExportException
 import java.io.File
@@ -19,6 +20,7 @@ class ZipImporter(private val maxUnpackedBytes: Long = 20L * 1024 * 1024) {
 
     /** Replaces the site in [siteDir] with the cards in [zip]. On failure, [siteDir] does not change. */
     fun import(zip: InputStream, zipName: String, siteDir: File): Site {
+        if (!PackageName.hasExtension(zipName)) throw ImportException(NOT_PACKAGE)
         val name = siteName(zipName)
         val temp = File(siteDir.parentFile, siteDir.name + ".tmp")
         temp.deleteRecursively()
@@ -94,6 +96,7 @@ class ZipImporter(private val maxUnpackedBytes: Long = 20L * 1024 * 1024) {
         path.startsWith("/") || DRIVE.containsMatchIn(path) || path.split('/').any { it == ".." }
 
     companion object {
+        const val NOT_PACKAGE = "This file is not an HD Sender package. Use a file that ends with .hdpkg."
         private const val NAME_FILE = ".site-name"
         private val DRIVE = Regex("^[A-Za-z]:")
 
@@ -109,7 +112,7 @@ class ZipImporter(private val maxUnpackedBytes: Long = 20L * 1024 * 1024) {
         }
 
         private fun siteName(zipName: String): String =
-            zipName.substringAfterLast('/').replace(Regex("(?i)\\.zip$"), "")
+            PackageName.withoutExtension(zipName.substringAfterLast('/'))
 
         private fun scan(root: File, siteName: String): Site {
             val cards = root.walkTopDown()
