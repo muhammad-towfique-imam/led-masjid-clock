@@ -1,27 +1,20 @@
 package com.masjidclock.wfsender.usb
 
-import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.Settings
 import androidx.annotation.RequiresApi
-import androidx.core.content.ContextCompat
 
-/** File access for the Create flow (spec section 5.5). */
+/** File access for the Create flow, which needs Android 11 or later (spec section 5.5). */
 object StorageAccess {
-    val LEGACY_PERMISSIONS = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
+    @Suppress("UNUSED_PARAMETER")
     fun granted(context: Context): Boolean =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Environment.isExternalStorageManager()
-        } else {
-            LEGACY_PERMISSIONS.all { ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED }
-        }
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager()
 
     /** Opens the "All files access" settings page of this app. */
     @RequiresApi(Build.VERSION_CODES.R)

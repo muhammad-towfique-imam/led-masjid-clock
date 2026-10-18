@@ -11,8 +11,9 @@ A package holds the program of exactly 1 display. It is a ZIP file with the exte
 
 1. In HD2020, export the program of the display with the U-disk option to a USB drive.
 2. Connect the USB drive to the phone with a USB OTG adapter.
-3. In HD Sender, tap **Create**. The first time, allow file access (on Android 11 and later,
-   turn on "Allow access to manage all files" for HD Sender, then go back).
+3. In HD Sender, tap **Create**. The first time, allow file access: turn on "Allow access to
+   manage all files" for HD Sender, then go back. Create needs Android 11 or later
+   (Send works from Android 7.0).
 4. When the app shows "Found on: … display", tap **Save** (to Downloads) or **Share** (for example
    to WhatsApp), and type a file name, for example `masjid-north-english`.
 
@@ -86,6 +87,7 @@ On the home screen, tap **Send**. The Send page has 3 steps.
 7. Create: the first Create asks for file access; the second does not.
 8. Create without a USB drive shows the message; when the drive is connected, the app finds it.
 9. Create with a USB drive without an export shows "The USB drive has no HD2020 export".
+   An export larger than 20 MB shows "The HD2020 export is larger than 20 MB…".
 10. Save twice with the same name: Downloads has `name.hdpkg` and `name (1).hdpkg`.
 11. Share to WhatsApp, open the file with "Open with" → HD Sender, and send it to the display.
 12. Load a `.zip` file in Send: the app shows "This file is not an HD Sender package".

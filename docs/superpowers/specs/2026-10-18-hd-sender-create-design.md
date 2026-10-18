@@ -3,7 +3,7 @@
 - **Date:** 2026-10-18
 - **Branch:** `android-wf-sender`
 - **Code location:** `app/` (module `android`)
-- **Version:** 0.3.0
+- **Version:** 0.3.1 (Create needs Android 11 or later)
 - **Base spec:** `docs/superpowers/specs/2026-10-18-android-wf-sender-design.md`
 - **Status:** Approved in conversation. Waiting for review of this written spec.
 
@@ -21,6 +21,10 @@ With this change, a person can make the package on the phone:
 
 Packages use the new extension `.hdpkg`.
 
+**Change 2026-10-18 (version 0.3.1):** Create needs Android 11 or later. All phones that use Create
+run Android 11 or later, and stock Android 7–10 does not give apps a file path to a USB OTG drive.
+The Send flow still works from Android 7.0.
+
 ### 1.1 Success criteria
 
 1. A person connects a USB drive with an HD2020 U-disk export, taps "Create", and saves or
@@ -34,7 +38,7 @@ Packages use the new extension `.hdpkg`.
 |---|---|
 | Package extension | `.hdpkg`. The content is a ZIP file, as before |
 | Send accepts | Only `.hdpkg` files (`.zip` files are rejected) |
-| USB access | Direct file paths with the "All files access" permission (Android 11 and later) or the storage permission (Android 7–10). The raw-USB approach is not used: it does not support exFAT |
+| USB access | Direct file paths with the "All files access" permission. Create needs Android 11 or later. The raw-USB approach is not used: it does not support exFAT |
 | Save | The app asks for a file name in its own dialog and saves the file in the Downloads folder |
 | Share | The app asks for a file name too, then opens the Android share sheet |
 | Home screen | 2 buttons: "Send" and "Create" |
@@ -63,13 +67,14 @@ Packages use the new extension `.hdpkg`.
 The page has 4 steps. Each step shows ✔ done, ● current, or ○ waiting, as on the Send page.
 
 1. **Allow file access**
-   - Android 11 and later: the step has a button "Allow file access". It opens the Android
-     "All files access" settings page for HD Sender (`ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION`).
+   - The step has a button "Allow file access". It opens the Android "All files access" settings
+     page for HD Sender (`ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION`). If the phone has no such
+     page, the app opens the general "All files access" page, and then the app settings page.
      The person turns on the switch and returns to the app.
-   - Android 7–10: the button asks for `READ_EXTERNAL_STORAGE` and `WRITE_EXTERNAL_STORAGE`
-     in the normal Android permission dialog.
    - The app checks the permission each time the page becomes visible. When the permission is
      given, the step is done and its button is hidden.
+   - On Android 7–10, the Create page shows only: "Create needs Android 11 or later. This phone
+     has an older Android version. You can still use Send."
 2. **Connect the USB drive**
    - The app lists the mounted removable volumes (section 5.1) every 2 seconds while the page is
      visible and the permission is given.
@@ -77,6 +82,10 @@ The page has 4 steps. Each step shows ✔ done, ● current, or ○ waiting, as 
 3. **Check the files**
    - For each removable volume, the app reads `screen.hds` and `progam.hds` at the root of the
      volume and checks them with `HdsExport`. The file names are matched without regard to case.
+   - If the 2 files together are larger than 20 MB (the import limit of the Send flow), the step
+     shows "The HD2020 export is larger than 20 MB. The app cannot send a program of this size."
+     The app does not read files that are too large. It reads the files again only when their
+     size or time changes.
    - The first volume with a valid export is used. The step shows
      "Found on: <volume name> — 128 × 64 display".
    - If no volume has a valid export: "The USB drive has no HD2020 export. Use the U-disk export of HD2020."
@@ -106,10 +115,7 @@ flow can always read the name.
 ### 5.1 Removable volumes
 
 - `StorageManager.getStorageVolumes()`: the volumes that are removable and in the state `mounted`.
-- The root folder of a volume:
-  - Android 11 and later: `StorageVolume.getDirectory()`.
-  - Android 7–10: the app finds the root from `Context.getExternalFilesDirs(null)`: for each folder
-    on removable storage, the root is the part of the path before `/Android/data/`.
+- The root folder of a volume is `StorageVolume.getDirectory()` (Android 11 and later).
 - The volume name is `StorageVolume.getDescription(context)`.
 
 ### 5.2 Package writer
@@ -142,11 +148,8 @@ flow can always read the name.
 | Permission | Android versions | Purpose |
 |---|---|---|
 | `MANAGE_EXTERNAL_STORAGE` | 11 and later | Read the USB drive, write to Downloads |
-| `READ_EXTERNAL_STORAGE` | 7–10 (`maxSdkVersion="29"`) | Read the USB drive |
-| `WRITE_EXTERNAL_STORAGE` | 7–10 (`maxSdkVersion="29"`) | Write to Downloads |
 
-The manifest also sets `android:requestLegacyExternalStorage="true"` for Android 10.
-The Send flow does not need these permissions.
+The Send flow does not need this permission.
 
 "All files access" is a strong permission, and Google Play reviews apps that ask for it.
 The app is distributed as an APK file, so this does not block the release.

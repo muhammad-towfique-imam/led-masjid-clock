@@ -19,12 +19,7 @@ class RemovableVolumes(private val context: Context) {
             .mapNotNull { volume -> rootOf(volume)?.let { Volume(volume.getDescription(context), it) } }
     }
 
-    private fun rootOf(volume: StorageVolume): File? {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) return volume.directory
-        // Android 7-10: a removable volume is mounted at /storage/<UUID>.
-        val uuid = volume.uuid ?: return null
-        return context.getExternalFilesDirs(null).filterNotNull()
-            .map { File(it.path.substringBefore("/Android/data/")) }
-            .firstOrNull { it.name.equals(uuid, ignoreCase = true) }
-    }
+    /** Create needs Android 11 or later: older versions do not give apps a path to a USB drive. */
+    private fun rootOf(volume: StorageVolume): File? =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) volume.directory else null
 }

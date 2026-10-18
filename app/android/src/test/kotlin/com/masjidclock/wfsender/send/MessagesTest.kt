@@ -55,6 +55,10 @@ class MessagesTest {
         assertEquals("Saved: Downloads/english (1).hdpkg", Messages.saved("english (1).hdpkg"))
         assertEquals("The USB drive has no HD2020 export. Use the U-disk export of HD2020.", Messages.NO_EXPORT)
         assertEquals(
+            "Create needs Android 11 or later. This phone has an older Android version. You can still use Send.",
+            Messages.CREATE_NEEDS_ANDROID_11,
+        )
+        assertEquals(
             "The HD2020 export is larger than 20 MB. The app cannot send a program of this size.",
             Messages.TOO_LARGE,
         )

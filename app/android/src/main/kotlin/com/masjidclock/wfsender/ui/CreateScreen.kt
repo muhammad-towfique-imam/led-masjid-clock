@@ -4,9 +4,8 @@ import android.content.ClipData
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -44,12 +43,26 @@ private enum class NameAction { SAVE, SHARE }
 
 @Composable
 fun CreateScreen(model: CreateViewModel, onBack: () -> Unit) {
+    // Create reads the USB drive with "All files access", which exists from Android 11 (spec section 5.5).
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        CreatePage(model, onBack)
+    } else {
+        BackHandler { onBack() }
+        Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            PageTitle("Create a package", onBack)
+            Text(Messages.CREATE_NEEDS_ANDROID_11)
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.R)
+@Composable
+private fun CreatePage(model: CreateViewModel, onBack: () -> Unit) {
     val usb by model.usb.collectAsStateWithLifecycle()
     val result by model.result.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var naming by remember { mutableStateOf<NameAction?>(null) }
-    val askLegacy = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { }
     val steps = createSteps(usb.status)
 
     // The checks run only while the page is visible; they start again when the person returns from Settings.
@@ -68,13 +81,7 @@ fun CreateScreen(model: CreateViewModel, onBack: () -> Unit) {
         Step(1, "Allow file access", steps.access) {
             if (usb.status == UsbStatus.NO_PERMISSION) {
                 Text(Messages.ALLOW_ACCESS)
-                Button(onClick = {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                        StorageAccess.openSettings(context)
-                    } else {
-                        askLegacy.launch(StorageAccess.LEGACY_PERMISSIONS)
-                    }
-                }) { Text("Allow file access") }
+                Button(onClick = { StorageAccess.openSettings(context) }) { Text("Allow file access") }
             }
         }
         HorizontalDivider()
