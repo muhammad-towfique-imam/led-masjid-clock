@@ -4,18 +4,27 @@ import android.content.ClipData
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.activity.compose.BackHandler
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -26,6 +35,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -43,21 +53,32 @@ private enum class NameAction { SAVE, SHARE }
 
 @Composable
 fun CreateScreen(model: CreateViewModel, onBack: () -> Unit) {
+    BackHandler { onBack() }
     // Create reads the USB drive with "All files access", which exists from Android 11 (spec section 5.5).
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        CreatePage(model, onBack)
+        CreatePage(model)
     } else {
-        BackHandler { onBack() }
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            PageTitle("Create a package", onBack)
-            Text(Messages.CREATE_NEEDS_ANDROID_11)
+        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Icon(Icons.Filled.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.onErrorContainer)
+                    Text(Messages.CREATE_NEEDS_ANDROID_11, color = MaterialTheme.colorScheme.onErrorContainer)
+                }
+            }
         }
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.R)
 @Composable
-private fun CreatePage(model: CreateViewModel, onBack: () -> Unit) {
+private fun CreatePage(model: CreateViewModel) {
     val usb by model.usb.collectAsStateWithLifecycle()
     val result by model.result.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -70,57 +91,41 @@ private fun CreatePage(model: CreateViewModel, onBack: () -> Unit) {
         model.startChecks()
         onPauseOrDispose { model.stopChecks() }
     }
-    BackHandler { onBack() }
 
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        PageTitle("Create a package", onBack)
-
-        Step(1, "Allow file access", steps.access) {
+        StepCard(1, "Allow file access", steps.access) {
             if (usb.status == UsbStatus.NO_PERMISSION) {
-                Text(Messages.ALLOW_ACCESS)
-                Button(onClick = { StorageAccess.openSettings(context) }) { Text("Allow file access") }
+                Text(Messages.ALLOW_ACCESS, style = MaterialTheme.typography.bodyMedium)
+                Button(onClick = { StorageAccess.openSettings(context) }) { IconLabel(Icons.Filled.Lock, "Allow file access") }
             }
         }
-        HorizontalDivider()
 
-        Step(2, "Connect the USB drive", steps.drive) {
-            if (usb.status == UsbStatus.NO_DRIVE) Text(Messages.CONNECT_USB)
+        StepCard(2, "Connect the USB drive", steps.drive) {
+            if (usb.status == UsbStatus.NO_DRIVE) Text(Messages.CONNECT_USB, style = MaterialTheme.typography.bodyMedium)
         }
-        HorizontalDivider()
 
-        Step(3, "Check the files", steps.files) {
+        StepCard(3, "Check the files", steps.files) {
             when (usb.status) {
-                UsbStatus.NO_EXPORT -> Text(Messages.NO_EXPORT, color = RED)
-                UsbStatus.TOO_LARGE -> Text(Messages.TOO_LARGE, color = RED)
+                UsbStatus.NO_EXPORT -> StatusLine(Messages.NO_EXPORT, ok = false)
+                UsbStatus.TOO_LARGE -> StatusLine(Messages.TOO_LARGE, ok = false)
                 UsbStatus.FOUND -> {
                     val export = usb.export!!
-                    Text(Messages.found(usb.volumeName, export.width, export.height), color = GREEN, fontWeight = FontWeight.Bold)
+                    StatusLine(Messages.found(usb.volumeName, export.width, export.height), ok = true)
                 }
                 else -> Unit
             }
         }
-        HorizontalDivider()
 
-        Step(4, "Save or share", steps.output) {
-            if (usb.status == UsbStatus.FOUND) {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Button(onClick = { naming = NameAction.SAVE }) { Text("Save") }
-                    OutlinedButton(onClick = { naming = NameAction.SHARE }) { Text("Share") }
-                }
+        StepCard(4, "Save or share", steps.output) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Button(onClick = { naming = NameAction.SAVE }) { IconLabel(Icons.Filled.Done, "Save") }
+                OutlinedButton(onClick = { naming = NameAction.SHARE }) { IconLabel(Icons.Filled.Share, "Share") }
             }
-            result?.let { Text(it, fontWeight = FontWeight.Bold) }
+            result?.let { Text(it, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) }
         }
-        HorizontalDivider()
-        TextButton(onClick = {
-            scope.launch {
-                val report = model.storageReport()
-                val share = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, report)
-                context.startActivity(Intent.createChooser(share, "Share details"))
-            }
-        }) { Text("Share details (for support)") }
     }
 
     naming?.let { action ->
@@ -153,8 +158,12 @@ private fun NameDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
                     onValueChange = { text = it },
                     singleLine = true,
                     placeholder = { Text("for example masjid-north-english") },
+                    supportingText = { Text(".hdpkg is added automatically") },
+                    isError = text.isNotBlank() && clean == null,
                 )
-                if (text.isNotBlank() && clean == null) Text(Messages.NAME_RULE, color = RED)
+                if (text.isNotBlank() && clean == null) {
+                    Text(Messages.NAME_RULE, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                }
             }
         },
         confirmButton = { TextButton(onClick = { clean?.let(onConfirm) }, enabled = clean != null) { Text("OK") } },

@@ -34,7 +34,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-enum class Page { HOME, SEND, CREATE }
+/** The 2 tabs of the bottom navigation bar. */
+enum class Page { SEND, CREATE }
 
 class AppViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -45,7 +46,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private var check: ConnectionCheck<Network>? = null
     private val gate = SendGate()
 
-    private val _page = MutableStateFlow(Page.HOME)
+    private val _page = MutableStateFlow(Page.SEND)
     val page: StateFlow<Page> = _page
 
     private val _site = MutableStateFlow(ZipImporter.load(siteDir))
@@ -63,8 +64,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val _sendState = MutableStateFlow<SendState>(SendState.Idle)
     val sendState: StateFlow<SendState> = _sendState
 
-    /** Opens the Send page. A package holds 1 display, so it is selected without an input. */
+    init {
+        // The app opens on the Send tab. A package holds 1 display, so it is selected without an input.
+        _site.value?.cards?.firstOrNull()?.let(::selectCard)
+    }
+
+    /** Opens the Send tab. Nothing happens if it is already open, so a result stays on the screen. */
     fun openSend() {
+        if (_page.value == Page.SEND) return
         _page.value = Page.SEND
         // selectCard does nothing during a send, so an "Open with" during a send cannot change the card.
         _site.value?.cards?.firstOrNull()?.let(::selectCard)
@@ -74,14 +81,6 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         if (gate.busy) return
         stopConnectionChecks()
         _page.value = Page.CREATE
-    }
-
-    /** Back to the home screen. Not possible during a send. */
-    fun goHome() {
-        if (gate.busy) return
-        stopConnectionChecks()
-        _sendState.value = SendState.Idle
-        _page.value = Page.HOME
     }
 
     fun importPackage(uri: Uri) {

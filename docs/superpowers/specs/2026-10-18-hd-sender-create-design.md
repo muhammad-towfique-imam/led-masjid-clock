@@ -53,14 +53,19 @@ The Send flow still works from Android 7.0.
 
 ## 4. Screens
 
-### 4.1 Home screen
+### 4.1 Navigation (changed in version 0.4.0)
 
-- The title "HD Sender" and 2 large buttons: **Send** and **Create**.
-- **Send** opens the 3-step Send page of the base spec (section 5.2).
-- **Create** opens the Create page.
-- The Send page and the Create page have a "Back" button that returns to the home screen.
-  During a send, "Back" is disabled (base spec, section 5.2).
-- A file from "Open with" (for example from WhatsApp) opens the Send page directly and loads the file.
+- The app uses Material 3 with a fixed green color scheme. Light and dark mode follow the phone setting.
+- A bottom navigation bar has 2 tabs: **Send** and **Create**. The app opens on Send.
+  (Versions 0.3.x had a home screen with 2 buttons. It is removed.)
+- Each tab has a top app bar with its title: "Send" or "Create a package". On Create, an info
+  icon in the top app bar shares the storage report ("Share details", for support).
+- The back button: on Create, it opens Send; on Send, it closes the app. During a send, the back
+  button does nothing and both tabs are disabled.
+- Tapping the Send tab while it is open does nothing, so a result stays on the screen.
+- A file from "Open with" (for example from WhatsApp) opens the Send tab and loads the file.
+- Each step is a card. Its header shows a check (done), a filled number (current), or an outlined
+  number (waiting). The content of a waiting step is hidden.
 
 ### 4.2 Create page
 

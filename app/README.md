@@ -11,7 +11,7 @@ A package holds the program of exactly 1 display. It is a ZIP file with the exte
 
 1. In HD2020, export the program of the display with the U-disk option to a USB drive.
 2. Connect the USB drive to the phone with a USB OTG adapter.
-3. In HD Sender, tap **Create**. The first time, allow file access: turn on "Allow access to
+3. In HD Sender, open the **Create** tab (bottom bar). The first time, allow file access: turn on "Allow access to
    manage all files" for HD Sender, then go back. Create needs Android 11 or later
    (Send works from Android 7.0).
 4. When the app shows "Found on: … display", tap **Save** (to Downloads) or **Share** (for example
@@ -67,7 +67,7 @@ keyPassword=YOUR_KEY_PASSWORD
 
 ## Use
 
-On the home screen, tap **Send**. The Send page has 3 steps.
+Open the **Send** tab (bottom bar). It has 3 steps.
 
 1. **Load file:** open the .hdpkg file with the app ("Open with" in WhatsApp), or tap "Load file".
 2. **Connect to the display WiFi:** connect the phone to the WiFi of the display in Android settings.
@@ -91,6 +91,9 @@ On the home screen, tap **Send**. The Send page has 3 steps.
 10. Save twice with the same name: Downloads has `name.hdpkg` and `name (1).hdpkg`.
 11. Share to WhatsApp, open the file with "Open with" → HD Sender, and send it to the display.
 12. Load a `.zip` file in Send: the app shows "This file is not an HD Sender package".
+
+If Create does not find a USB drive, tap the ⓘ icon at the top of the Create tab ("Share details")
+and send the text to support.
 
 The protocol was confirmed only on a WF1 card with a 128 × 64 screen.
 Test WF2 and WF4 cards and other screen sizes before you use the app with them.

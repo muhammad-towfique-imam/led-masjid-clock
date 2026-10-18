@@ -1,11 +1,9 @@
 package com.masjidclock.wfsender
 
 import android.content.Intent
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -18,12 +16,9 @@ class MainActivity : ComponentActivity() {
     private val create: CreateViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Android 15 draws apps edge to edge. Dark icons on a transparent bar keep the status bar visible
-        // on the light page; the page itself is padded below the status bar (safeDrawingPadding).
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
-        )
+        // Edge to edge: the status-bar icons follow light or dark mode, and the Scaffold pads the
+        // page below the top app bar and above the bottom navigation bar.
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) handleIntent(intent)
         setContent { WfSenderApp(model, create) }
