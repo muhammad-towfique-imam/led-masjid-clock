@@ -6,8 +6,8 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.core.content.IntentCompat
 import com.masjidclock.wfsender.ui.WfSenderApp
@@ -15,6 +15,7 @@ import com.masjidclock.wfsender.ui.WfSenderApp
 class MainActivity : ComponentActivity() {
 
     private val model: AppViewModel by viewModels()
+    private val create: CreateViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Android 15 draws apps edge to edge. Dark icons on a transparent bar keep the status bar visible
@@ -25,7 +26,7 @@ class MainActivity : ComponentActivity() {
         )
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) handleIntent(intent)
-        setContent { WfSenderApp(model) }
+        setContent { WfSenderApp(model, create) }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -33,13 +34,13 @@ class MainActivity : ComponentActivity() {
         handleIntent(intent)
     }
 
-    /** A ZIP from "Open with" (ACTION_VIEW) or from the share sheet (ACTION_SEND). */
+    /** A package from "Open with" (ACTION_VIEW) or from the share sheet (ACTION_SEND) opens the Send page. */
     private fun handleIntent(intent: Intent?) {
         val uri = when (intent?.action) {
             Intent.ACTION_VIEW -> intent.data
             Intent.ACTION_SEND -> IntentCompat.getParcelableExtra(intent, Intent.EXTRA_STREAM, Uri::class.java)
             else -> null
         } ?: return
-        model.importZip(uri)
+        model.importPackage(uri)
     }
 }

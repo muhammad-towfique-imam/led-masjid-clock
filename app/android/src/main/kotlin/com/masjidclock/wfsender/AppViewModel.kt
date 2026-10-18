@@ -34,6 +34,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+enum class Page { HOME, SEND, CREATE }
+
 class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     private val siteDir = File(app.filesDir, "site")
@@ -42,6 +44,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private var checkJob: Job? = null
     private var check: ConnectionCheck<Network>? = null
     private val gate = SendGate()
+
+    private val _page = MutableStateFlow(Page.HOME)
+    val page: StateFlow<Page> = _page
 
     private val _site = MutableStateFlow(ZipImporter.load(siteDir))
     val site: StateFlow<Site?> = _site
@@ -58,22 +63,39 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val _sendState = MutableStateFlow<SendState>(SendState.Idle)
     val sendState: StateFlow<SendState> = _sendState
 
-    init {
-        // A ZIP holds the program of 1 display, so the display is selected without an input.
+    /** Opens the Send page. A package holds 1 display, so it is selected without an input. */
+    fun openSend() {
+        _page.value = Page.SEND
+        // selectCard does nothing during a send, so an "Open with" during a send cannot change the card.
         _site.value?.cards?.firstOrNull()?.let(::selectCard)
     }
 
-    fun importZip(uri: Uri) {
+    fun openCreate() {
+        if (gate.busy) return
+        stopConnectionChecks()
+        _page.value = Page.CREATE
+    }
+
+    /** Back to the home screen. Not possible during a send. */
+    fun goHome() {
+        if (gate.busy) return
+        stopConnectionChecks()
+        _sendState.value = SendState.Idle
+        _page.value = Page.HOME
+    }
+
+    fun importPackage(uri: Uri) {
         if (gate.busy) {
             _importError.value = Messages.WAIT_FOR_SEND
             return
         }
+        openSend()
         viewModelScope.launch {
             _importError.value = null
             val resolver = getApplication<Application>().contentResolver
             try {
                 val imported = withContext(Dispatchers.IO) {
-                    val name = displayName(resolver, uri) ?: "site.zip"
+                    val name = displayName(resolver, uri) ?: ""
                     val input = resolver.openInputStream(uri) ?: throw ImportException("Could not open the file.")
                     input.use { importer.import(it, name, siteDir) }
                 }
@@ -162,6 +184,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     override fun onCleared() {
+        stopConnectionChecks()
         network.stop()
     }
 
