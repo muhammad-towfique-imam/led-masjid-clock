@@ -5,6 +5,7 @@ import com.masjidclock.wfsender.send.SendState
 import com.masjidclock.wfsender.ui.StepState.CURRENT
 import com.masjidclock.wfsender.ui.StepState.DONE
 import com.masjidclock.wfsender.ui.StepState.WAITING
+import com.masjidclock.wfsender.usb.UsbStatus
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -45,5 +46,13 @@ class StepsTest {
     fun failure() {
         val failed = SendState.Finished(success = false, message = "weak", log = "")
         assertEquals(Steps(DONE, DONE, CURRENT), stepStates(true, ConnectionStatus.DISPLAY_FOUND, failed))
+    }
+
+    @Test
+    fun createStepsFollowTheUsbStatus() {
+        assertEquals(CreateSteps(CURRENT, WAITING, WAITING, WAITING), createSteps(UsbStatus.NO_PERMISSION))
+        assertEquals(CreateSteps(DONE, CURRENT, WAITING, WAITING), createSteps(UsbStatus.NO_DRIVE))
+        assertEquals(CreateSteps(DONE, DONE, CURRENT, WAITING), createSteps(UsbStatus.NO_EXPORT))
+        assertEquals(CreateSteps(DONE, DONE, DONE, CURRENT), createSteps(UsbStatus.FOUND))
     }
 }

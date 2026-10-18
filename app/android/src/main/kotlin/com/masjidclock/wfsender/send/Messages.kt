@@ -16,8 +16,18 @@ object Messages {
     const val NO_DISPLAY = "No display found on this WiFi"
     const val DISPLAY_FOUND = "Display found"
     const val INVALID_EXPORT = "The program files on the phone are damaged. Open the ZIP file again."
-    const val WAIT_FOR_SEND = "Wait until the send is complete. Then open the ZIP file again."
-    const val NO_SITE = "Load the ZIP file that you received. It contains the program for the display."
+    const val WAIT_FOR_SEND = "Wait until the send is complete. Then open the file again."
+    const val NO_SITE = "Load the HD Sender package (.hdpkg) that you received."
+
+    const val ALLOW_ACCESS = "HD Sender needs access to files to read the USB drive and to save packages."
+    const val CONNECT_USB = "Connect the USB drive with the HD2020 export to the phone. Use a USB OTG adapter."
+    const val NO_EXPORT = "The USB drive has no HD2020 export. Use the U-disk export of HD2020."
+    const val SAVE_FAILED = "Could not save the file. Check that the phone has free space."
+    const val NAME_RULE = "Use only English letters, numbers, spaces, - and _ (maximum 50 characters)."
+
+    fun found(volume: String, width: Int, height: Int): String = "Found on: $volume — $width × $height display"
+
+    fun saved(fileName: String): String = "Saved: Downloads/$fileName"
 
     fun forResult(result: SendResult): String = when (result) {
         SendResult.Success -> SUCCESS

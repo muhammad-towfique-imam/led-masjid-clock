@@ -48,4 +48,15 @@ class MessagesTest {
     fun cardRowShowsLabelAndSize() {
         assertEquals("english — 128 × 64", Messages.cardRow(card))
     }
+
+    @Test
+    fun createMessages() {
+        assertEquals("Found on: SanDisk USB drive — 128 × 64 display", Messages.found("SanDisk USB drive", 128, 64))
+        assertEquals("Saved: Downloads/english (1).hdpkg", Messages.saved("english (1).hdpkg"))
+        assertEquals("The USB drive has no HD2020 export. Use the U-disk export of HD2020.", Messages.NO_EXPORT)
+        assertEquals(
+            "Connect the USB drive with the HD2020 export to the phone. Use a USB OTG adapter.",
+            Messages.CONNECT_USB,
+        )
+    }
 }
