@@ -96,9 +96,11 @@ The page has 4 steps. Each step shows ✔ done, ● current, or ○ waiting, as 
    - If no volume has a valid export: "The USB drive has no HD2020 export. Use the U-disk export of HD2020."
    - Android does not separate a USB drive from an SD card. If both have an export, the app uses
      the first one, and the step shows its volume name.
-4. **Save or share**
-   - 2 buttons: **Save** and **Share**. Both open the same name dialog: "File name", with the
-     hint "for example masjid-north-english", and the buttons "OK" and "Cancel".
+4. **Save or share** (changed in version 0.6.1)
+   - A text field with the label "File name". It has no placeholder and no help text.
+     If the name is not valid (section 4.3), the field turns red and shows the rule.
+   - Below the field: the **Save** and **Share** buttons. They are enabled only when the name is
+     valid. The name stays in the field after Save or Share.
    - **Save** writes `<name>.hdpkg` to the Downloads folder (section 5.3), then shows
      "Saved: Downloads/<file name>".
    - **Share** writes `<name>.hdpkg` to the cache folder of the app, then opens the Android share
@@ -109,8 +111,8 @@ The page has 4 steps. Each step shows ✔ done, ● current, or ○ waiting, as 
 - Allowed characters: letters A–Z and a–z, digits 0–9, space, `-`, and `_`.
 - Length: 1 to 50 characters, after spaces at the start and the end are removed.
 - The person does not type `.hdpkg`. If they type it, the app removes it.
-- If the name is not valid, the dialog shows: "Use only English letters, numbers, spaces, - and _
-  (maximum 50 characters)." and "OK" is disabled.
+- If the name is not valid, the field shows: "Use only English letters, numbers, spaces, - and _
+  (maximum 50 characters)." and Save and Share are disabled.
 
 These rules agree with the rule for folder names in a ZIP (base spec, section 5.1), so the Send
 flow can always read the name.

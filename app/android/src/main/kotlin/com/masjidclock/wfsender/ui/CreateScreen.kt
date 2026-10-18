@@ -19,7 +19,6 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -28,11 +27,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,8 +46,6 @@ import com.masjidclock.wfsender.send.Messages
 import com.masjidclock.wfsender.usb.StorageAccess
 import com.masjidclock.wfsender.usb.UsbStatus
 import kotlinx.coroutines.launch
-
-private enum class NameAction { SAVE, SHARE }
 
 @Composable
 fun CreateScreen(model: CreateViewModel, onBack: () -> Unit) {
@@ -83,7 +79,7 @@ private fun CreatePage(model: CreateViewModel) {
     val result by model.result.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var naming by remember { mutableStateOf<NameAction?>(null) }
+    var name by rememberSaveable { mutableStateOf("") }
     val steps = createSteps(usb.status)
 
     // The checks run only while the page is visible; they start again when the person returns from Settings.
@@ -120,55 +116,37 @@ private fun CreatePage(model: CreateViewModel) {
         }
 
         StepCard(4, "Save or share", steps.output) {
+            val clean = PackageName.clean(name)
+            val invalid = name.isNotBlank() && clean == null
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("File name") },
+                singleLine = true,
+                isError = invalid,
+                supportingText = if (invalid) {
+                    { Text(Messages.NAME_RULE) }
+                } else {
+                    null
+                },
+                modifier = Modifier.fillMaxWidth(),
+            )
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(onClick = { naming = NameAction.SAVE }) { IconLabel(Icons.Filled.Done, "Save") }
-                OutlinedButton(onClick = { naming = NameAction.SHARE }) { IconLabel(Icons.Filled.Share, "Share") }
+                Button(onClick = { clean?.let(model::save) }, enabled = clean != null) {
+                    IconLabel(Icons.Filled.Done, "Save")
+                }
+                OutlinedButton(
+                    onClick = {
+                        clean?.let { packageName ->
+                            scope.launch { model.shareFile(packageName)?.let { uri -> context.startActivity(shareIntent(uri)) } }
+                        }
+                    },
+                    enabled = clean != null,
+                ) { IconLabel(Icons.Filled.Share, "Share") }
             }
             result?.let { Text(it, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) }
         }
     }
-
-    naming?.let { action ->
-        NameDialog(
-            onDismiss = { naming = null },
-            onConfirm = { name ->
-                naming = null
-                when (action) {
-                    NameAction.SAVE -> model.save(name)
-                    NameAction.SHARE -> scope.launch {
-                        model.shareFile(name)?.let { uri -> context.startActivity(shareIntent(uri)) }
-                    }
-                }
-            },
-        )
-    }
-}
-
-@Composable
-private fun NameDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
-    var text by remember { mutableStateOf("") }
-    val clean = PackageName.clean(text)
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("File name") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    singleLine = true,
-                    placeholder = { Text("for example masjid-north-english") },
-                    supportingText = { Text(".hdpkg is added automatically") },
-                    isError = text.isNotBlank() && clean == null,
-                )
-                if (text.isNotBlank() && clean == null) {
-                    Text(Messages.NAME_RULE, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
-                }
-            }
-        },
-        confirmButton = { TextButton(onClick = { clean?.let(onConfirm) }, enabled = clean != null) { Text("OK") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
-    )
 }
 
 private fun shareIntent(uri: Uri): Intent {

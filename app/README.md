@@ -14,8 +14,8 @@ A package holds the program of exactly 1 display. It is a ZIP file with the exte
 3. In HD Sender, open the **Create** tab (bottom bar). The first time, allow file access: turn on "Allow access to
    manage all files" for HD Sender, then go back. Create needs Android 11 or later
    (Send works from Android 7.0).
-4. When the app shows "Found on: … display", tap **Save** (to Downloads) or **Share** (for example
-   to WhatsApp), and type a file name, for example `masjid-north-english`.
+4. When the app shows "Found on: … display", type a file name in step 4, for example
+   `masjid-north-english`. Then tap **Save** (to Downloads) or **Share** (for example to WhatsApp).
 
 **On a PC:** put `screen.hds` and `progam.hds` from the U-disk export into a ZIP file, at its root,
 and rename the ZIP to `<name>.hdpkg`. Use only English letters, numbers, spaces, `-` and `_` in the name.
