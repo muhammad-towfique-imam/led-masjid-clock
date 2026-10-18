@@ -38,26 +38,46 @@ The release APK is `android/build/outputs/apk/release/android-release.apk`.
 ## Release key
 
 Android installs an update over an earlier version only if both use the same key.
+The certificate SHA-256 of the HD Sender key is
+`f1ef44b2f8a84ed57c3e376ea8aebe28f0a748f5f5ec07d66300bf37eb9f648a`.
 
-**CAUTION: Keep the key file and its passwords in a safe place, with a backup copy outside this computer.
-If you lose the key, every phone must uninstall the app before it can install a new version.
-Never commit the key or `keystore.properties` to git.**
+**How the build gets the key:** git contains the key and its passwords only as an encrypted file,
+`keystore-backup/release-key.enc` (AES-256-GCM, key from the passphrase with PBKDF2).
+The release build decrypts it into `build/signing/` with the passphrase from the environment
+variable `HDSENDER_KEY_PASSPHRASE`, or from the file `.env` in this folder:
 
-Make the key 1 time:
+```
+HDSENDER_KEY_PASSPHRASE=your long passphrase
+```
+
+`.env` is ignored by git. Without a passphrase, the release APK is unsigned (with a warning).
+With a wrong passphrase, the build stops. If there is no encrypted file, the build uses
+`keystore.properties` and `keystore/release.jks`, if they exist.
+
+**CAUTION: Keep the passphrase in Bitwarden. Without it, the encrypted file is useless. Never commit
+`.env`, `keystore/`, or `keystore.properties`.**
+
+**Make the encrypted file (1 time, or after a key change):**
+
+1. Write the passphrase into `.env` (at least 16 characters; use 5 or more random words).
+2. Run `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew encryptReleaseKey`.
+   It reads `keystore.properties` and its keystore, and writes `keystore-backup/release-key.enc`.
+3. Commit `keystore-backup/release-key.enc`.
+
+**On a new computer:** clone the repository, write `.env` with the passphrase from Bitwarden,
+and build the release. Check the certificate with
+`apksigner verify --print-certs android/build/outputs/apk/release/android-release.apk`.
+
+**Make a new key (only if there is no key):**
 
 ```bash
 mkdir -p keystore
 keytool -genkeypair -v -keystore keystore/release.jks -alias wfsender -keyalg RSA -keysize 4096 -validity 10000
 ```
 
-Then make `keystore.properties` in this folder:
-
-```properties
-storeFile=keystore/release.jks
-storePassword=YOUR_STORE_PASSWORD
-keyAlias=wfsender
-keyPassword=YOUR_KEY_PASSWORD
-```
+Then write `keystore.properties` (`storeFile=keystore/release.jks`, `storePassword=…`, `keyAlias=wfsender`,
+`keyPassword=…`) and make the encrypted file as above. A new key cannot update phones that have the app
+with the old key.
 
 ## Install on a phone
 

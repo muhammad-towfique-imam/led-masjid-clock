@@ -1,9 +1,16 @@
-import java.util.Properties
+import hdsender.signing.ReleaseSigning
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-val keystoreProperties = Properties().apply {
-    val file = rootProject.file("keystore.properties")
-    if (file.exists()) file.inputStream().use { load(it) }
+// The release key: decrypted from keystore-backup/release-key.enc with HDSENDER_KEY_PASSPHRASE
+// (environment or the git-ignored app/.env), or else read from keystore.properties. See README.
+val releaseSigning: ReleaseSigning.Result? = ReleaseSigning.load(rootProject.projectDir, System.getenv())
+val releaseRequested = gradle.startParameter.taskNames.any { it.contains("Release", ignoreCase = true) }
+if (releaseRequested) {
+    if (releaseSigning == null) {
+        logger.warn("HD Sender: no release key. Set HDSENDER_KEY_PASSPHRASE in app/.env. The release APK is unsigned.")
+    } else {
+        logger.lifecycle("HD Sender: release key from ${releaseSigning.source}")
+    }
 }
 
 plugins {
@@ -25,12 +32,12 @@ android {
     }
 
     signingConfigs {
-        if (!keystoreProperties.isEmpty) {
+        releaseSigning?.let { key ->
             create("release") {
-                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
-                storePassword = keystoreProperties.getProperty("storePassword")
-                keyAlias = keystoreProperties.getProperty("keyAlias")
-                keyPassword = keystoreProperties.getProperty("keyPassword")
+                storeFile = key.storeFile
+                storePassword = key.storePassword
+                keyAlias = key.keyAlias
+                keyPassword = key.keyPassword
             }
         }
     }
@@ -71,4 +78,13 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.kotlinx.coroutines.android)
     testImplementation(libs.junit)
+}
+
+tasks.register("encryptReleaseKey") {
+    group = "signing"
+    description = "Encrypts keystore.properties and its keystore into keystore-backup/release-key.enc."
+    doLast {
+        val file = ReleaseSigning.encrypt(rootProject.projectDir, System.getenv())
+        println("Wrote $file. Commit this file. Keep HDSENDER_KEY_PASSPHRASE in Bitwarden.")
+    }
 }
