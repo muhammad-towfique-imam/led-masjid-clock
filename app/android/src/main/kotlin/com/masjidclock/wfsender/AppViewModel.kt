@@ -11,18 +11,23 @@ import androidx.lifecycle.viewModelScope
 import com.masjidclock.wfsender.net.CardNetwork
 import com.masjidclock.wfsender.net.ConnectionCheck
 import com.masjidclock.wfsender.net.ConnectionStatus
+import com.masjidclock.wfsender.protocol.CardClock
 import com.masjidclock.wfsender.protocol.CardSender
+import com.masjidclock.wfsender.protocol.ClockFailure
+import com.masjidclock.wfsender.protocol.ClockResult
 import com.masjidclock.wfsender.protocol.SendListener
 import com.masjidclock.wfsender.protocol.SendResult
 import com.masjidclock.wfsender.send.Messages
 import com.masjidclock.wfsender.send.SendGate
 import com.masjidclock.wfsender.send.SendLog
 import com.masjidclock.wfsender.send.SendState
+import com.masjidclock.wfsender.send.TimeStep
 import com.masjidclock.wfsender.send.sendCard
 import com.masjidclock.wfsender.site.Card
 import com.masjidclock.wfsender.site.ImportException
 import com.masjidclock.wfsender.site.Site
 import com.masjidclock.wfsender.site.ZipImporter
+import com.masjidclock.wfsender.time.WallClock
 import java.io.File
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -63,6 +68,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     private val _sendState = MutableStateFlow<SendState>(SendState.Idle)
     val sendState: StateFlow<SendState> = _sendState
+
+    private val _timeStep = MutableStateFlow<TimeStep>(TimeStep.Pending)
+    val timeStep: StateFlow<TimeStep> = _timeStep
 
     init {
         // The app opens on the Send tab. A package holds 1 display, so it is selected without an input.
@@ -121,6 +129,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         if (gate.busy) return
         _selectedCard.value = card
         _sendState.value = SendState.Idle
+        _timeStep.value = TimeStep.Pending
         stopConnectionChecks()
         startConnectionChecks()
     }
@@ -138,6 +147,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             while (isActive) {
                 val status = withContext(Dispatchers.IO) { newCheck.next() } ?: break
                 _connection.value = status
+                // A time result belongs to the display on this WiFi only.
+                if (status != ConnectionStatus.DISPLAY_FOUND && _timeStep.value != TimeStep.Busy) {
+                    _timeStep.value = TimeStep.Pending
+                }
                 delay(2_000)
             }
         }
@@ -151,9 +164,33 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         checkJob = null
     }
 
+    /** Step 3: sets the display clock to the phone's local time. */
+    fun setTime() {
+        val wifi = network.current ?: return
+        if (_timeStep.value == TimeStep.Busy || gate.busy) return
+        _timeStep.value = TimeStep.Busy
+        viewModelScope.launch {
+            val wall = WallClock.now()
+            val result = try {
+                withContext(Dispatchers.IO) { CardClock(network.udpFor(wifi)).setTime(wall) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                ClockResult.Failed(ClockFailure.NETWORK, null)
+            }
+            val message = Messages.forClock(result, WallClock.time(wall))
+            _timeStep.value = if (result is ClockResult.Success) TimeStep.Set(message) else TimeStep.Failed(message)
+        }
+    }
+
+    fun skipTime() {
+        if (_timeStep.value != TimeStep.Busy) _timeStep.value = TimeStep.Skipped
+    }
+
     fun send() {
         val card = _selectedCard.value ?: return
         val wifi = network.current ?: return
+        if (!_timeStep.value.done) return
         if (!gate.tryStart()) return
         stopConnectionChecks()
         _sendState.value = SendState.Sending(0, 0)

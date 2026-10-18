@@ -7,6 +7,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -15,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
@@ -27,18 +29,24 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.masjidclock.wfsender.AppViewModel
 import com.masjidclock.wfsender.net.ConnectionStatus
 import com.masjidclock.wfsender.send.Messages
 import com.masjidclock.wfsender.send.SendState
+import com.masjidclock.wfsender.send.TimeStep
+import com.masjidclock.wfsender.time.WallClock
+import kotlinx.coroutines.delay
 
 /** The file picker shows all files: Android has no type for .hdpkg. The app checks the name. */
 private val PACKAGE_TYPES = arrayOf("*/*")
@@ -50,14 +58,27 @@ internal fun SendScreen(model: AppViewModel) {
     val card by model.selectedCard.collectAsStateWithLifecycle()
     val connection by model.connection.collectAsStateWithLifecycle()
     val sendState by model.sendState.collectAsStateWithLifecycle()
+    val timeStep by model.timeStep.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    var now by remember { mutableLongStateOf(WallClock.now()) }
+    var autoTime by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            now = WallClock.now()
+            delay(1_000)
+        }
+    }
+    LifecycleResumeEffect(Unit) {
+        autoTime = Settings.Global.getInt(context.contentResolver, Settings.Global.AUTO_TIME, 1) == 1
+        onPauseOrDispose { }
+    }
     val openPackage = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) model.importPackage(uri)
     }
     var confirming by remember { mutableStateOf(false) }
     val sending = sendState is SendState.Sending
     val loaded = site != null && card != null
-    val steps = stepStates(loaded, connection, sendState)
+    val steps = stepStates(loaded, connection, timeStep.done, sendState)
 
     // During a send, the back button does nothing and the screen stays on.
     BackHandler(enabled = sending) {}
@@ -75,12 +96,7 @@ internal fun SendScreen(model: AppViewModel) {
                     IconLabel(Icons.Filled.Add, "Load file")
                 }
             } else {
-                Text("${site!!.name}.hdpkg", style = MaterialTheme.typography.titleSmall)
-                Text(
-                    "Display: ${Messages.cardRow(shown)}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Text("Display: ${Messages.cardRow(shown)}", style = MaterialTheme.typography.titleSmall)
                 OutlinedButton(onClick = { openPackage.launch(PACKAGE_TYPES) }, enabled = !sending) {
                     Text("Load another file")
                 }
@@ -103,11 +119,36 @@ internal fun SendScreen(model: AppViewModel) {
             }
         }
 
-        StepCard(3, "Send", steps.send) {
+        StepCard(3, "Set the time", steps.time) {
+            val step = timeStep
+            when (step) {
+                is TimeStep.Set -> StatusLine(step.message, ok = true)
+                TimeStep.Skipped -> Text("Skipped.", style = MaterialTheme.typography.bodyMedium)
+                else -> {
+                    Text(
+                        "Phone time: ${WallClock.time(now)}  ${WallClock.date(now)}",
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    if (!autoTime) StatusLine(Messages.TIME_MANUAL, ok = false)
+                    if (step is TimeStep.Failed) StatusLine(step.message, ok = false)
+                    if (step == TimeStep.Busy) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Button(onClick = model::setTime, enabled = step != TimeStep.Busy && !sending) {
+                            IconLabel(Icons.Filled.DateRange, "Set the time")
+                        }
+                        OutlinedButton(onClick = model::skipTime, enabled = step != TimeStep.Busy && !sending) {
+                            Text("Skip")
+                        }
+                    }
+                }
+            }
+        }
+
+        StepCard(4, "Send", steps.send) {
             when (val state = sendState) {
                 SendState.Idle -> Button(
                     onClick = { confirming = true },
-                    enabled = loaded && connection == ConnectionStatus.DISPLAY_FOUND,
+                    enabled = loaded && connection == ConnectionStatus.DISPLAY_FOUND && timeStep.done,
                     modifier = Modifier.fillMaxWidth(),
                 ) { IconLabel(Icons.AutoMirrored.Filled.Send, "Send") }
                 is SendState.Sending -> {

@@ -13,39 +13,66 @@ class StepsTest {
 
     private val idle = SendState.Idle
 
+    private val found = ConnectionStatus.DISPLAY_FOUND
+
     @Test
     fun noFileLoaded() {
-        assertEquals(Steps(CURRENT, WAITING, WAITING), stepStates(false, ConnectionStatus.NOT_CONNECTED, idle))
+        assertEquals(
+            Steps(CURRENT, WAITING, WAITING, WAITING),
+            stepStates(false, ConnectionStatus.NOT_CONNECTED, timeDone = false, sendState = idle),
+        )
     }
 
     @Test
     fun fileLoadedButNotConnected() {
-        assertEquals(Steps(DONE, CURRENT, WAITING), stepStates(true, ConnectionStatus.NOT_CONNECTED, idle))
-        assertEquals(Steps(DONE, CURRENT, WAITING), stepStates(true, ConnectionStatus.NO_DISPLAY, idle))
+        assertEquals(
+            Steps(DONE, CURRENT, WAITING, WAITING),
+            stepStates(true, ConnectionStatus.NOT_CONNECTED, timeDone = false, sendState = idle),
+        )
+        assertEquals(
+            Steps(DONE, CURRENT, WAITING, WAITING),
+            stepStates(true, ConnectionStatus.NO_DISPLAY, timeDone = false, sendState = idle),
+        )
     }
 
     @Test
-    fun displayFound() {
-        assertEquals(Steps(DONE, DONE, CURRENT), stepStates(true, ConnectionStatus.DISPLAY_FOUND, idle))
+    fun displayFoundTimeNotDone() {
+        assertEquals(Steps(DONE, DONE, CURRENT, WAITING), stepStates(true, found, timeDone = false, sendState = idle))
+    }
+
+    @Test
+    fun displayFoundTimeDone() {
+        assertEquals(Steps(DONE, DONE, DONE, CURRENT), stepStates(true, found, timeDone = true, sendState = idle))
+    }
+
+    @Test
+    fun timeDoneButWifiLostWaitsForTheWifi() {
+        assertEquals(
+            Steps(DONE, CURRENT, WAITING, WAITING),
+            stepStates(true, ConnectionStatus.NOT_CONNECTED, timeDone = true, sendState = idle),
+        )
     }
 
     @Test
     fun sending() {
         // The connection check stops during a send, so the status is not used.
         val sending = SendState.Sending(3, 16)
-        assertEquals(Steps(DONE, DONE, CURRENT), stepStates(true, ConnectionStatus.NOT_CONNECTED, sending))
+        assertEquals(
+            Steps(DONE, DONE, DONE, CURRENT),
+            stepStates(true, ConnectionStatus.NOT_CONNECTED, timeDone = true, sendState = sending),
+        )
     }
 
     @Test
     fun success() {
         val done = SendState.Finished(success = true, message = "Done.", log = "")
-        assertEquals(Steps(DONE, DONE, DONE), stepStates(true, ConnectionStatus.DISPLAY_FOUND, done))
+        assertEquals(Steps(DONE, DONE, DONE, DONE), stepStates(true, found, timeDone = true, sendState = done))
     }
 
     @Test
     fun failure() {
         val failed = SendState.Finished(success = false, message = "weak", log = "")
-        assertEquals(Steps(DONE, DONE, CURRENT), stepStates(true, ConnectionStatus.DISPLAY_FOUND, failed))
+        assertEquals(Steps(DONE, DONE, DONE, CURRENT), stepStates(true, found, timeDone = true, sendState = failed))
     }
 
     @Test

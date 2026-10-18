@@ -6,21 +6,23 @@ import com.masjidclock.wfsender.usb.UsbStatus
 
 enum class StepState { DONE, CURRENT, WAITING }
 
-/** The state of the 3 steps on the page: load file, connect to the display WiFi, send. */
-data class Steps(val load: StepState, val connect: StepState, val send: StepState)
+/** The state of the 4 steps of the Send page: load file, connect, set the time, send. */
+data class Steps(val load: StepState, val connect: StepState, val time: StepState, val send: StepState)
 
-fun stepStates(fileLoaded: Boolean, connection: ConnectionStatus, sendState: SendState): Steps {
-    if (!fileLoaded) return Steps(StepState.CURRENT, StepState.WAITING, StepState.WAITING)
+/** [timeDone] is true when the time was set or skipped for the display on this WiFi. */
+fun stepStates(fileLoaded: Boolean, connection: ConnectionStatus, timeDone: Boolean, sendState: SendState): Steps {
+    val done = StepState.DONE
+    val current = StepState.CURRENT
+    val waiting = StepState.WAITING
+    if (!fileLoaded) return Steps(current, waiting, waiting, waiting)
     return when (sendState) {
-        is SendState.Finished ->
-            Steps(StepState.DONE, StepState.DONE, if (sendState.success) StepState.DONE else StepState.CURRENT)
-        is SendState.Sending -> Steps(StepState.DONE, StepState.DONE, StepState.CURRENT)
-        SendState.Idle ->
-            if (connection == ConnectionStatus.DISPLAY_FOUND) {
-                Steps(StepState.DONE, StepState.DONE, StepState.CURRENT)
-            } else {
-                Steps(StepState.DONE, StepState.CURRENT, StepState.WAITING)
-            }
+        is SendState.Finished -> Steps(done, done, done, if (sendState.success) done else current)
+        is SendState.Sending -> Steps(done, done, done, current)
+        SendState.Idle -> when {
+            connection != ConnectionStatus.DISPLAY_FOUND -> Steps(done, current, waiting, waiting)
+            !timeDone -> Steps(done, done, current, waiting)
+            else -> Steps(done, done, done, current)
+        }
     }
 }
 

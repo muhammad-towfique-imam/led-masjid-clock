@@ -1,5 +1,7 @@
 package com.masjidclock.wfsender.send
 
+import com.masjidclock.wfsender.protocol.ClockFailure
+import com.masjidclock.wfsender.protocol.ClockResult
 import com.masjidclock.wfsender.protocol.FailureReason
 import com.masjidclock.wfsender.protocol.SendResult
 import com.masjidclock.wfsender.site.Card
@@ -75,5 +77,27 @@ class MessagesTest {
         assertEquals("The display did not answer. Check the WiFi connection.", Messages.TIME_NO_ANSWER)
         assertEquals("The display rejected the time (code 0x07).", Messages.timeRejected(7))
         assertEquals("The phone time is set by hand. Check that it is correct.", Messages.TIME_MANUAL)
+    }
+
+    @Test
+    fun wifiInstructionsDoNotShowThePassword() {
+        assertEquals("Connect the phone to the WiFi of the display in Android settings.", Messages.WIFI_INSTRUCTIONS)
+    }
+
+    @Test
+    fun clockResultMessages() {
+        assertEquals("The display clock is set to 21:09:41.", Messages.forClock(ClockResult.Success("WF1"), "21:09:41"))
+        assertEquals(
+            "The display rejected the time (code 0x07).",
+            Messages.forClock(ClockResult.Failed(ClockFailure.REJECTED, 7), "21:09:41"),
+        )
+        assertEquals(
+            "The display did not answer. Check the WiFi connection.",
+            Messages.forClock(ClockResult.Failed(ClockFailure.NO_ANSWER, null), "21:09:41"),
+        )
+        assertEquals(
+            "The display did not answer. Check the WiFi connection.",
+            Messages.forClock(ClockResult.Failed(ClockFailure.NETWORK, null), "21:09:41"),
+        )
     }
 }

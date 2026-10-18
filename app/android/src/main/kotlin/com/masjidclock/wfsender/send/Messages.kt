@@ -1,5 +1,7 @@
 package com.masjidclock.wfsender.send
 
+import com.masjidclock.wfsender.protocol.ClockFailure
+import com.masjidclock.wfsender.protocol.ClockResult
 import com.masjidclock.wfsender.protocol.FailureReason
 import com.masjidclock.wfsender.protocol.SendResult
 import com.masjidclock.wfsender.site.Card
@@ -10,8 +12,7 @@ object Messages {
     const val WEAK_SIGNAL = "The WiFi signal is too weak. Move nearer to the display and try again."
     const val NETWORK_LOST = "The phone left the WiFi of the display. Connect again and try again."
     const val UNEXPECTED_REPLY = "The display sent an unexpected reply. Contact the person who sent you the file."
-    const val WIFI_INSTRUCTIONS =
-        "Connect the phone to the WiFi of the display in Android settings. The password is 88888888."
+    const val WIFI_INSTRUCTIONS = "Connect the phone to the WiFi of the display in Android settings."
     const val NOT_CONNECTED = "Not connected to WiFi"
     const val NO_DISPLAY = "No display found on this WiFi"
     const val DISPLAY_FOUND = "Display found"
@@ -40,6 +41,13 @@ object Messages {
     fun timeSet(time: String): String = "The display clock is set to $time."
 
     fun timeRejected(status: Int): String = "The display rejected the time (code 0x%02X).".format(status)
+
+    /** The result of a time sync. [time] is the time that was sent, as "HH:MM:SS". */
+    fun forClock(result: ClockResult, time: String): String = when (result) {
+        is ClockResult.Success -> timeSet(time)
+        is ClockResult.Failed ->
+            if (result.reason == ClockFailure.REJECTED) timeRejected(result.status ?: 0) else TIME_NO_ANSWER
+    }
 
     fun forResult(result: SendResult): String = when (result) {
         SendResult.Success -> SUCCESS

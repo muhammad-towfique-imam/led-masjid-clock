@@ -67,12 +67,13 @@ keyPassword=YOUR_KEY_PASSWORD
 
 ## Use
 
-Open the **Send** tab (bottom bar). It has 3 steps.
+Open the **Send** tab (bottom bar). It has 4 steps.
 
 1. **Load file:** open the .hdpkg file with the app ("Open with" in WhatsApp), or tap "Load file".
 2. **Connect to the display WiFi:** connect the phone to the WiFi of the display in Android settings.
    The password is 88888888. Wait until the status shows "Display found".
-3. **Send:** tap "Send", and then "Yes, send". If the send fails, tap "Share log" and send the log
+3. **Set the time:** tap "Set the time" to set the display clock to the phone time, or "Skip".
+4. **Send:** tap "Send", and then "Yes, send". If the send fails, tap "Share log" and send the log
    to the person who sent you the package. Tap "Send again" to try again.
 
 ## Set the display clock

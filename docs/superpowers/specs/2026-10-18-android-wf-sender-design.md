@@ -177,17 +177,23 @@ The app keeps the last imported site after it closes.
 
 ### 5.2 Screen
 
-The app has 1 page with the title "HD Sender" and 3 steps. Each step shows a mark:
-✔ done, ● current, or ○ waiting. The page starts below the Android status bar, and the
-status bar stays visible.
+(Changed in version 0.6.0.) The Send page has 4 steps. Each step shows a mark:
+✔ done, ● current, or ○ waiting. The content of a waiting step is hidden.
 
-1. **Load file:** If no file is loaded, it tells the person to load the ZIP that they received.
-   After a load, it shows the ZIP file name and the display, for example "english — 128 × 64".
-   It has a "Load file" (or "Load another file") button.
+1. **Load file:** If no file is loaded, it tells the person to load the package that they received.
+   After a load, it shows only the display, for example "Display: english — 128 × 64"
+   (not the file name). It has a "Load file" (or "Load another file") button.
 2. **Connect to the display WiFi:** "Connect the phone to the WiFi of the display in Android
-   settings. The password is 88888888.", an "Open WiFi settings" button, and the status
-   (section 5.3).
-3. **Send:** a "Send" button. It is available only when the status is "Display found".
+   settings." (without the password), an "Open WiFi settings" button, and the status (section 5.3).
+3. **Set the time (optional):** the phone's time and date, a warning if the phone's automatic time
+   is off, and the buttons "Set the time" and "Skip". The time sync is the one of the Time tab
+   (`docs/superpowers/specs/2026-10-18-hd-sender-create-design.md`, section 9). After a success,
+   the step shows "The display clock is set to HH:MM:SS."; after "Skip", it shows "Skipped.".
+   After a failure, it shows the error, and both buttons stay available.
+   The step starts again when a new file is loaded, after "Send again", and when the WiFi
+   disconnects or changes, so that a time result never counts for a different display.
+4. **Send:** a "Send" button. It is available only when the status is "Display found" and step 3
+   is done (set or skipped).
    - When the person taps "Send", the app asks: "This program is for a 128 × 64 display
      named 'english'. Is the phone connected to this display?" with "Yes, send" and "Cancel".
    - During the send, the step shows a progress bar (frames sent of total frames).

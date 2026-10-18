@@ -88,15 +88,7 @@ class TimeViewModel(app: Application) : AndroidViewModel(app) {
             } catch (e: Exception) {
                 ClockResult.Failed(ClockFailure.NETWORK, null)
             }
-            _result.value = when (result) {
-                is ClockResult.Success -> TimeResult(Messages.timeSet(WallClock.time(wall)), ok = true)
-                is ClockResult.Failed ->
-                    if (result.reason == ClockFailure.REJECTED) {
-                        TimeResult(Messages.timeRejected(result.status ?: 0), ok = false)
-                    } else {
-                        TimeResult(Messages.TIME_NO_ANSWER, ok = false)
-                    }
-            }
+            _result.value = TimeResult(Messages.forClock(result, WallClock.time(wall)), ok = result is ClockResult.Success)
             _busy.value = false
         }
     }
