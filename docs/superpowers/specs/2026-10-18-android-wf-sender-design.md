@@ -18,6 +18,10 @@ The person loads the ZIP in the app and sends the program to the card over the c
 **Change 2026-10-18 (version 0.2.0):** The app is named "HD Sender" (app ID `com.hdsender.app`).
 A ZIP file holds the program of exactly 1 display, and the app has 1 page with 3 steps.
 
+**Change 2026-10-18 (version 0.3.0):** Packages use the extension `.hdpkg` (the content is a ZIP,
+as before), and the Send flow accepts only `.hdpkg` files. A home screen with "Send" and "Create"
+is added. See `docs/superpowers/specs/2026-10-18-hd-sender-create-design.md`.
+
 The app only relays files. It does not make or change programs.
 
 ### 1.1 Success criteria
