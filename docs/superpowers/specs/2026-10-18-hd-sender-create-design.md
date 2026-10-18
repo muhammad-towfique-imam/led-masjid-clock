@@ -39,8 +39,8 @@ The Send flow still works from Android 7.0.
 | Package extension | `.hdpkg`. The content is a ZIP file, as before |
 | Send accepts | Only `.hdpkg` files (`.zip` files are rejected) |
 | USB access | Direct file paths with the "All files access" permission. Create needs Android 11 or later. The raw-USB approach is not used: it does not support exFAT |
-| Save | The app asks for a file name in its own dialog and saves the file in the Downloads folder |
-| Share | The app asks for a file name too, then opens the Android share sheet |
+| Save | The person types a file name in step 4 of the Create page; the app saves the file in the Downloads folder |
+| Share | The app uses the same file name, then opens the Android share sheet |
 | Home screen | 2 buttons: "Send" and "Create" |
 
 ## 3. The .hdpkg package
