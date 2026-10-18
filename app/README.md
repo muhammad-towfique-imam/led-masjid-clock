@@ -50,6 +50,7 @@ variable `HDSENDER_KEY_PASSPHRASE`, or from the file `.env` in this folder:
 HDSENDER_KEY_PASSPHRASE=your long passphrase
 ```
 
+`.env.example` shows the format: copy it to `.env` and set the value.
 `.env` is ignored by git. Without a passphrase, the release APK is unsigned (with a warning).
 With a wrong passphrase, the build stops. If there is no encrypted file, the build uses
 `keystore.properties` and `keystore/release.jks`, if they exist.
