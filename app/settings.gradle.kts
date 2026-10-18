@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "wf-sender"
 include(":protocol")
+include(":android")
