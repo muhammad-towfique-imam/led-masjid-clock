@@ -9,16 +9,18 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.masjidclock.wfsender.net.CardNetwork
 import com.masjidclock.wfsender.protocol.CardSender
-import com.masjidclock.wfsender.protocol.HdsExport
 import com.masjidclock.wfsender.protocol.SendListener
 import com.masjidclock.wfsender.protocol.SendResult
 import com.masjidclock.wfsender.send.Messages
+import com.masjidclock.wfsender.send.SendGate
 import com.masjidclock.wfsender.send.SendLog
+import com.masjidclock.wfsender.send.sendCard
 import com.masjidclock.wfsender.site.Card
 import com.masjidclock.wfsender.site.ImportException
 import com.masjidclock.wfsender.site.Site
 import com.masjidclock.wfsender.site.ZipImporter
 import java.io.File
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -42,6 +44,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val importer = ZipImporter()
     private val network = CardNetwork(app).also { it.start() }
     private var checkJob: Job? = null
+    private val gate = SendGate()
 
     private val _site = MutableStateFlow(ZipImporter.load(siteDir))
     val site: StateFlow<Site?> = _site
@@ -59,6 +62,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     val sendState: StateFlow<SendState> = _sendState
 
     fun importZip(uri: Uri) {
+        if (gate.busy) {
+            _importError.value = Messages.WAIT_FOR_SEND
+            return
+        }
         viewModelScope.launch {
             _importError.value = null
             val resolver = getApplication<Application>().contentResolver
@@ -72,13 +79,17 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 selectCard(null)
             } catch (e: ImportException) {
                 _importError.value = e.message
-            } catch (e: SecurityException) {
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // For example FileNotFoundException when the sharing app no longer gives access to the file.
                 _importError.value = "Could not open the file."
             }
         }
     }
 
     fun selectCard(card: Card?) {
+        if (gate.busy) return
         _selectedCard.value = card
         _sendState.value = SendState.Idle
         checkJob?.cancel()
@@ -88,7 +99,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private fun startConnectionChecks() {
         checkJob = viewModelScope.launch {
             while (isActive) {
-                if (_sendState.value !is SendState.Sending) {
+                if (!gate.busy) {
                     _connection.value = withContext(Dispatchers.IO) { checkConnection() }
                 }
                 delay(2_000)
@@ -105,7 +116,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun send() {
         val card = _selectedCard.value ?: return
         val wifi = network.current ?: return
-        if (_sendState.value is SendState.Sending) return
+        if (!gate.tryStart()) return
         _sendState.value = SendState.Sending(0, 0)
         viewModelScope.launch {
             val log = SendLog(
@@ -120,12 +131,17 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     _sendState.value = SendState.Sending(index, total)
                 }
             }
-            val result = withContext(Dispatchers.IO) {
-                val sender = CardSender(network.connectorFor(wifi), isNetworkLost = { network.current != wifi })
-                sender.send(HdsExport.fromDirectory(card.dir), progress)
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    val sender = CardSender(network.connectorFor(wifi), isNetworkLost = { network.current != wifi })
+                    sendCard(card, sender, progress)
+                }
+                log.finish(result)
+                _sendState.value =
+                    SendState.Finished(result == SendResult.Success, Messages.forResult(result), log.text())
+            } finally {
+                gate.finish()
             }
-            log.finish(result)
-            _sendState.value = SendState.Finished(result == SendResult.Success, Messages.forResult(result), log.text())
         }
     }
 

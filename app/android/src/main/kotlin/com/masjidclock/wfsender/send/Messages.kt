@@ -15,6 +15,8 @@ object Messages {
     const val NOT_CONNECTED = "Not connected to WiFi"
     const val NO_DISPLAY = "No display found on this WiFi"
     const val DISPLAY_FOUND = "Display found"
+    const val INVALID_EXPORT = "The program files on the phone are damaged. Open the ZIP file again."
+    const val WAIT_FOR_SEND = "Wait until the send is complete. Then open the ZIP file again."
     const val NO_SITE = "Open the ZIP file that you received. It contains the programs for the displays."
 
     fun forResult(result: SendResult): String = when (result) {
@@ -26,6 +28,7 @@ object Messages {
                 "The display rejected the program (code 0x%02X). Contact the person who sent you the file."
                     .format(result.status ?: 0)
             FailureReason.UNEXPECTED_REPLY -> UNEXPECTED_REPLY
+            FailureReason.INVALID_EXPORT -> INVALID_EXPORT
         }
     }
 

@@ -28,6 +28,12 @@ class ZipImporter(private val maxUnpackedBytes: Long = 20L * 1024 * 1024) {
                 unpack(zip, temp)
             } catch (e: IOException) {
                 throw ImportException("Could not read the ZIP file. Ask the sender for a new file.")
+            } catch (e: IllegalArgumentException) {
+                // ZipInputStream cannot decode names that are not UTF-8 (Windows "Compressed folder" with non-ASCII names).
+                throw ImportException(
+                    "The ZIP file has folder names that the app cannot read. " +
+                        "Ask the sender to use only English letters and numbers in folder names."
+                )
             }
             val site = scan(temp, name)
             if (site.cards.isEmpty()) {

@@ -12,7 +12,7 @@ fun interface CardConnector {
     fun connect(host: String, port: Int, timeoutMs: Int): Socket
 }
 
-enum class FailureReason { NETWORK, NETWORK_LOST, REJECTED, UNEXPECTED_REPLY }
+enum class FailureReason { NETWORK, NETWORK_LOST, REJECTED, UNEXPECTED_REPLY, INVALID_EXPORT }
 
 sealed class SendResult {
     object Success : SendResult()

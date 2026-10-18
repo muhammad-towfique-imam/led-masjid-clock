@@ -30,6 +30,10 @@ class MessagesTest {
             "The display sent an unexpected reply. Contact the person who sent you the file.",
             Messages.forResult(SendResult.Failed(FailureReason.UNEXPECTED_REPLY, null, "")),
         )
+        assertEquals(
+            "The program files on the phone are damaged. Open the ZIP file again.",
+            Messages.forResult(SendResult.Failed(FailureReason.INVALID_EXPORT, null, "")),
+        )
     }
 
     @Test

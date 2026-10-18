@@ -149,6 +149,18 @@ class ZipImporterTest {
     }
 
     @Test
+    fun rejectsWindowsZipWithNamesThatAreNotUtf8() {
+        // Windows "Send to > Compressed folder" writes non-ASCII names in the OEM code page, without the UTF-8 flag.
+        val bytes = ByteArrayOutputStream()
+        ZipOutputStream(bytes, java.nio.charset.Charset.forName("IBM437")).use { zip ->
+            zip.putNextEntry(ZipEntry("Mosquée/screen.hds")); zip.write(screen(128, 64)); zip.closeEntry()
+            zip.putNextEntry(ZipEntry("Mosquée/progam.hds")); zip.write(program()); zip.closeEntry()
+        }
+        val message = importError(bytes.toByteArray())
+        assertTrue(message, message.contains("English letters and numbers"))
+    }
+
+    @Test
     fun rejectsFileThatIsNotAZip() {
         importError(ByteArray(500) { 7 })
     }
