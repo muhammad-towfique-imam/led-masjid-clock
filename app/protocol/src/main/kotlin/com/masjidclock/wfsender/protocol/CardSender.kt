@@ -12,7 +12,8 @@ fun interface CardConnector {
     fun connect(host: String, port: Int, timeoutMs: Int): Socket
 }
 
-enum class FailureReason { NETWORK, NETWORK_LOST, REJECTED, UNEXPECTED_REPLY, INVALID_EXPORT }
+/** SAFE_REQUIRED: the card refused the normal form at the start packet (firmware V4.45); use SafeSender. */
+enum class FailureReason { NETWORK, NETWORK_LOST, REJECTED, UNEXPECTED_REPLY, INVALID_EXPORT, SAFE_REQUIRED }
 
 sealed class SendResult {
     object Success : SendResult()
@@ -56,7 +57,16 @@ class CardSender(
                         output.flush()
                         listener.onFrameSent(index + 1, frames.size, frame)
                         val command = frame[6].toInt() and 0xFF
-                        val ack = awaitAck(input, command)
+                        val ack = try {
+                            awaitAck(input, command)
+                        } catch (e: EOFException) {
+                            // Firmware V4.45 accepts the screen packet but closes the connection at the
+                            // normal start packet. A retry gives the same result.
+                            if (command != Command.START) throw e
+                            val detail = "the card closed the connection at the start packet"
+                            listener.onAttemptFailed(attempt, detail)
+                            return SendResult.Failed(FailureReason.SAFE_REQUIRED, null, detail)
+                        }
                         listener.onAck(ack)
                         if (ack.status != 0) {
                             val detail = "status 0x%02x for command 0x%02x".format(ack.status, ack.command)

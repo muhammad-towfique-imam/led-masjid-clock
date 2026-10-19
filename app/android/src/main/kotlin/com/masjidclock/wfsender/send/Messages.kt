@@ -33,6 +33,8 @@ object Messages {
 
     fun saved(fileName: String): String = "Saved: Downloads/$fileName"
 
+    const val SAFE_QUESTION = "Does the display show the new program?"
+    const val SAFE_NOT_SHOWN = "The display did not show the program. Send it with HD2020, and send the log to support."
     const val TIME_NO_ANSWER = "The display did not answer. Check the WiFi connection."
     const val TIME_MANUAL = "The phone time is set by hand. Check that it is correct."
 
@@ -57,7 +59,7 @@ object Messages {
             FailureReason.REJECTED ->
                 "The display rejected the program (code 0x%02X). Contact the person who sent you the file."
                     .format(result.status ?: 0)
-            FailureReason.UNEXPECTED_REPLY -> UNEXPECTED_REPLY
+            FailureReason.UNEXPECTED_REPLY, FailureReason.SAFE_REQUIRED -> UNEXPECTED_REPLY
             FailureReason.INVALID_EXPORT -> INVALID_EXPORT
         }
     }

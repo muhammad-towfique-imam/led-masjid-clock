@@ -48,4 +48,14 @@ class CardSendTest {
         // The export is valid, so the sender runs; the refused connection gives NETWORK.
         assertEquals(FailureReason.NETWORK, (result as SendResult.Failed).reason)
     }
+
+    @Test
+    fun safeSendWithAMissingFolderGivesInvalidExport() {
+        val card = Card("english", File(tmp.root, "gone"), 128, 64, 100)
+        val safe = com.masjidclock.wfsender.protocol.SafeSender(
+            com.masjidclock.wfsender.protocol.UdpConnector { throw java.io.IOException("not used") },
+        )
+        val result = sendCardSafe(card, safe, com.masjidclock.wfsender.protocol.SafeVariant.PLAIN, object : SendListener {})
+        assertEquals(FailureReason.INVALID_EXPORT, (result as SendResult.Failed).reason)
+    }
 }

@@ -1,10 +1,7 @@
 package com.masjidclock.wfsender.protocol
 
 import java.io.IOException
-import java.net.DatagramPacket
 import java.net.DatagramSocket
-import java.net.InetAddress
-import java.net.SocketTimeoutException
 
 /** Opens a UDP socket. The Android app gives a socket that is bound to the card WiFi. */
 fun interface UdpConnector {
@@ -50,27 +47,11 @@ class CardClock(
         ClockResult.Failed(ClockFailure.NO_ANSWER, null)
     }
 
-    private fun discover(socket: DatagramSocket): CardIdentity? =
-        exchange(socket, HdFrames.discoverRequest(1), 0x1b)?.let { CardIdentity.parse(it) }
+    private fun link(socket: DatagramSocket) = UdpLink(socket, host, port, timeoutMs, tries)
 
-    /** Sends [packet] up to [tries] times. Returns the HR answer for [command], or null. */
-    private fun exchange(socket: DatagramSocket, packet: ByteArray, command: Int): ByteArray? {
-        socket.soTimeout = timeoutMs
-        val address = InetAddress.getByName(host)
-        val buffer = ByteArray(2048)
-        repeat(tries) {
-            socket.send(DatagramPacket(packet, packet.size, address, port))
-            try {
-                while (true) {
-                    val reply = DatagramPacket(buffer, buffer.size)
-                    socket.receive(reply)
-                    val data = reply.data.copyOf(reply.length)
-                    if (data.size > 21 && Ack.isHr(data) && (data[20].toInt() and 0xFF) == command) return data
-                }
-            } catch (e: SocketTimeoutException) {
-                // Try again.
-            }
-        }
-        return null
-    }
+    private fun discover(socket: DatagramSocket): CardIdentity? =
+        link(socket).exchange(HdFrames.discoverRequest(1), 0x1b)?.let { CardIdentity.parse(it) }
+
+    private fun exchange(socket: DatagramSocket, packet: ByteArray, command: Int): ByteArray? =
+        link(socket).exchange(packet, command)
 }

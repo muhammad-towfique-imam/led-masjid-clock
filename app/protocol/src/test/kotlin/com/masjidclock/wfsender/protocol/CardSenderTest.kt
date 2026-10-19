@@ -166,4 +166,16 @@ class CardSenderTest {
         assertEquals("ack", events.last())
         assertEquals(16, events.count { it == "ack" })
     }
+
+    @Test
+    fun cardThatClosesAtStartNeedsTheSafeForm() {
+        // Firmware V4.45: the card accepts the screen packet, then closes the connection at the start packet.
+        val card = startCard { _, input, output ->
+            receive(input); output.write(FakeCard.ack(Command.SCREEN)); output.flush()
+            receive(input)
+        }
+        val failed = failure(sender(card).send(export))
+        assertEquals(FailureReason.SAFE_REQUIRED, failed.reason)
+        assertEquals(1, card.connections.get())
+    }
 }

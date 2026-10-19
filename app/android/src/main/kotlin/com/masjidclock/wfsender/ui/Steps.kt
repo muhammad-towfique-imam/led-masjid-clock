@@ -17,7 +17,7 @@ fun stepStates(fileLoaded: Boolean, connection: ConnectionStatus, timeDone: Bool
     if (!fileLoaded) return Steps(current, waiting, waiting, waiting)
     return when (sendState) {
         is SendState.Finished -> Steps(done, done, done, if (sendState.success) done else current)
-        is SendState.Sending -> Steps(done, done, done, current)
+        is SendState.Sending, is SendState.Confirm -> Steps(done, done, done, current)
         SendState.Idle -> when {
             connection != ConnectionStatus.DISPLAY_FOUND -> Steps(done, current, waiting, waiting)
             !timeDone -> Steps(done, done, current, waiting)

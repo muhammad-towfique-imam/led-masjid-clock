@@ -49,4 +49,11 @@ class SendLogTest {
         log.finish(SendResult.Success)
         assertEquals("Result: SUCCESS", log.text().lines().last())
     }
+
+    @Test
+    fun recordsNotes() {
+        val log = SendLog("s", Card("a", File("x"), 64, 32, 100), "0.7.0", "16", now = { Date(0) })
+        log.note("Safe form, variant PLAIN")
+        assertEquals("Safe form, variant PLAIN", log.text().lines().last())
+    }
 }

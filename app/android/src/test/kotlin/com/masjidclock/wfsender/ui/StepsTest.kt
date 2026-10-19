@@ -90,4 +90,10 @@ class StepsTest {
         assertEquals(TimeSteps(DONE, CURRENT), timeSteps(found = true, timeSet = false))
         assertEquals(TimeSteps(DONE, DONE), timeSteps(found = true, timeSet = true))
     }
+
+    @Test
+    fun waitingForTheDisplayAnswerKeepsSendCurrent() {
+        val confirm = SendState.Confirm(com.masjidclock.wfsender.protocol.SafeVariant.PLAIN)
+        assertEquals(Steps(DONE, DONE, DONE, CURRENT), stepStates(true, found, timeDone = true, sendState = confirm))
+    }
 }

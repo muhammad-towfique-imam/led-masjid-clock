@@ -40,6 +40,9 @@ class SendLog(
 
     override fun onAttemptFailed(attempt: Int, error: String) = add("  attempt $attempt failed: $error")
 
+    /** A free text line, for example the form and the variant of an attempt. */
+    fun note(text: String) = add(text)
+
     fun finish(result: SendResult) = add(
         when (result) {
             SendResult.Success -> "Result: SUCCESS"

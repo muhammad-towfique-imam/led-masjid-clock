@@ -271,6 +271,31 @@ The log of 1 send contains:
 "Share log" sends the log as plain text through the Android share sheet
 (for example to WhatsApp).
 
+### 6.4 Safe form for firmware V4.45 (version 0.7.0)
+
+Found on 2026-10-18 with the `hijri` and `bangla` cards (WF1, firmware `HD_W0X_3 V4.45.02`):
+the card answers the normal screen packet (`0x13`), then closes the TCP connection at the normal
+start packet (`0x02`). HD2020 uses its "safe" form for these cards (`CHDPack::GetSafeOnePack` in
+`HDCommon.dll`; captured in `hijri-full.pcapng`).
+
+1. `CardSender` reports this case as `SAFE_REQUIRED` at once, without retries.
+2. The app sends again with `SafeSender` over UDP (`192.168.4.1:6101`, socket bound to the WiFi):
+   discover (`0x1b`, device ID), open (`0x27`), safe screen (`0x13`), safe start (`0x02`),
+   data (`0x03`, 1,000-byte chunks, 27-byte header with the device ID and a counter), safe end (`0x04`).
+   Each packet gets up to 3 tries of 2 seconds. An error status stops the send.
+   The builder makes the 14 captured HD2020 packets byte for byte.
+3. HD2020 adds its project data (`readback.json` in a ZIP) and an `HC` header table to the program.
+   The export does not contain the project data, so the app has 2 variants:
+   **PLAIN** (`progam.hds` without change) and **TABLE** (with HD2020's table, without the project data).
+4. The card can accept a variant at the protocol level while the display stays empty, so after a
+   successful safe send the app asks "Does the display show the new program?" (**Yes** /
+   **No, try again**). "No" sends variant TABLE. A second "No" ends with
+   "The display did not show the program. Send it with HD2020, and send the log to support."
+   The log records the form, the variant, and the answers.
+
+**Temporary:** the question stays until a test on a V4.45 card shows which variant works.
+Then the app keeps only that variant and the question is removed.
+
 ## 7. Testing
 
 ### 7.1 Automatic tests (JVM, no phone)
