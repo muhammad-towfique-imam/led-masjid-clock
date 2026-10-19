@@ -27,8 +27,8 @@ android {
         applicationId = "com.hdsender.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 15
-        versionName = "0.7.4"
+        versionCode = 16
+        versionName = "0.7.5"
     }
 
     signingConfigs {
