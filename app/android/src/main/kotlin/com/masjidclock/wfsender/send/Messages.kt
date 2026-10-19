@@ -33,8 +33,6 @@ object Messages {
 
     fun saved(fileName: String): String = "Saved: Downloads/$fileName"
 
-    const val SAFE_QUESTION = "Does the display show the new program?"
-    const val SAFE_NOT_SHOWN = "The display did not show the program. Send it with HD2020, and send the log to support."
     const val TIME_NO_ANSWER = "The display did not answer. Check the WiFi connection."
     const val TIME_MANUAL = "The phone time is set by hand. Check that it is correct."
 

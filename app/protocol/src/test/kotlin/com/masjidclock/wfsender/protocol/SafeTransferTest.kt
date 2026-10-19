@@ -55,19 +55,6 @@ class SafeTransferTest {
     }
 
     @Test
-    fun plainVariantIsTheExportWithoutChange() {
-        assertArrayEquals(program, SafeTransfer.programData(export, SafeVariant.PLAIN))
-    }
-
-    @Test
-    fun tableVariantIsHd2020DataWithoutTheProjectPart() {
-        val expected = hd2020Data.copyOf(program.size)
-        // HD2020's table gives the length of its project data at bytes 19-22; without it, the length is 0.
-        for (i in 19..22) expected[i] = 0
-        assertArrayEquals(expected, SafeTransfer.programData(export, SafeVariant.TABLE))
-    }
-
-    @Test
     fun framesUseTheCommandsOfTheSafeForm() {
         val frames = SafeTransfer.frames(ByteArray(15), screen, program, 0L, counter = 100, transferId = 1)
         // open, screen, start, 7 data chunks (6053 bytes), end

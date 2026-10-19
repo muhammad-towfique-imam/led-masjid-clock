@@ -95,11 +95,6 @@ class MessagesTest {
 
     @Test
     fun safeFormMessages() {
-        assertEquals("Does the display show the new program?", Messages.SAFE_QUESTION)
-        assertEquals(
-            "The display did not show the program. Send it with HD2020, and send the log to support.",
-            Messages.SAFE_NOT_SHOWN,
-        )
         // SAFE_REQUIRED is handled by the app (it sends again with the safe form); it is never the last result.
         assertEquals(
             Messages.UNEXPECTED_REPLY,

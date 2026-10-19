@@ -42,7 +42,6 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.masjidclock.wfsender.AppViewModel
 import com.masjidclock.wfsender.net.ConnectionStatus
-import com.masjidclock.wfsender.protocol.SafeVariant
 import com.masjidclock.wfsender.send.Messages
 import com.masjidclock.wfsender.send.SendState
 import com.masjidclock.wfsender.send.TimeStep
@@ -167,16 +166,6 @@ internal fun SendScreen(model: AppViewModel) {
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                }
-                is SendState.Confirm -> {
-                    StatusLine("The display accepted the program.", ok = true)
-                    Text(Messages.SAFE_QUESTION, style = MaterialTheme.typography.titleSmall)
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Button(onClick = { model.confirmDisplay(true) }) { Text("Yes") }
-                        OutlinedButton(onClick = { model.confirmDisplay(false) }) {
-                            Text(if (state.variant == SafeVariant.PLAIN) "No, try again" else "No")
-                        }
-                    }
                 }
                 is SendState.Finished -> {
                     StatusLine(state.message, ok = state.success)

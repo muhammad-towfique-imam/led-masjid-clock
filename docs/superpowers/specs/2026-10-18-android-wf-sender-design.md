@@ -284,16 +284,10 @@ start packet (`0x02`). HD2020 uses its "safe" form for these cards (`CHDPack::Ge
    Each packet gets up to 3 tries of 2 seconds. An error status stops the send.
    The builder makes the 14 captured HD2020 packets byte for byte.
 3. HD2020 adds its project data (`readback.json` in a ZIP) and an `HC` header table to the program.
-   The export does not contain the project data, so the app has 2 variants:
-   **PLAIN** (`progam.hds` without change) and **TABLE** (with HD2020's table, without the project data).
-4. The card can accept a variant at the protocol level while the display stays empty, so after a
-   successful safe send the app asks "Does the display show the new program?" (**Yes** /
-   **No, try again**). "No" sends variant TABLE. A second "No" ends with
-   "The display did not show the program. Send it with HD2020, and send the log to support."
-   The log records the form, the variant, and the answers.
-
-**Temporary:** the question stays until a test on a V4.45 card shows which variant works.
-Then the app keeps only that variant and the question is removed.
+   The card does not need them: on 2026-10-19 the app sent `progam.hds` without change to the
+   `hijri` card (WF1, V4.45), the card accepted all packets, and the display showed the program.
+   So the safe form sends the export without change. (Version 0.7.0 had a second variant and a
+   question "Does the display show the new program?" for this test; both were removed in 0.7.2.)
 
 ## 7. Testing
 

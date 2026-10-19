@@ -17,7 +17,6 @@ import com.masjidclock.wfsender.protocol.ClockFailure
 import com.masjidclock.wfsender.protocol.ClockResult
 import com.masjidclock.wfsender.protocol.FailureReason
 import com.masjidclock.wfsender.protocol.SafeSender
-import com.masjidclock.wfsender.protocol.SafeVariant
 import com.masjidclock.wfsender.protocol.SendListener
 import com.masjidclock.wfsender.protocol.SendResult
 import com.masjidclock.wfsender.send.Messages
@@ -191,9 +190,6 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         if (_timeStep.value != TimeStep.Busy) _timeStep.value = TimeStep.Skipped
     }
 
-    /** The log of the current send; the safe form adds lines after the person's answer. */
-    private var sendLog: SendLog? = null
-
     fun send() {
         val card = _selectedCard.value ?: return
         val wifi = network.current ?: return
@@ -207,7 +203,6 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             appVersion = BuildConfig.VERSION_NAME,
             androidVersion = Build.VERSION.RELEASE,
         )
-        sendLog = log
         viewModelScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {
@@ -215,8 +210,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     sendCard(card, sender, progress(log))
                 }
                 if (result is SendResult.Failed && result.reason == FailureReason.SAFE_REQUIRED) {
-                    log.note("The card refused the normal form at the start packet (firmware V4.45). Safe form, variant PLAIN.")
-                    sendSafe(card, wifi, SafeVariant.PLAIN, log)
+                    log.note("The card refused the normal form at the start packet (firmware V4.45). Safe form.")
+                    sendSafe(card, wifi, log)
                 } else {
                     finishSend(result, log)
                 }
@@ -226,52 +221,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    /**
-     * The answer to "Does the display show the new program?" after a safe send. The card accepts a
-     * variant at the protocol level even if the display stays empty, so only the person can tell.
-     */
-    fun confirmDisplay(shown: Boolean) {
-        val state = _sendState.value as? SendState.Confirm ?: return
-        val log = sendLog ?: return
-        if (shown) {
-            log.note("The person confirmed: the display shows the program (variant ${state.variant}).")
-            finishSend(SendResult.Success, log)
-            return
-        }
-        log.note("The person answered: the display does not show the program (variant ${state.variant}).")
-        val card = _selectedCard.value
-        val wifi = network.current
-        if (state.variant != SafeVariant.PLAIN || card == null) {
-            log.note("No other variant.")
-            _sendState.value = SendState.Finished(false, Messages.SAFE_NOT_SHOWN, log.text())
-            return
-        }
-        if (wifi == null) {
-            finishSend(SendResult.Failed(FailureReason.NETWORK_LOST, null, "no WiFi"), log)
-            return
-        }
-        if (!gate.tryStart()) return
-        log.note("Safe form, variant TABLE.")
-        viewModelScope.launch {
-            try {
-                sendSafe(card, wifi, SafeVariant.TABLE, log)
-            } finally {
-                gate.finish()
-            }
-        }
-    }
-
-    private suspend fun sendSafe(card: Card, wifi: Network, variant: SafeVariant, log: SendLog) {
+    private suspend fun sendSafe(card: Card, wifi: Network, log: SendLog) {
         _sendState.value = SendState.Sending(0, 0)
         val result = withContext(Dispatchers.IO) {
-            sendCardSafe(card, SafeSender(network.udpFor(wifi)), variant, progress(log))
+            sendCardSafe(card, SafeSender(network.udpFor(wifi)), progress(log))
         }
-        if (result == SendResult.Success) {
-            log.note("Safe form, variant $variant: the card accepted all packets.")
-            _sendState.value = SendState.Confirm(variant)
-        } else {
-            finishSend(result, log)
-        }
+        finishSend(result, log)
     }
 
     private fun finishSend(result: SendResult, log: SendLog) {

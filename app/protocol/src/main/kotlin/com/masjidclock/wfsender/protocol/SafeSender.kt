@@ -5,32 +5,12 @@ import java.util.TimeZone
 import kotlin.random.Random
 
 /**
- * Program data for the safe form. HD2020 adds its project data (readback.json) and a table in the HC
- * header; the U-disk export does not contain the project data, so the app has 2 variants.
+ * The safe form of a program transfer, from the HD2020 capture hijri-full.pcapng (firmware V4.45).
+ * HD2020 adds its project data (readback.json) to the program; the card does not need it: a test on a
+ * V4.45 card on 2026-10-19 showed the program with progam.hds without change.
  */
-enum class SafeVariant {
-    /** progam.hds without change. */
-    PLAIN,
-
-    /** progam.hds with HD2020's HC table (bytes 9-26), without the project data. */
-    TABLE,
-}
-
-/** The safe form of a program transfer, from the HD2020 capture hijri-full.pcapng (firmware V4.45). */
 object SafeTransfer {
     private val OPEN_DATA = byteArrayOf(0x08, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x04, 0x00)
-
-    fun programData(export: HdsExport, variant: SafeVariant): ByteArray = when (variant) {
-        SafeVariant.PLAIN -> export.program.copyOf()
-        SafeVariant.TABLE -> export.program.copyOf().also { data ->
-            require(data.size >= 27) { "progam.hds too short for the HC table" }
-            data[9] = 0x00
-            data[10] = 0x03
-            for (i in 11..18) data[i] = 0xFF.toByte()
-            HdFrames.putU32(data, 19, 0) // no project data
-            HdFrames.putU32(data, 23, export.program.size.toLong()) // where the project data would start
-        }
-    }
 
     /** open (0x27), screen (0x13), start (0x02), data (0x03, 1000-byte chunks), end (0x04). */
     fun frames(
@@ -73,7 +53,7 @@ class SafeSender(
     },
 ) {
 
-    fun send(export: HdsExport, variant: SafeVariant, listener: SendListener = object : SendListener {}): SendResult {
+    fun send(export: HdsExport, listener: SendListener = object : SendListener {}): SendResult {
         val transferId = newTransferId()
         listener.onAttemptStarted(1, transferId)
         return try {
@@ -82,7 +62,7 @@ class SafeSender(
                 val identity = link.exchange(HdFrames.discoverRequest(1), 0x1b)?.let { CardIdentity.parse(it) }
                     ?: return fail(listener, FailureReason.NETWORK, null, "no answer to discover")
                 val frames = SafeTransfer.frames(
-                    identity.deviceId, export.screen, SafeTransfer.programData(export, variant),
+                    identity.deviceId, export.screen, export.program,
                     wallSeconds(), newCounter(), transferId,
                 )
                 frames.forEachIndexed { index, frame ->

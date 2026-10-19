@@ -67,17 +67,20 @@ class SafeSenderTest {
     @Test
     fun sendsDiscoverThenTheSafeTransfer() {
         val port = startCard { request, _ -> normal(request) }
-        assertEquals(SendResult.Success, sender(port).send(export, SafeVariant.PLAIN))
+        assertEquals(SendResult.Success, sender(port).send(export))
         val commands = received.map { it[6].toInt() and 0xFF }
         assertEquals(listOf(0x1b, 0x27, 0x13, 0x02) + List(7) { 0x03 } + listOf(0x04), commands)
         // The frames carry the device ID from the discover answer.
         assertEquals(discoverAnswer.copyOfRange(3, 18).toList(), received[1].copyOfRange(8, 23).toList())
+        // The data packets carry progam.hds without change (confirmed on a V4.45 card, 2026-10-19).
+        val sent = received.filter { it[6].toInt() == 0x03 }.fold(ByteArray(0)) { acc, f -> acc + f.copyOfRange(32, f.size - 3) }
+        assertEquals(export.program.toList(), sent.toList())
     }
 
     @Test
     fun sendsALostPacketAgain() {
         val port = startCard { request, count -> if (count == 5) emptyList() else normal(request) }
-        assertEquals(SendResult.Success, sender(port).send(export, SafeVariant.PLAIN))
+        assertEquals(SendResult.Success, sender(port).send(export))
     }
 
     @Test
@@ -85,7 +88,7 @@ class SafeSenderTest {
         val port = startCard { request, _ ->
             if (request[6].toInt() == 0x04) listOf(ack(0x04, status = 0x09)) else normal(request)
         }
-        val result = sender(port).send(export, SafeVariant.PLAIN) as SendResult.Failed
+        val result = sender(port).send(export) as SendResult.Failed
         assertEquals(FailureReason.REJECTED, result.reason)
         assertEquals(0x09, result.status)
     }
@@ -93,7 +96,7 @@ class SafeSenderTest {
     @Test
     fun noAnswerIsANetworkFailure() {
         val port = startCard { _, _ -> emptyList() }
-        assertEquals(FailureReason.NETWORK, (sender(port).send(export, SafeVariant.PLAIN) as SendResult.Failed).reason)
+        assertEquals(FailureReason.NETWORK, (sender(port).send(export) as SendResult.Failed).reason)
     }
 
     @Test
@@ -104,7 +107,7 @@ class SafeSenderTest {
             override fun onFrameSent(index: Int, total: Int, frame: ByteArray) { events += "frame $index/$total" }
             override fun onAck(ack: Ack) { events += "ack" }
         }
-        sender(port).send(export, SafeVariant.TABLE, listener)
+        sender(port).send(export, listener)
         assertEquals("frame 11/11", events[events.size - 2])
         assertEquals(11, events.count { it == "ack" })
     }

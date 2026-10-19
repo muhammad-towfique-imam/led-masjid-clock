@@ -55,7 +55,7 @@ class CardSendTest {
         val safe = com.masjidclock.wfsender.protocol.SafeSender(
             com.masjidclock.wfsender.protocol.UdpConnector { throw java.io.IOException("not used") },
         )
-        val result = sendCardSafe(card, safe, com.masjidclock.wfsender.protocol.SafeVariant.PLAIN, object : SendListener {})
+        val result = sendCardSafe(card, safe, object : SendListener {})
         assertEquals(FailureReason.INVALID_EXPORT, (result as SendResult.Failed).reason)
     }
 }

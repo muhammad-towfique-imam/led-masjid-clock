@@ -129,9 +129,10 @@ The display gets the phone's local time. Keep the phone's automatic time on.
 If Create does not find a USB drive, tap the ⓘ icon at the top of the Create tab ("Share details")
 and send the text to support.
 
-**Cards with firmware V4.45** (for example the `bangla` and `hijri` cards): the app sends with
-HD2020's safe form and then asks "Does the display show the new program?". Look at the display
-and answer. If both tries fail, send the program with HD2020 and share the log.
+**Cards with firmware V4.45** (for example the `bangla` and `hijri` cards): these cards refuse the
+normal send at the start packet. The app then sends again by itself with HD2020's safe form over UDP.
+Confirmed on the `hijri` card (WF1, V4.45) on 2026-10-19.
 
-The protocol was confirmed only on a WF1 card with a 128 × 64 screen.
-Test WF2 and WF4 cards and other screen sizes before you use the app with them.
+Confirmed so far: program send on a WF1 card with older firmware (128 × 64) and on a WF1 card with
+firmware V4.45 (384 × 32); time sync on a WF2 card. Test WF2 and WF4 program sends before you use the
+app with them.
