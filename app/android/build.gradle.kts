@@ -27,8 +27,8 @@ android {
         applicationId = "com.hdsender.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 14
-        versionName = "0.7.3"
+        versionCode = 15
+        versionName = "0.7.4"
     }
 
     signingConfigs {
@@ -57,6 +57,15 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    // The APK file name: hd-sender-<versionName>.apk, and hd-sender-<versionName>-debug.apk for debug.
+    applicationVariants.all {
+        val suffix = if (buildType.name == "release") "" else "-${buildType.name}"
+        outputs.all {
+            (this as com.android.build.gradle.internal.api.BaseVariantOutputImpl).outputFileName =
+                "hd-sender-${versionName}$suffix.apk"
+        }
     }
 }
 

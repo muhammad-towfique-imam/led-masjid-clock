@@ -32,7 +32,7 @@ JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :protocol:test :android:testDeb
 JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :android:assembleRelease
 ```
 
-The release APK is `android/build/outputs/apk/release/android-release.apk`.
+The release APK is `android/build/outputs/apk/release/hd-sender-<version>.apk`.
 `local.properties` must contain `sdk.dir=` with the path of the Android SDK.
 
 ## Release key
@@ -67,7 +67,7 @@ With a wrong passphrase, the build stops. If there is no encrypted file, the bui
 
 **On a new computer:** clone the repository, write `.env` with the passphrase from Bitwarden,
 and build the release. Check the certificate with
-`apksigner verify --print-certs android/build/outputs/apk/release/android-release.apk`.
+`apksigner verify --print-certs android/build/outputs/apk/release/hd-sender-<version>.apk`.
 
 **Make a new key (only if there is no key):**
 
