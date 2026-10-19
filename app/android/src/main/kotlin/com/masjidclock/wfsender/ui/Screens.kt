@@ -58,6 +58,7 @@ internal fun SendScreen(model: AppViewModel) {
     val card by model.selectedCard.collectAsStateWithLifecycle()
     val connection by model.connection.collectAsStateWithLifecycle()
     val sendState by model.sendState.collectAsStateWithLifecycle()
+    val cardName by model.cardName.collectAsStateWithLifecycle()
     val timeStep by model.timeStep.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var now by remember { mutableLongStateOf(WallClock.now()) }
@@ -109,12 +110,11 @@ internal fun SendScreen(model: AppViewModel) {
                 enabled = !sending,
             ) { IconLabel(Icons.Filled.Settings, "Open WiFi settings") }
             if (sendState == SendState.Idle) {
-                val status = when (connection) {
-                    ConnectionStatus.NOT_CONNECTED -> Messages.NOT_CONNECTED
-                    ConnectionStatus.NO_DISPLAY -> Messages.NO_DISPLAY
-                    ConnectionStatus.DISPLAY_FOUND -> Messages.DISPLAY_FOUND
+                when (connection) {
+                    ConnectionStatus.NOT_CONNECTED -> StatusLine(Messages.NOT_CONNECTED, ok = false)
+                    ConnectionStatus.NO_DISPLAY -> StatusLine(Messages.NO_DISPLAY, ok = false)
+                    ConnectionStatus.DISPLAY_FOUND -> FoundLine(Messages.foundLabel(cardName))
                 }
-                StatusLine(status, ok = connection == ConnectionStatus.DISPLAY_FOUND)
             }
         }
 

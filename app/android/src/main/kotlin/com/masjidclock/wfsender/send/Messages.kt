@@ -36,7 +36,8 @@ object Messages {
     const val TIME_NO_ANSWER = "The display did not answer. Check the WiFi connection."
     const val TIME_MANUAL = "The phone time is set by hand. Check that it is correct."
 
-    fun displayFound(cardName: String): String = "Display found: $cardName"
+    /** The status when the display is found: its card name (for example WF1_3030f98d38da), if the card gave it. */
+    fun foundLabel(cardName: String?): String = if (cardName.isNullOrEmpty()) DISPLAY_FOUND else cardName
 
     fun timeSet(time: String): String = "The display clock is set to $time."
 

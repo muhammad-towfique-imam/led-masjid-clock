@@ -216,7 +216,8 @@ and `hijri-full.pcapng`, and was confirmed on a WF2 card: the display showed a t
 A third tab in the bottom bar, **Time** (title "Set the time"), with 2 step cards:
 
 1. **Connect to the display WiFi:** the WiFi text, "Open WiFi settings", and the status.
-   When the card answers, the status is "Display found: <card name>".
+   When the card answers, the status shows the card name (for example `WF1_3030f98d38da`) with a check
+   icon in a larger font (version 0.7.3).
 2. **Set the time:** the phone's local time and date, updated every second, and a
    "Set the time" button. The result is "The display clock is set to HH:MM:SS." or an error:
    "The display did not answer. Check the WiFi connection." or

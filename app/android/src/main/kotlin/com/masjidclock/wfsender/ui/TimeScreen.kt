@@ -72,12 +72,11 @@ fun TimeScreen(model: TimeViewModel, onBack: () -> Unit) {
             OutlinedButton(onClick = { context.startActivity(Intent(Settings.ACTION_WIFI_SETTINGS)) }) {
                 IconLabel(Icons.Filled.SettingsIcon, "Open WiFi settings")
             }
-            val status = when (connection) {
-                ConnectionStatus.NOT_CONNECTED -> Messages.NOT_CONNECTED
-                ConnectionStatus.NO_DISPLAY -> Messages.NO_DISPLAY
-                ConnectionStatus.DISPLAY_FOUND -> cardName?.let(Messages::displayFound) ?: Messages.DISPLAY_FOUND
+            when (connection) {
+                ConnectionStatus.NOT_CONNECTED -> StatusLine(Messages.NOT_CONNECTED, ok = false)
+                ConnectionStatus.NO_DISPLAY -> StatusLine(Messages.NO_DISPLAY, ok = false)
+                ConnectionStatus.DISPLAY_FOUND -> FoundLine(Messages.foundLabel(cardName))
             }
-            StatusLine(status, ok = found)
         }
 
         StepCard(2, "Set the time", steps.set) {

@@ -64,7 +64,6 @@ class MessagesTest {
 
     @Test
     fun timeMessages() {
-        assertEquals("Display found: WF2_e072a1efcde0", Messages.displayFound("WF2_e072a1efcde0"))
         assertEquals("The display clock is set to 22:55:42.", Messages.timeSet("22:55:42"))
         assertEquals("The display did not answer. Check the WiFi connection.", Messages.TIME_NO_ANSWER)
         assertEquals("The display rejected the time (code 0x07).", Messages.timeRejected(7))
@@ -100,5 +99,12 @@ class MessagesTest {
             Messages.UNEXPECTED_REPLY,
             Messages.forResult(SendResult.Failed(FailureReason.SAFE_REQUIRED, null, "")),
         )
+    }
+
+    @Test
+    fun foundLabelIsTheCardNameWhenKnown() {
+        assertEquals("WF1_3030f98d38da", Messages.foundLabel("WF1_3030f98d38da"))
+        assertEquals("Display found", Messages.foundLabel(null))
+        assertEquals("Display found", Messages.foundLabel(""))
     }
 }

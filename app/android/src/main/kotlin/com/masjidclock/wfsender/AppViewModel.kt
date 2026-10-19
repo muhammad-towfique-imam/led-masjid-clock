@@ -69,6 +69,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val _connection = MutableStateFlow(ConnectionStatus.NOT_CONNECTED)
     val connection: StateFlow<ConnectionStatus> = _connection
 
+    private val _cardName = MutableStateFlow<String?>(null)
+    val cardName: StateFlow<String?> = _cardName
+
     private val _sendState = MutableStateFlow<SendState>(SendState.Idle)
     val sendState: StateFlow<SendState> = _sendState
 
@@ -144,12 +147,18 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun startConnectionChecks() {
         _connection.value = ConnectionStatus.NOT_CONNECTED
-        val newCheck = ConnectionCheck({ network.current }) { wifi -> CardSender(network.connectorFor(wifi)).probe() }
+        val newCheck = ConnectionCheck({ network.current }) { wifi ->
+            val found = CardSender(network.connectorFor(wifi)).probe()
+            // The card name for the screen: 1 short UDP request. A card that does not answer keeps "Display found".
+            _cardName.value = if (found) CardClock(network.udpFor(wifi), timeoutMs = 1_500, tries = 1).discover()?.name else null
+            found
+        }
         check = newCheck
         checkJob = viewModelScope.launch {
             while (isActive) {
                 val status = withContext(Dispatchers.IO) { newCheck.next() } ?: break
                 _connection.value = status
+                if (status != ConnectionStatus.DISPLAY_FOUND) _cardName.value = null
                 // A time result belongs to the display on this WiFi only.
                 if (status != ConnectionStatus.DISPLAY_FOUND && _timeStep.value != TimeStep.Busy) {
                     _timeStep.value = TimeStep.Pending

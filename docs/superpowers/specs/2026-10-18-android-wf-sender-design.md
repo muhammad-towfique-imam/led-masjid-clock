@@ -185,6 +185,9 @@ The app keeps the last imported site after it closes.
    (not the file name). It has a "Load file" (or "Load another file") button.
 2. **Connect to the display WiFi:** "Connect the phone to the WiFi of the display in Android
    settings." (without the password), an "Open WiFi settings" button, and the status (section 5.3).
+   When the display is found, the status shows the card name (for example `WF1_3030f98d38da`) with a
+   check icon in a larger font. The app gets the name with 1 short UDP discover request after the probe;
+   if the card does not answer it, the status shows "Display found" (version 0.7.3).
 3. **Set the time (optional):** the phone's time and date, a warning if the phone's automatic time
    is off, and the buttons "Set the time" and "Skip". The time sync is the one of the Time tab
    (`docs/superpowers/specs/2026-10-18-hd-sender-create-design.md`, section 9). After a success,

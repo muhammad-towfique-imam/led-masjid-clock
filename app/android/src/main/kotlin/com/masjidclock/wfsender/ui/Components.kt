@@ -106,3 +106,23 @@ internal fun KeepScreenOn() {
         onDispose { view.keepScreenOn = false }
     }
 }
+
+/** The connected display: a check icon and the card name (or "Display found") in a larger font. */
+@Composable
+internal fun FoundLine(text: String) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Icon(
+            Icons.Filled.CheckCircle,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp),
+        )
+        Text(
+            text,
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+        )
+    }
+}
+

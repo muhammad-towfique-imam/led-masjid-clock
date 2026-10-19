@@ -92,7 +92,8 @@ Open the **Send** tab (bottom bar). It has 4 steps.
 
 1. **Load file:** open the .hdpkg file with the app ("Open with" in WhatsApp), or tap "Load file".
 2. **Connect to the display WiFi:** connect the phone to the WiFi of the display in Android settings.
-   The password is 88888888. Wait until the status shows "Display found".
+   The password is 88888888. Wait until the app shows the card name (for example `WF1_3030f98d38da`),
+   or "Display found".
 3. **Set the time:** tap "Set the time" to set the display clock to the phone time, or "Skip".
 4. **Send:** tap "Send". If the send fails, tap "Share log" and send the log
    to the person who sent you the package. Tap "Send again" to try again.
@@ -100,7 +101,7 @@ Open the **Send** tab (bottom bar). It has 4 steps.
 ## Set the display clock
 
 1. Open the **Time** tab (bottom bar).
-2. Connect the phone to the WiFi of the display. Wait until the status shows "Display found: …".
+2. Connect the phone to the WiFi of the display. Wait until the app shows the card name.
 3. Check the phone time on the screen, and tap **Set the time**.
 
 The display gets the phone's local time. Keep the phone's automatic time on.
