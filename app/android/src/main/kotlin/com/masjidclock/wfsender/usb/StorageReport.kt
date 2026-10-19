@@ -10,7 +10,7 @@ object StorageReport {
 
     fun make(context: Context, appVersion: String): String {
         val lines = mutableListOf<String>()
-        lines += "HD Sender $appVersion, Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT}), ${Build.MANUFACTURER} ${Build.MODEL}"
+        lines += "Masjid Clock $appVersion, Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT}), ${Build.MANUFACTURER} ${Build.MODEL}"
         lines += "All files access: ${StorageAccess.granted(context)}"
         val volumes = try {
             context.getSystemService(StorageManager::class.java).storageVolumes

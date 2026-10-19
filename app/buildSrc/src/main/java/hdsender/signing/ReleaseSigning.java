@@ -13,13 +13,13 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * The release signing key of HD Sender. The key and its passwords are in git only as an encrypted file
- * (keystore-backup/release-key.enc). The passphrase comes from the environment variable
- * HDSENDER_KEY_PASSPHRASE, or from the git-ignored file .env in the project folder.
+ * The release signing key of Masjid Clock. The key and its passwords are in git only as an encrypted file
+ * (keystore-backup/masjid-clock-key.enc). The passphrase comes from the environment variable
+ * MASJIDCLOCK_KEY_PASSPHRASE, or from the git-ignored file .env in the project folder.
  */
 public final class ReleaseSigning {
-    public static final String VAR = "HDSENDER_KEY_PASSPHRASE";
-    public static final String SEALED = "keystore-backup/release-key.enc";
+    public static final String VAR = "MASJIDCLOCK_KEY_PASSPHRASE";
+    public static final String SEALED = "keystore-backup/masjid-clock-key.enc";
     private static final int MIN_PASSPHRASE = 16;
 
     public static final class Result {
@@ -76,7 +76,7 @@ public final class ReleaseSigning {
         return null;
     }
 
-    /** Makes keystore-backup/release-key.enc from keystore.properties and its keystore, then checks it. */
+    /** Makes keystore-backup/masjid-clock-key.enc from keystore.properties and its keystore, then checks it. */
     public static File encrypt(File projectDir, Map<String, String> environment) {
         String passphrase = passphrase(projectDir, environment);
         if (passphrase == null) {

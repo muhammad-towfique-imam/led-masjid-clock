@@ -1,15 +1,15 @@
 import hdsender.signing.ReleaseSigning
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-// The release key: decrypted from keystore-backup/release-key.enc with HDSENDER_KEY_PASSPHRASE
+// The release key: decrypted from keystore-backup/masjid-clock-key.enc with MASJIDCLOCK_KEY_PASSPHRASE
 // (environment or the git-ignored app/.env), or else read from keystore.properties. See README.
 val releaseSigning: ReleaseSigning.Result? = ReleaseSigning.load(rootProject.projectDir, System.getenv())
 val releaseRequested = gradle.startParameter.taskNames.any { it.contains("Release", ignoreCase = true) }
 if (releaseRequested) {
     if (releaseSigning == null) {
-        logger.warn("HD Sender: no release key. Set HDSENDER_KEY_PASSPHRASE in app/.env. The release APK is unsigned.")
+        logger.warn("Masjid Clock: no release key. Set MASJIDCLOCK_KEY_PASSPHRASE in app/.env. The release APK is unsigned.")
     } else {
-        logger.lifecycle("HD Sender: release key from ${releaseSigning.source}")
+        logger.lifecycle("Masjid Clock: release key from ${releaseSigning.source}")
     }
 }
 
@@ -24,11 +24,11 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.hdsender.app"
+        applicationId = "com.cyanwarelabs.masjidclock.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 16
-        versionName = "0.7.5"
+        versionCode = 1
+        versionName = "0.1.0"
     }
 
     signingConfigs {
@@ -61,12 +61,12 @@ android {
         buildConfig = true
     }
 
-    // The APK file name: hd-sender-<versionName>.apk, and hd-sender-<versionName>-debug.apk for debug.
+    // The APK file name: masjid-clock-<versionName>.apk, and masjid-clock-<versionName>-debug.apk for debug.
     applicationVariants.all {
         val suffix = if (buildType.name == "release") "" else "-${buildType.name}"
         outputs.all {
             (this as com.android.build.gradle.internal.api.BaseVariantOutputImpl).outputFileName =
-                "hd-sender-${versionName}$suffix.apk"
+                "masjid-clock-${versionName}$suffix.apk"
         }
     }
 }
@@ -94,9 +94,9 @@ dependencies {
 
 tasks.register("encryptReleaseKey") {
     group = "signing"
-    description = "Encrypts keystore.properties and its keystore into keystore-backup/release-key.enc."
+    description = "Encrypts keystore.properties and its keystore into keystore-backup/masjid-clock-key.enc."
     doLast {
         val file = ReleaseSigning.encrypt(rootProject.projectDir, System.getenv())
-        println("Wrote $file. Commit this file. Keep HDSENDER_KEY_PASSPHRASE in Bitwarden.")
+        println("Wrote $file. Commit this file. Keep MASJIDCLOCK_KEY_PASSPHRASE in Bitwarden.")
     }
 }

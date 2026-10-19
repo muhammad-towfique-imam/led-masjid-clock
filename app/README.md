@@ -1,7 +1,8 @@
-# HD Sender (Android)
+# Masjid Clock (Android)
 
-The app sends HD2020 programs to Huidu WF cards (WF1, WF2, WF4) over the card WiFi.
-It is for sites that have no laptop. Design: `docs/superpowers/specs/2026-10-18-android-wf-sender-design.md`.
+The app sends programs to the masjid clock displays (Huidu WF1, WF2, WF4 cards) over the card WiFi.
+It is for masjids that have no laptop. It started as HD Sender (github.com/muhammad-towfique-imam/hd-sender).
+The app ID is `com.cyanwarelabs.masjidclock.app`. Design: `docs/superpowers/specs/2026-10-18-android-wf-sender-design.md`.
 
 ## Make a package (.hdpkg)
 
@@ -11,8 +12,8 @@ A package holds the program of exactly 1 display. It is a ZIP file with the exte
 
 1. In HD2020, export the program of the display with the U-disk option to a USB drive.
 2. Connect the USB drive to the phone with a USB OTG adapter.
-3. In HD Sender, open the **Create** tab (bottom bar). The first time, allow file access: turn on "Allow access to
-   manage all files" for HD Sender, then go back. Create needs Android 11 or later
+3. In Masjid Clock, open the **Create** tab (bottom bar). The first time, allow file access: turn on "Allow access to
+   manage all files" for Masjid Clock, then go back. Create needs Android 11 or later
    (Send works from Android 7.0).
 4. When the app shows "Found on: … display", type a file name in step 4, for example
    `masjid-north-english`. Then tap **Save** (to Downloads) or **Share** (for example to WhatsApp).
@@ -32,28 +33,29 @@ JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :protocol:test :android:testDeb
 JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :android:assembleRelease
 ```
 
-The release APK is `android/build/outputs/apk/release/hd-sender-<version>.apk`.
+The release APK is `android/build/outputs/apk/release/masjid-clock-<version>.apk`.
 `local.properties` must contain `sdk.dir=` with the path of the Android SDK.
 
 ## Release key
 
 Android installs an update over an earlier version only if both use the same key.
-The certificate SHA-256 of the HD Sender key is
-`f1ef44b2f8a84ed57c3e376ea8aebe28f0a748f5f5ec07d66300bf37eb9f648a`.
+The certificate SHA-256 of the Masjid Clock key is
+`2fbf779f1b860193471a14f38b7a4455c9a1fa5c4c55e6ed031c1eba019f52ec`.
+This key is not the HD Sender key. Masjid Clock and HD Sender are 2 different apps on the phone.
 
 **How the build gets the key:** git contains the key and its passwords only as an encrypted file,
-`keystore-backup/release-key.enc` (AES-256-GCM, key from the passphrase with PBKDF2).
+`keystore-backup/masjid-clock-key.enc` (AES-256-GCM, key from the passphrase with PBKDF2).
 The release build decrypts it into `build/signing/` with the passphrase from the environment
-variable `HDSENDER_KEY_PASSPHRASE`, or from the file `.env` in this folder:
+variable `MASJIDCLOCK_KEY_PASSPHRASE`, or from the file `.env` in this folder:
 
 ```
-HDSENDER_KEY_PASSPHRASE=your long passphrase
+MASJIDCLOCK_KEY_PASSPHRASE=your long passphrase
 ```
 
 `.env.example` shows the format: copy it to `.env` and set the value.
 `.env` is ignored by git. Without a passphrase, the release APK is unsigned (with a warning).
 With a wrong passphrase, the build stops. If there is no encrypted file, the build uses
-`keystore.properties` and `keystore/release.jks`, if they exist.
+`keystore.properties` and its keystore, if they exist.
 
 **CAUTION: Keep the passphrase in Bitwarden. Without it, the encrypted file is useless. Never commit
 `.env`, `keystore/`, or `keystore.properties`.**
@@ -62,21 +64,21 @@ With a wrong passphrase, the build stops. If there is no encrypted file, the bui
 
 1. Write the passphrase into `.env` (at least 16 characters; use 5 or more random words).
 2. Run `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew encryptReleaseKey`.
-   It reads `keystore.properties` and its keystore, and writes `keystore-backup/release-key.enc`.
-3. Commit `keystore-backup/release-key.enc`.
+   It reads `keystore.properties` and its keystore, and writes `keystore-backup/masjid-clock-key.enc`.
+3. Commit `keystore-backup/masjid-clock-key.enc`.
 
 **On a new computer:** clone the repository, write `.env` with the passphrase from Bitwarden,
 and build the release. Check the certificate with
-`apksigner verify --print-certs android/build/outputs/apk/release/hd-sender-<version>.apk`.
+`apksigner verify --print-certs android/build/outputs/apk/release/masjid-clock-<version>.apk`.
 
 **Make a new key (only if there is no key):**
 
 ```bash
 mkdir -p keystore
-keytool -genkeypair -v -keystore keystore/release.jks -alias wfsender -keyalg RSA -keysize 4096 -validity 10000
+keytool -genkeypair -v -keystore keystore/masjid-clock.jks -alias masjidclock -keyalg RSA -keysize 4096 -validity 10000
 ```
 
-Then write `keystore.properties` (`storeFile=keystore/release.jks`, `storePassword=…`, `keyAlias=wfsender`,
+Then write `keystore.properties` (`storeFile=keystore/masjid-clock.jks`, `storePassword=…`, `keyAlias=masjidclock`,
 `keyPassword=…`) and make the encrypted file as above. A new key cannot update phones that have the app
 with the old key.
 
@@ -120,8 +122,8 @@ The display gets the phone's local time. Keep the phone's automatic time on.
 9. Create with a USB drive without an export shows "The USB drive has no HD2020 export".
    An export larger than 20 MB shows "The HD2020 export is larger than 20 MB…".
 10. Save twice with the same name: Downloads has `name.hdpkg` and `name (1).hdpkg`.
-11. Share to WhatsApp, open the file with "Open with" → HD Sender, and send it to the display.
-12. Load a `.zip` file in Send: the app shows "This file is not an HD Sender package".
+11. Share to WhatsApp, open the file with "Open with" → Masjid Clock, and send it to the display.
+12. Load a `.zip` file in Send: the app shows "This file is not a display package".
 13. Time: the display clock changes to the phone time. Test it once with the phone time set by hand
     to a wrong value (for example 12:34), then with automatic time on again.
 14. Time without a display WiFi: the button stays disabled. With a WiFi that is not a display:

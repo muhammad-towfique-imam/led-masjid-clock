@@ -51,7 +51,7 @@ private val DarkColors = darkColorScheme(
     surfaceContainerHighest = Color(0xFF33362F),
 )
 
-/** The HD Sender theme. Light or dark follows the phone setting. */
+/** The Masjid Clock theme. Light or dark follows the phone setting. */
 @Composable
 fun HdSenderTheme(content: @Composable () -> Unit) {
     MaterialTheme(colorScheme = if (isSystemInDarkTheme()) DarkColors else LightColors, content = content)

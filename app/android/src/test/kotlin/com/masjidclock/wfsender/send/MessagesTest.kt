@@ -107,4 +107,13 @@ class MessagesTest {
         assertEquals("Display found", Messages.foundLabel(null))
         assertEquals("Display found", Messages.foundLabel(""))
     }
+
+    @Test
+    fun textsUseTheAppNameMasjidClock() {
+        assertEquals("Load the package (.hdpkg) that you received.", Messages.NO_SITE)
+        assertEquals(
+            "Masjid Clock needs access to files to read the USB drive and to save packages.",
+            Messages.ALLOW_ACCESS,
+        )
+    }
 }

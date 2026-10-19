@@ -1,37 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- WiFi waves over "HD". Source: app/design/icon.svg (same shapes). -->
+<!-- A mosque dome with a clock face. Source: app/design/icon.svg (same shapes). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path
-        android:pathData="M37.03,38.03 A24,24 0 0,1 70.97,38.03"
-        android:strokeWidth="6"
-        android:strokeColor="#FFFFFF"
-        android:strokeLineCap="round" />
-    <path
-        android:pathData="M44.1,45.1 A14,14 0 0,1 63.9,45.1"
-        android:strokeWidth="6"
-        android:strokeColor="#FFFFFF"
-        android:strokeLineCap="round" />
+    <!-- The crescent and its stick. -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M49.5,53.5 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0 z" />
-    <!-- The "HD" letters: scale 0.7 around (31,56), then move to (38.25,64). -->
-    <group
-        android:pivotX="31"
-        android:pivotY="56"
-        android:scaleX="0.7"
-        android:scaleY="0.7"
-        android:translateX="7.25"
-        android:translateY="8">
-        <path
-            android:fillColor="#FFFFFF"
-            android:pathData="M31,56 h6.5 v8 h7 v-8 h6.5 v22 h-6.5 v-8.5 h-7 v8.5 h-6.5 z" />
-        <path
-            android:fillColor="#FFFFFF"
-            android:fillType="evenOdd"
-            android:pathData="M55,56 h9 a11,11 0 0,1 0,22 h-9 z M61.5,62 h2.5 a5,5 0 0,1 0,10 h-2.5 z" />
-    </group>
+        android:pathData="M54,24.5 a4.5,4.5 0 1,0 3.2,7.7 a3.6,3.6 0 1,1 -3.2,-7.7 z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M53,32 h2 v5 h-2 z" />
+    <!-- The dome, with the clock face as a hole. -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M54,36 C58,42 74,48 74,64 L74,66 L34,66 L34,64 C34,48 50,42 54,36 Z M45.5,56 a8.5,8.5 0 1,0 17,0 a8.5,8.5 0 1,0 -17,0 z" />
+    <!-- The base. -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M33,68 h42 a2,2 0 0,1 2,2 v6 a2,2 0 0,1 -2,2 h-42 a2,2 0 0,1 -2,-2 v-6 a2,2 0 0,1 2,-2 z" />
+    <!-- The clock hands. -->
+    <path
+        android:pathData="M54,56 L54,50.5"
+        android:strokeWidth="2.2"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M54,56 L58,58.5"
+        android:strokeWidth="2.2"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round" />
 </vector>

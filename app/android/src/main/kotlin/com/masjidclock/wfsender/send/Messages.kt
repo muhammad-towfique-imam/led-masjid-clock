@@ -18,11 +18,11 @@ object Messages {
     const val DISPLAY_FOUND = "Display found"
     const val INVALID_EXPORT = "The program files on the phone are damaged. Open the ZIP file again."
     const val WAIT_FOR_SEND = "Wait until the send is complete. Then open the file again."
-    const val NO_SITE = "Load the HD Sender package (.hdpkg) that you received."
+    const val NO_SITE = "Load the package (.hdpkg) that you received."
 
     const val CREATE_NEEDS_ANDROID_11 =
         "Create needs Android 11 or later. This phone has an older Android version. You can still use Send."
-    const val ALLOW_ACCESS = "HD Sender needs access to files to read the USB drive and to save packages."
+    const val ALLOW_ACCESS = "Masjid Clock needs access to files to read the USB drive and to save packages."
     const val CONNECT_USB = "Connect the USB drive with the HD2020 export to the phone. Use a USB OTG adapter."
     const val NO_EXPORT = "The USB drive has no HD2020 export. Use the U-disk export of HD2020."
     const val TOO_LARGE = "The HD2020 export is larger than 20 MB. The app cannot send a program of this size."

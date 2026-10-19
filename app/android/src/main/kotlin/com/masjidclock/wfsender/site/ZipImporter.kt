@@ -97,7 +97,7 @@ class ZipImporter(private val maxUnpackedBytes: Long = MAX_UNPACKED_BYTES) {
 
     companion object {
         const val MAX_UNPACKED_BYTES = 20L * 1024 * 1024
-        const val NOT_PACKAGE = "This file is not an HD Sender package. Use a file that ends with .hdpkg."
+        const val NOT_PACKAGE = "This file is not a display package. Use a file that ends with .hdpkg."
         private const val NAME_FILE = ".site-name"
         private val DRIVE = Regex("^[A-Za-z]:")
 

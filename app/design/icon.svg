@@ -1,12 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 108 108">
-  <rect width="108" height="108" fill="#386A20"/>
-  <g fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round">
-    <path d="M37.03,38.03 A24,24 0 0 1 70.97,38.03"/>
-    <path d="M44.1,45.1 A14,14 0 0 1 63.9,45.1"/>
+  <!-- Masjid Clock: a mosque dome with a clock face, on dark teal. -->
+  <rect width="108" height="108" fill="#0B5563"/>
+  <g fill="#FFFFFF">
+    <path d="M54,24.5 a4.5,4.5 0 1,0 3.2,7.7 a3.6,3.6 0 1,1 -3.2,-7.7 z"/>
+    <path d="M53,32 h2 v5 h-2 z"/>
+    <path fill-rule="evenodd" d="M54,36 C58,42 74,48 74,64 L74,66 L34,66 L34,64 C34,48 50,42 54,36 Z M45.5,56 a8.5,8.5 0 1,0 17,0 a8.5,8.5 0 1,0 -17,0 z"/>
+    <path d="M33,68 h42 a2,2 0 0,1 2,2 v6 a2,2 0 0,1 -2,2 h-42 a2,2 0 0,1 -2,-2 v-6 a2,2 0 0,1 2,-2 z"/>
   </g>
-  <circle cx="54" cy="53.5" r="4.5" fill="#FFFFFF"/>
-  <g fill="#FFFFFF" fill-rule="evenodd" transform="translate(38.25 64) scale(0.7) translate(-31 -56)">
-    <path d="M31,56 h6.5 v8 h7 v-8 h6.5 v22 h-6.5 v-8.5 h-7 v8.5 h-6.5 z"/>
-    <path d="M55,56 h9 a11,11 0 0 1 0,22 h-9 z M61.5,62 h2.5 a5,5 0 0 1 0,10 h-2.5 z"/>
+  <g fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round">
+    <path d="M54,56 L54,50.5"/>
+    <path d="M54,56 L58,58.5"/>
   </g>
 </svg>

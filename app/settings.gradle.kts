@@ -14,6 +14,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "hd-sender"
+rootProject.name = "masjid-clock"
 include(":protocol")
 include(":android")

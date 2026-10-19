@@ -1,6 +1,6 @@
 package com.masjidclock.wfsender.pkg
 
-/** The file name rule of HD Sender packages (spec section 4.3). */
+/** The file name rule of the packages (spec section 4.3). */
 object PackageName {
     const val EXTENSION = ".hdpkg"
     private val ALLOWED = Regex("^[A-Za-z0-9 _-]{1,50}$")

@@ -184,7 +184,7 @@ class ZipImporterTest {
         val zip = zipOf("screen.hds" to screen(128, 64), "progam.hds" to program())
         val error = assertThrows(ImportException::class.java) { import(zip, name = "english.zip") }
         assertEquals(ZipImporter.NOT_PACKAGE, error.message)
-        assertEquals("This file is not an HD Sender package. Use a file that ends with .hdpkg.", error.message)
+        assertEquals("This file is not a display package. Use a file that ends with .hdpkg.", error.message)
     }
 
     @Test

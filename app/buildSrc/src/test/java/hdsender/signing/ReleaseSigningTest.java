@@ -39,9 +39,9 @@ public class ReleaseSigningTest {
     @Test
     public void encryptThenLoadFromTheEncryptedFile() throws Exception {
         File dir = project();
-        write(new File(dir, ".env"), "HDSENDER_KEY_PASSPHRASE=" + PASSPHRASE + "\n");
+        write(new File(dir, ".env"), "MASJIDCLOCK_KEY_PASSPHRASE=" + PASSPHRASE + "\n");
         ReleaseSigning.encrypt(dir, noEnv);
-        assertTrue(new File(dir, "keystore-backup/release-key.enc").isFile());
+        assertTrue(new File(dir, "keystore-backup/masjid-clock-key.enc").isFile());
 
         // A fresh clone: no keystore folder and no keystore.properties.
         new File(dir, "keystore/release.jks").delete();
@@ -58,7 +58,7 @@ public class ReleaseSigningTest {
     public void environmentVariableWinsOverDotEnv() throws Exception {
         File dir = project();
         ReleaseSigning.encrypt(dir, Collections.singletonMap(ReleaseSigning.VAR, PASSPHRASE));
-        write(new File(dir, ".env"), "HDSENDER_KEY_PASSPHRASE=wrong passphrase value\n");
+        write(new File(dir, ".env"), "MASJIDCLOCK_KEY_PASSPHRASE=wrong passphrase value\n");
         ReleaseSigning.Result result = ReleaseSigning.load(dir, Collections.singletonMap(ReleaseSigning.VAR, PASSPHRASE));
         assertEquals("sp", result.storePassword);
     }
@@ -67,9 +67,9 @@ public class ReleaseSigningTest {
     public void wrongPassphraseStopsTheBuildWithAClearMessage() throws Exception {
         File dir = project();
         ReleaseSigning.encrypt(dir, Collections.singletonMap(ReleaseSigning.VAR, PASSPHRASE));
-        write(new File(dir, ".env"), "HDSENDER_KEY_PASSPHRASE=this is not the passphrase\n");
+        write(new File(dir, ".env"), "MASJIDCLOCK_KEY_PASSPHRASE=this is not the passphrase\n");
         IllegalStateException e = assertThrows(IllegalStateException.class, () -> ReleaseSigning.load(dir, noEnv));
-        assertTrue(e.getMessage(), e.getMessage().contains("HDSENDER_KEY_PASSPHRASE"));
+        assertTrue(e.getMessage(), e.getMessage().contains("MASJIDCLOCK_KEY_PASSPHRASE"));
     }
 
     @Test

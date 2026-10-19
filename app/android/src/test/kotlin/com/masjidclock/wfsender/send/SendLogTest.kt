@@ -30,7 +30,7 @@ class SendLogTest {
         log.finish(SendResult.Failed(FailureReason.NETWORK, null, "java.net.SocketTimeoutException: Read timed out"))
 
         val expected = """
-            HD Sender 0.1.0, Android 13
+            Masjid Clock 0.1.0, Android 13
             Time: 1970-01-01 00:00:00
             Site: site-a
             Card: english, 128 × 64, progam.hds 12586 bytes

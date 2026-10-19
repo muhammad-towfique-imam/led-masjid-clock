@@ -42,7 +42,7 @@ public final class KeyBox {
     public static byte[] open(byte[] data, char[] passphrase) throws GeneralSecurityException {
         if (data.length < MAGIC.length + 4 + SALT + NONCE + TAG_BITS / 8
             || !Arrays.equals(Arrays.copyOf(data, MAGIC.length), MAGIC)) {
-            throw new GeneralSecurityException("not an HD Sender key file");
+            throw new GeneralSecurityException("not a release key file");
         }
         ByteBuffer in = ByteBuffer.wrap(data, MAGIC.length, data.length - MAGIC.length);
         int iterations = in.getInt();
