@@ -94,7 +94,7 @@ Open the **Send** tab (bottom bar). It has 4 steps.
 2. **Connect to the display WiFi:** connect the phone to the WiFi of the display in Android settings.
    The password is 88888888. Wait until the status shows "Display found".
 3. **Set the time:** tap "Set the time" to set the display clock to the phone time, or "Skip".
-4. **Send:** tap "Send", and then "Yes, send". If the send fails, tap "Share log" and send the log
+4. **Send:** tap "Send". If the send fails, tap "Share log" and send the log
    to the person who sent you the package. Tap "Send again" to try again.
 
 ## Set the display clock

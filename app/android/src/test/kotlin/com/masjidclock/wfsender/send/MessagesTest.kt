@@ -39,14 +39,6 @@ class MessagesTest {
     }
 
     @Test
-    fun confirmationNamesTheCardAndTheSize() {
-        assertEquals(
-            "This program is for a 128 × 64 display named 'english'. Is the phone connected to this display?",
-            Messages.confirmation(card),
-        )
-    }
-
-    @Test
     fun cardRowShowsLabelAndSize() {
         assertEquals("english — 128 × 64", Messages.cardRow(card))
     }

@@ -43,7 +43,7 @@ All screens are in English.
 |---|---|
 | Delivery of programs | 1 ZIP file for each display (changed in 0.2.0; it was 1 ZIP for each site) |
 | Card selection | The person connects to the card WiFi in Android settings. The display in the ZIP is selected automatically |
-| Card check | Confirmation only: the app shows the folder name and the screen size, and the person confirms |
+| Card check | None. (Until version 0.7.0, a confirmation dialog showed the display name and size before each send; removed in 0.7.1 at the user's request.) |
 | Distribution | A signed APK file, sent directly to the person (no Google Play) |
 | Language | English only |
 | WiFi mode | Each card uses its own hotspot: `192.168.4.1`, TCP port `6101` |
@@ -194,8 +194,7 @@ The app keeps the last imported site after it closes.
    disconnects or changes, so that a time result never counts for a different display.
 4. **Send:** a "Send" button. It is available only when the status is "Display found" and step 3
    is done (set or skipped).
-   - When the person taps "Send", the app asks: "This program is for a 128 × 64 display
-     named 'english'. Is the phone connected to this display?" with "Yes, send" and "Cancel".
+   - "Send" starts the send at once, without a confirmation dialog (version 0.7.1).
    - During the send, the step shows a progress bar (frames sent of total frames).
      The screen stays on, all buttons are disabled, and the back button does nothing.
    - At the end, the step shows the result message (section 6.2), a "Send again" button,

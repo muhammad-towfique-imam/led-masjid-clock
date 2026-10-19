@@ -64,9 +64,5 @@ object Messages {
         }
     }
 
-    fun confirmation(card: Card): String =
-        "This program is for a ${card.width} × ${card.height} display named '${card.label}'. " +
-            "Is the phone connected to this display?"
-
     fun cardRow(card: Card): String = "${card.label} — ${card.width} × ${card.height}"
 }

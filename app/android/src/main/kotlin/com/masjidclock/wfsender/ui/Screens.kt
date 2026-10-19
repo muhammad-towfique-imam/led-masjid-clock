@@ -76,7 +76,6 @@ internal fun SendScreen(model: AppViewModel) {
     val openPackage = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) model.importPackage(uri)
     }
-    var confirming by remember { mutableStateOf(false) }
     val sending = sendState is SendState.Sending
     val loaded = site != null && card != null
     val steps = stepStates(loaded, connection, timeStep.done, sendState)
@@ -148,7 +147,7 @@ internal fun SendScreen(model: AppViewModel) {
         StepCard(4, "Send", steps.send) {
             when (val state = sendState) {
                 SendState.Idle -> Button(
-                    onClick = { confirming = true },
+                    onClick = model::send,
                     enabled = loaded && connection == ConnectionStatus.DISPLAY_FOUND && timeStep.done,
                     modifier = Modifier.fillMaxWidth(),
                 ) { IconLabel(Icons.AutoMirrored.Filled.Send, "Send") }
@@ -195,17 +194,6 @@ internal fun SendScreen(model: AppViewModel) {
         }
     }
 
-    val selected = card
-    if (confirming && selected != null) {
-        AlertDialog(
-            onDismissRequest = { confirming = false },
-            icon = { Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null) },
-            title = { Text("Send the program?") },
-            text = { Text(Messages.confirmation(selected)) },
-            confirmButton = { TextButton(onClick = { confirming = false; model.send() }) { Text("Yes, send") } },
-            dismissButton = { TextButton(onClick = { confirming = false }) { Text("Cancel") } },
-        )
-    }
     importError?.let { message ->
         AlertDialog(
             onDismissRequest = model::clearImportError,
