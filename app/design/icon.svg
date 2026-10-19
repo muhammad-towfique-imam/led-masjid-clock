@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 108 108">
-  <!-- Masjid Clock: a mosque dome with a clock face and an "LED" bar, on dark teal. -->
+  <!-- Masjid Clock: a mosque dome with a clock face and an "LED" bar, on dark teal. One color: the letters are holes. -->
   <rect width="108" height="108" fill="#0B5563"/>
   <g fill="#FFFFFF" fill-rule="evenodd">
     <path d="M53,31 h2 v6 h-2 z"/>
@@ -10,10 +10,5 @@
   <g fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round">
     <path d="M54,56 L54,50.5"/>
     <path d="M54,56 L58,58.5"/>
-  </g>
-  <g fill="#E53935" fill-rule="evenodd">
-    <path d="M45,70 h1.6 v4.4 h2.9 v1.6 h-4.5 z"/>
-    <path d="M51,70 h4.5 v1.6 h-2.9 v0.6 h2.4 v1.6 h-2.4 v0.6 h2.9 v1.6 h-4.5 z"/>
-    <path d="M57,70 h2.6 a3,3 0 0,1 3,3 a3,3 0 0,1 -3,3 h-2.6 z M58.6,71.6 v2.8 h1 a1.4,1.4 0 0,0 1.4,-1.4 a1.4,1.4 0 0,0 -1.4,-1.4 z"/>
   </g>
 </svg>
