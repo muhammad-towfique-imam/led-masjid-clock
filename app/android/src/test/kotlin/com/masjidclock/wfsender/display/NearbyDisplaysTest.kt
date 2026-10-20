@@ -61,4 +61,15 @@ class NearbyDisplaysTest {
         assertEquals("medium signal", signalText(-75))
         assertEquals("weak signal", signalText(-76))
     }
+
+    @Test
+    fun scanSummaryForTheDiagnosticLine() {
+        assertEquals(
+            "Scan: 3 networks, 0 cards. Names: HomeNet, WF1 1183677752, <hidden>. Location: off",
+            scanSummary(listOf(WifiSeen("HomeNet", -40), WifiSeen("WF1 1183677752", -50), WifiSeen("", -60)), 0, locationOn = false),
+        )
+        assertEquals("Scan: 0 networks, 0 cards. Location: on", scanSummary(emptyList(), 0, locationOn = true))
+        val many = (1..9).map { WifiSeen("N$it", -40 - it) }
+        assertEquals("Scan: 9 networks, 0 cards. Names: N1, N2, N3, N4, N5, N6, …. Location: on", scanSummary(many, 0, true))
+    }
 }

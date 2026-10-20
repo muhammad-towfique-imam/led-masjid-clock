@@ -10,6 +10,7 @@ import com.masjidclock.wfsender.display.CardList
 import com.masjidclock.wfsender.display.DisplayTab
 import com.masjidclock.wfsender.display.NearbyDisplay
 import com.masjidclock.wfsender.display.nearbyDisplays
+import com.masjidclock.wfsender.display.scanSummary
 import com.masjidclock.wfsender.hijri.HijriDataException
 import com.masjidclock.wfsender.net.CardNetwork
 import com.masjidclock.wfsender.net.ConnectionCheck
@@ -66,6 +67,10 @@ abstract class DisplayViewModel(app: Application, val tab: DisplayTab) : Android
     /** The card WiFi networks near the phone, for the list "Displays nearby". */
     private val _nearby = MutableStateFlow<List<NearbyDisplay>>(emptyList())
     val nearby: StateFlow<List<NearbyDisplay>> = _nearby
+
+    /** The diagnostic line of the scan (shown when no card is in the list). */
+    private val _scanSummary = MutableStateFlow("")
+    val scanSummary: StateFlow<String> = _scanSummary
 
     private val _scanState = MutableStateFlow(ScanState.NO_PERMISSION)
     val scanState: StateFlow<ScanState> = _scanState
@@ -167,7 +172,9 @@ abstract class DisplayViewModel(app: Application, val tab: DisplayTab) : Android
 
     private fun refreshNearby() {
         _scanState.value = scanner.state()
-        _nearby.value = nearbyDisplays(scanner.results(), tab) { cardList.tabOf(it) }
+        val seen = scanner.results()
+        _nearby.value = nearbyDisplays(seen, tab) { cardList.tabOf(it) }
+        _scanSummary.value = scanSummary(seen, _nearby.value.size, scanner.locationOn())
     }
 
     /** After a result: back to step 2 for the same display. */

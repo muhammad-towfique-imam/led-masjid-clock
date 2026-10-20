@@ -34,3 +34,14 @@ fun signalText(level: Int): String = when {
     level >= -75 -> "medium signal"
     else -> "weak signal"
 }
+
+/**
+ * The diagnostic line under an empty list: how many networks the scan gave, how many are cards, up to 6 names
+ * (an empty name shows as <hidden>), and the location setting. It shows where the data stops.
+ */
+fun scanSummary(seen: List<WifiSeen>, cards: Int, locationOn: Boolean): String {
+    val names = seen.map { it.ssid.ifEmpty { "<hidden>" } }.distinct()
+    val shown = if (names.size > 6) names.take(6) + "…" else names
+    val list = if (shown.isEmpty()) "" else " Names: ${shown.joinToString(", ")}."
+    return "Scan: ${seen.size} networks, $cards cards.$list Location: ${if (locationOn) "on" else "off"}"
+}

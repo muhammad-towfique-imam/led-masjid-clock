@@ -42,7 +42,7 @@ class WifiScanner(private val context: Context) {
         }
     }
 
-    private fun locationOn(): Boolean {
+    fun locationOn(): Boolean {
         val location = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return LocationManagerCompat.isLocationEnabled(location)
     }

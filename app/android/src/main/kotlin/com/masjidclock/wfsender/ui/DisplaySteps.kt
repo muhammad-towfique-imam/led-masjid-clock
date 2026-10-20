@@ -1,7 +1,6 @@
 package com.masjidclock.wfsender.ui
 
 import android.content.Intent
-import android.os.Build
 import android.content.Context
 import android.content.ActivityNotFoundException
 import android.provider.Settings
@@ -172,13 +171,15 @@ internal fun DisplayTabScreen(
     }
 }
 
-/** The WiFi selection: on Android 10 and later the WiFi panel over the app, else the WiFi settings. */
+/**
+ * The WiFi settings. Not the WiFi panel of Android 10 and later: it shows only the first few networks, and an app
+ * cannot change that (field test 2026-10-20).
+ */
 internal fun openWifi(context: Context) {
-    val intent = if (Build.VERSION.SDK_INT >= 29) Intent(Settings.Panel.ACTION_WIFI) else Intent(Settings.ACTION_WIFI_SETTINGS)
     try {
-        context.startActivity(intent)
-    } catch (e: ActivityNotFoundException) {
         context.startActivity(Intent(Settings.ACTION_WIFI_SETTINGS))
+    } catch (e: ActivityNotFoundException) {
+        // No WiFi settings on this device: nothing to open.
     }
 }
 
@@ -187,6 +188,7 @@ internal fun openWifi(context: Context) {
 private fun NearbyList(model: DisplayViewModel) {
     val nearby by model.nearby.collectAsStateWithLifecycle()
     val scanState by model.scanState.collectAsStateWithLifecycle()
+    val summary by model.scanSummary.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { model.permissionChanged() }
     Text("Displays nearby", style = MaterialTheme.typography.titleSmall)
@@ -197,6 +199,7 @@ private fun NearbyList(model: DisplayViewModel) {
         ScanState.LOCATION_OFF -> StatusLine("Turn on location to see the displays nearby.", ok = false)
         ScanState.OK -> if (nearby.isEmpty()) {
             Text("No display found nearby.", style = MaterialTheme.typography.bodyMedium)
+            Text(summary, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         } else {
             Column {
                 for (display in nearby) {
