@@ -6,6 +6,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.TimeZone
 
@@ -77,5 +78,16 @@ class HijriInputTest {
     fun settingsIgnoreDamagedValues() {
         val map = mutableMapOf("monthStart" to "12/10/26", "month" to "13", "year" to "abc", "showDivider" to "maybe")
         assertEquals(HijriValues(today, null, "", showDivider = true), settings(map).load(today))
+    }
+
+    @Test
+    fun dayNumberCountsWholeDaysFromTheCounterStart() {
+        val start = LocalDateTime.of(2026, 10, 11, 17, 14)
+        assertNull(HijriInput.dayNumber(start, LocalDateTime.of(2026, 10, 11, 17, 13)))
+        assertEquals(1, HijriInput.dayNumber(start, start))
+        assertEquals(1, HijriInput.dayNumber(start, LocalDateTime.of(2026, 10, 12, 17, 13)))
+        assertEquals(2, HijriInput.dayNumber(start, LocalDateTime.of(2026, 10, 12, 17, 14)))
+        assertEquals(9, HijriInput.dayNumber(start, LocalDateTime.of(2026, 10, 20, 12, 0)))
+        assertEquals(10, HijriInput.dayNumber(start, LocalDateTime.of(2026, 10, 20, 17, 14)))
     }
 }

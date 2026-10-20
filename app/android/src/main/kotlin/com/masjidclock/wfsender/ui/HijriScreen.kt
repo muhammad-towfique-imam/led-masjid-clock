@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,8 +59,10 @@ import com.masjidclock.wfsender.send.Messages
 import com.masjidclock.wfsender.send.SendState
 import com.masjidclock.wfsender.send.TimeStep
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlinx.coroutines.delay
 
 private val DATE_TEXT = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.US)
 private val TIME_TEXT = DateTimeFormatter.ofPattern("HH:mm", Locale.US)
@@ -253,30 +256,44 @@ private fun MonthField(month: Int?, enabled: Boolean, onChange: (Int) -> Unit) {
 /** What the display will show, and when day 1 starts (spec section 3). */
 @Composable
 private fun Summary(monthStart: LocalDate, month: Int?, year: Int?, showDivider: Boolean) {
+    // The shown day number follows the phone clock: update it every 30 seconds.
+    var now by remember { mutableStateOf(LocalDateTime.now()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(30_000)
+            now = LocalDateTime.now()
+        }
+    }
     Surface(
         color = MaterialTheme.colorScheme.secondaryContainer,
         shape = MaterialTheme.shapes.medium,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("Display: m5 — 384 × 32", style = MaterialTheme.typography.bodyMedium)
+            if (month != null && year != null) {
+                val start = HijriStart.counterStart(monthStart, now.toLocalDate())
+                val day = HijriInput.dayNumber(start, now)
+                if (day != null) {
+                    Text(
+                        "The display shows: $day ${HijriMonths.NAMES[month - 1]} $year",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                } else {
+                    Text(
+                        "Day 1 starts on ${start.toLocalDate().format(DATE_TEXT)} at ${start.format(TIME_TEXT)}.",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }
+                Text(
+                    "The date changes every day at ${start.format(TIME_TEXT)} (Maghrib).",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                if (HijriInput.dateIsFar(monthStart, now.toLocalDate())) StatusLine(HijriInput.DATE_WARNING, ok = false)
+            }
             Text(
                 if (showDivider) "Divider line: shown" else "Divider line: hidden",
                 style = MaterialTheme.typography.bodyMedium,
             )
-            if (month != null && year != null) {
-                val today = LocalDate.now()
-                val start = HijriStart.counterStart(monthStart, today)
-                Text(
-                    "The display shows ${HijriMonths.NAMES[month - 1]} $year.",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Text(
-                    "Day 1 starts on ${start.toLocalDate().format(DATE_TEXT)} at ${start.format(TIME_TEXT)} (Maghrib).",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                if (HijriInput.dateIsFar(monthStart, today)) StatusLine(HijriInput.DATE_WARNING, ok = false)
-            }
         }
     }
 }

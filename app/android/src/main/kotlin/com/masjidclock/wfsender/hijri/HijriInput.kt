@@ -37,6 +37,16 @@ object HijriInput {
     fun dateFromPicker(utcMillis: Long): LocalDate = Instant.ofEpochMilli(utcMillis).atZone(ZoneOffset.UTC).toLocalDate()
 
     fun toPickerMillis(date: LocalDate): Long = date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+
+    /**
+     * The day number that the display shows at [now]: the whole days since [counterStart], plus 1.
+     * So the date changes every day at the time of [counterStart]. Null before the start.
+     */
+    fun dayNumber(counterStart: LocalDateTime, now: LocalDateTime): Int? {
+        val seconds = ChronoUnit.SECONDS.between(counterStart, now)
+        if (seconds < 0) return null
+        return (seconds / 86_400).toInt() + 1
+    }
 }
 
 /**
