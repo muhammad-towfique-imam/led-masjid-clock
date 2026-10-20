@@ -116,6 +116,7 @@ internal fun HijriScreen(model: HijriViewModel) {
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxWidth().toggleable(
                     value = values.showDivider,
                     enabled = !sending,
@@ -126,7 +127,7 @@ internal fun HijriScreen(model: HijriViewModel) {
                 Checkbox(checked = values.showDivider, onCheckedChange = null, enabled = !sending)
                 Text("Show the divider line", style = MaterialTheme.typography.bodyLarge)
             }
-            Summary(values.monthStart, month, year, values.showDivider)
+            Summary(values.monthStart, month, year)
         }
 
         StepCard(2, "Connect to the display WiFi", steps.connect) {
@@ -255,7 +256,7 @@ private fun MonthField(month: Int?, enabled: Boolean, onChange: (Int) -> Unit) {
 
 /** What the display will show, and when day 1 starts (spec section 3). */
 @Composable
-private fun Summary(monthStart: LocalDate, month: Int?, year: Int?, showDivider: Boolean) {
+private fun Summary(monthStart: LocalDate, month: Int?, year: Int?) {
     // The shown day number follows the phone clock: update it every 30 seconds.
     var now by remember { mutableStateOf(LocalDateTime.now()) }
     LaunchedEffect(Unit) {
@@ -290,10 +291,6 @@ private fun Summary(monthStart: LocalDate, month: Int?, year: Int?, showDivider:
                 )
                 if (HijriInput.dateIsFar(monthStart, now.toLocalDate())) StatusLine(HijriInput.DATE_WARNING, ok = false)
             }
-            Text(
-                if (showDivider) "Divider line: shown" else "Divider line: hidden",
-                style = MaterialTheme.typography.bodyMedium,
-            )
         }
     }
 }
