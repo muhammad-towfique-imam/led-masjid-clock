@@ -2,6 +2,7 @@ package com.masjidclock.wfsender
 
 import android.app.Application
 import android.content.ContentResolver
+import android.content.Context
 import android.net.Network
 import android.net.Uri
 import android.os.Build
@@ -42,8 +43,18 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/** The tabs of the bottom navigation bar. */
-enum class Page { SEND, CREATE, TIME, HIJRI }
+/**
+ * The pages. The first 3 are the tabs of the bottom bar, in the order of the display stack (display-tabs spec
+ * section 3); Send, Create, and Time open from the side menu.
+ */
+enum class Page(val isTab: Boolean) {
+    ENGLISH(true), BANGLA(true), HIJRI(true), SEND(false), CREATE(false), TIME(false);
+
+    companion object {
+        /** The tab that the app opens on: the last tab; the first time, English. */
+        fun start(saved: String?): Page = entries.firstOrNull { it.isTab && it.name == saved } ?: ENGLISH
+    }
+}
 
 class AppViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -54,7 +65,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private var check: ConnectionCheck<Network>? = null
     private val gate = SendGate.APP
 
-    private val _page = MutableStateFlow(Page.SEND)
+    private val prefs = app.getSharedPreferences("app", Context.MODE_PRIVATE)
+    private var lastTab = Page.start(prefs.getString(LAST_TAB, null))
+
+    private val _page = MutableStateFlow(lastTab)
     val page: StateFlow<Page> = _page
 
     private val _site = MutableStateFlow(ZipImporter.load(siteDir))
@@ -79,8 +93,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     val timeStep: StateFlow<TimeStep> = _timeStep
 
     init {
-        // The app opens on the Send tab. A package holds 1 display, so it is selected without an input.
-        _site.value?.cards?.firstOrNull()?.let(::selectCard)
+        // The app opens on a display tab. The Send page selects its card (and starts its checks) when it opens.
+        _selectedCard.value = _site.value?.cards?.firstOrNull()
     }
 
     /** Opens the Send tab. Nothing happens if it is already open, so a result stays on the screen. */
@@ -97,11 +111,28 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _page.value = Page.TIME
     }
 
-    fun openHijri() {
+    /** Opens a display tab (English, Bangla, Hijri) and remembers it. */
+    fun openTab(tab: Page) {
+        require(tab.isTab) { "$tab is not a tab" }
         if (gate.busy) return
         stopConnectionChecks()
-        _page.value = Page.HIJRI
+        _page.value = tab
+        lastTab = tab
+        prefs.edit().putString(LAST_TAB, tab.name).apply()
     }
+
+    /** Opens Send, Create, or Time from the side menu. */
+    fun openMenuPage(page: Page) {
+        when (page) {
+            Page.SEND -> if (!gate.busy) openSend()
+            Page.CREATE -> openCreate()
+            Page.TIME -> openTime()
+            else -> openTab(page)
+        }
+    }
+
+    /** The back arrow of a menu page: back to the last tab. */
+    fun back() = openTab(lastTab)
 
     fun openCreate() {
         if (gate.busy) return
@@ -269,4 +300,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         resolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
             if (cursor.moveToFirst()) cursor.getString(0) else null
         } ?: uri.lastPathSegment
+
+    private companion object {
+        const val LAST_TAB = "lastTab"
+    }
 }

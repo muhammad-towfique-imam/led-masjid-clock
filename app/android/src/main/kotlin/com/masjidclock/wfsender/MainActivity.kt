@@ -15,6 +15,8 @@ class MainActivity : ComponentActivity() {
     private val model: AppViewModel by viewModels()
     private val create: CreateViewModel by viewModels()
     private val time: TimeViewModel by viewModels()
+    private val english: EnglishViewModel by viewModels()
+    private val bangla: BanglaViewModel by viewModels()
     private val hijri: HijriViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,7 +25,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) handleIntent(intent)
-        setContent { WfSenderApp(model, create, time, hijri) }
+        setContent { WfSenderApp(model, create, time, english, bangla, hijri) }
     }
 
     override fun onNewIntent(intent: Intent) {

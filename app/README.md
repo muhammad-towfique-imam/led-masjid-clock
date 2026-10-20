@@ -12,7 +12,7 @@ A package holds the program of exactly 1 display. It is a ZIP file with the exte
 
 1. In HD2020, export the program of the display with the U-disk option to a USB drive.
 2. Connect the USB drive to the phone with a USB OTG adapter.
-3. In Masjid Clock, open the **Create** tab (bottom bar). The first time, allow file access: turn on "Allow access to
+3. In Masjid Clock, open the menu (≡ at the top left) and tap **Create**. The first time, allow file access: turn on "Allow access to
    manage all files" for Masjid Clock, then go back. Create needs Android 11 or later
    (Send works from Android 7.0).
 4. When the app shows "Found on: … display", type a file name in step 4, for example
@@ -90,7 +90,26 @@ with the old key.
 
 ## Use
 
-Open the **Send** tab (bottom bar). It has 4 steps.
+### The display tabs
+
+A masjid clock is a stack of separate displays, each with its own card and WiFi. The bottom bar has 1 tab for
+each display, in the order of the stack: **English**, **Bangla**, **Hijri** (m5 displays, 384 wide). On each tab:
+connect to the WiFi of that display, set the time (or skip), and tap **Send**.
+
+- **English:** no input. The app sends the stored English program; the card draws the date and the time.
+- **Bangla:** enter the Bangla year (the first time, the app fills in the current year; the year starts on
+  14 April). The box shows the date that the display shows today, for example "25 Poush 1432".
+- **Hijri:** see "Set the Hijri month" below.
+
+The app remembers which card got which program. If the connected card last got a different program, the step
+"Connect" shows a warning under the card name, for example "This card last got the Hijri program."
+
+The menu (≡ at the top left) has **Send** (a package), **Create** (a package), and **Time**. The back arrow returns
+to the last tab. The app opens on the last tab that you used.
+
+### Send a package
+
+Open the menu and tap **Send**. It has 4 steps.
 
 1. **Load file:** open the .hdpkg file with the app ("Open with" in WhatsApp), or tap "Load file".
 2. **Connect to the display WiFi:** connect the phone to the WiFi of the display in Android settings.
@@ -102,7 +121,7 @@ Open the **Send** tab (bottom bar). It has 4 steps.
 
 ## Set the display clock
 
-1. Open the **Time** tab (bottom bar).
+1. Open the menu and tap **Time**.
 2. Connect the phone to the WiFi of the display. Wait until the app shows the card name.
 3. Check the phone time on the screen, and tap **Set the time**.
 
@@ -112,7 +131,7 @@ The display gets the phone's local time. Keep the phone's automatic time on.
 
 For m5 displays (384 × 32) only. The phone makes the Hijri program itself: no PC and no package.
 
-1. Open the **Hijri** tab (bottom bar).
+1. Open the **Hijri** tab.
 2. **Hijri month:** set the month start date (the first day of the Hijri month), select the Hijri month,
    and enter the Hijri year. Turn "Show the divider line" off to hide the dashed line on the lower half.
    The box under the inputs shows the date that the display will show now, for example
@@ -147,6 +166,12 @@ For m5 displays (384 × 32) only. The phone makes the Hijri program itself: no P
 16. Hijri: after a send, switch to another app and back. The display must not flicker.
 17. Hijri: during a Hijri send, open an .hdpkg file with "Open with". The send must continue, and the Send
     page must not start a second send.
+
+18. English and Bangla: send each tab to its card and compare the display with the desktop app's program.
+19. Bangla: the summary shows the correct date; on 13 and 14 April, the first-use year is correct.
+20. Connect the Hijri card on the Bangla tab: the warning "This card last got the Hijri program." shows.
+21. The menu: Send, Create, and Time open; the back arrow and the Android back button return to the last tab.
+22. Close and open the app: it opens on the last tab.
 
 If Create does not find a USB drive, tap the ⓘ icon at the top of the Create tab ("Share details")
 and send the text to support.
