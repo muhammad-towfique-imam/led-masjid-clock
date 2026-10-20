@@ -96,69 +96,72 @@ internal fun HijriScreen(model: HijriViewModel) {
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        StepCard(1, "Hijri month", steps.load) {
-            DateField(values.monthStart, enabled = !sending, onChange = model::setDate)
-            MonthField(month, enabled = !sending, onChange = model::setMonth)
-            OutlinedTextField(
-                value = values.yearText,
-                onValueChange = model::setYearText,
-                label = { Text("Hijri year") },
-                singleLine = true,
-                enabled = !sending,
-                isError = values.yearText.isNotEmpty() && year == null,
-                supportingText = if (values.yearText.isNotEmpty() && year == null) {
-                    { Text(HijriInput.YEAR_ERROR) }
-                } else {
-                    null
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth().toggleable(
-                    value = values.showDivider,
+        // After a result, only the result shows. "Send again" brings the steps back.
+        if (sendState !is SendState.Finished) {
+            StepCard(1, "Hijri month", steps.load) {
+                DateField(values.monthStart, enabled = !sending, onChange = model::setDate)
+                MonthField(month, enabled = !sending, onChange = model::setMonth)
+                OutlinedTextField(
+                    value = values.yearText,
+                    onValueChange = model::setYearText,
+                    label = { Text("Hijri year") },
+                    singleLine = true,
                     enabled = !sending,
-                    role = Role.Checkbox,
-                    onValueChange = model::setShowDivider,
-                ),
-            ) {
-                Checkbox(checked = values.showDivider, onCheckedChange = null, enabled = !sending)
-                Text("Show the divider line", style = MaterialTheme.typography.bodyLarge)
+                    isError = values.yearText.isNotEmpty() && year == null,
+                    supportingText = if (values.yearText.isNotEmpty() && year == null) {
+                        { Text(HijriInput.YEAR_ERROR) }
+                    } else {
+                        null
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth().toggleable(
+                        value = values.showDivider,
+                        enabled = !sending,
+                        role = Role.Checkbox,
+                        onValueChange = model::setShowDivider,
+                    ),
+                ) {
+                    Checkbox(checked = values.showDivider, onCheckedChange = null, enabled = !sending)
+                    Text("Show the divider line", style = MaterialTheme.typography.bodyLarge)
+                }
+                Summary(values.monthStart, month, year)
             }
-            Summary(values.monthStart, month, year)
-        }
 
-        StepCard(2, "Connect to the display WiFi", steps.connect) {
-            Text(Messages.WIFI_INSTRUCTIONS, style = MaterialTheme.typography.bodyMedium)
-            OutlinedButton(
-                onClick = { context.startActivity(Intent(Settings.ACTION_WIFI_SETTINGS)) },
-                enabled = !sending,
-            ) { IconLabel(Icons.Filled.SettingsIcon, "Open WiFi settings") }
-            if (sendState == SendState.Idle) {
-                when (connection) {
-                    ConnectionStatus.NOT_CONNECTED -> StatusLine(Messages.NOT_CONNECTED, ok = false)
-                    ConnectionStatus.NO_DISPLAY -> StatusLine(Messages.NO_DISPLAY, ok = false)
-                    ConnectionStatus.DISPLAY_FOUND -> FoundLine(Messages.foundLabel(cardName))
+            StepCard(2, "Connect to the display WiFi", steps.connect) {
+                Text(Messages.WIFI_INSTRUCTIONS, style = MaterialTheme.typography.bodyMedium)
+                OutlinedButton(
+                    onClick = { context.startActivity(Intent(Settings.ACTION_WIFI_SETTINGS)) },
+                    enabled = !sending,
+                ) { IconLabel(Icons.Filled.SettingsIcon, "Open WiFi settings") }
+                if (sendState == SendState.Idle) {
+                    when (connection) {
+                        ConnectionStatus.NOT_CONNECTED -> StatusLine(Messages.NOT_CONNECTED, ok = false)
+                        ConnectionStatus.NO_DISPLAY -> StatusLine(Messages.NO_DISPLAY, ok = false)
+                        ConnectionStatus.DISPLAY_FOUND -> FoundLine(Messages.foundLabel(cardName))
+                    }
                 }
             }
-        }
 
-        StepCard(3, "Set the time", steps.time) {
-            when (val step = timeStep) {
-                is TimeStep.Set -> StatusLine(step.message, ok = true)
-                TimeStep.Skipped -> Text("Skipped.", style = MaterialTheme.typography.bodyMedium)
-                else -> {
-                    if (step is TimeStep.Failed) StatusLine(step.message, ok = false)
-                    if (step == TimeStep.Busy) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Button(
-                            onClick = model::setTime,
-                            enabled = step != TimeStep.Busy && !sending && connection == ConnectionStatus.DISPLAY_FOUND,
-                        ) { IconLabel(Icons.Filled.DateRange, "Set the time") }
-                        OutlinedButton(onClick = model::skipTime, enabled = step != TimeStep.Busy && !sending) {
-                            Text("Skip")
+            StepCard(3, "Set the time", steps.time) {
+                when (val step = timeStep) {
+                    is TimeStep.Set -> StatusLine(step.message, ok = true)
+                    TimeStep.Skipped -> Text("Skipped.", style = MaterialTheme.typography.bodyMedium)
+                    else -> {
+                        if (step is TimeStep.Failed) StatusLine(step.message, ok = false)
+                        if (step == TimeStep.Busy) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Button(
+                                onClick = model::setTime,
+                                enabled = step != TimeStep.Busy && !sending && connection == ConnectionStatus.DISPLAY_FOUND,
+                            ) { IconLabel(Icons.Filled.DateRange, "Set the time") }
+                            OutlinedButton(onClick = model::skipTime, enabled = step != TimeStep.Busy && !sending) {
+                                Text("Skip")
+                            }
                         }
                     }
                 }

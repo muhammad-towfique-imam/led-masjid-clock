@@ -88,55 +88,58 @@ internal fun SendScreen(model: AppViewModel) {
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        StepCard(1, "Load file", steps.load) {
-            val shown = card
-            if (site == null || shown == null) {
-                Text(Messages.NO_SITE, style = MaterialTheme.typography.bodyMedium)
-                Button(onClick = { openPackage.launch(PACKAGE_TYPES) }, enabled = !sending) {
-                    IconLabel(Icons.Filled.Add, "Load file")
-                }
-            } else {
-                Text("Display: ${Messages.cardRow(shown)}", style = MaterialTheme.typography.titleSmall)
-                OutlinedButton(onClick = { openPackage.launch(PACKAGE_TYPES) }, enabled = !sending) {
-                    Text("Load another file")
-                }
-            }
-        }
-
-        StepCard(2, "Connect to the display WiFi", steps.connect) {
-            Text(Messages.WIFI_INSTRUCTIONS, style = MaterialTheme.typography.bodyMedium)
-            OutlinedButton(
-                onClick = { context.startActivity(Intent(Settings.ACTION_WIFI_SETTINGS)) },
-                enabled = !sending,
-            ) { IconLabel(Icons.Filled.Settings, "Open WiFi settings") }
-            if (sendState == SendState.Idle) {
-                when (connection) {
-                    ConnectionStatus.NOT_CONNECTED -> StatusLine(Messages.NOT_CONNECTED, ok = false)
-                    ConnectionStatus.NO_DISPLAY -> StatusLine(Messages.NO_DISPLAY, ok = false)
-                    ConnectionStatus.DISPLAY_FOUND -> FoundLine(Messages.foundLabel(cardName))
+        // After a result, only the result shows. "Send again" brings the steps back.
+        if (sendState !is SendState.Finished) {
+            StepCard(1, "Load file", steps.load) {
+                val shown = card
+                if (site == null || shown == null) {
+                    Text(Messages.NO_SITE, style = MaterialTheme.typography.bodyMedium)
+                    Button(onClick = { openPackage.launch(PACKAGE_TYPES) }, enabled = !sending) {
+                        IconLabel(Icons.Filled.Add, "Load file")
+                    }
+                } else {
+                    Text("Display: ${Messages.cardRow(shown)}", style = MaterialTheme.typography.titleSmall)
+                    OutlinedButton(onClick = { openPackage.launch(PACKAGE_TYPES) }, enabled = !sending) {
+                        Text("Load another file")
+                    }
                 }
             }
-        }
 
-        StepCard(3, "Set the time", steps.time) {
-            val step = timeStep
-            when (step) {
-                is TimeStep.Set -> StatusLine(step.message, ok = true)
-                TimeStep.Skipped -> Text("Skipped.", style = MaterialTheme.typography.bodyMedium)
-                else -> {
-                    Text(
-                        "Phone time: ${WallClock.time(now)}  ${WallClock.date(now)}",
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                    if (!autoTime) StatusLine(Messages.TIME_MANUAL, ok = false)
-                    if (step is TimeStep.Failed) StatusLine(step.message, ok = false)
-                    if (step == TimeStep.Busy) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Button(onClick = model::setTime, enabled = step != TimeStep.Busy && !sending) {
-                            IconLabel(Icons.Filled.DateRange, "Set the time")
-                        }
-                        OutlinedButton(onClick = model::skipTime, enabled = step != TimeStep.Busy && !sending) {
-                            Text("Skip")
+            StepCard(2, "Connect to the display WiFi", steps.connect) {
+                Text(Messages.WIFI_INSTRUCTIONS, style = MaterialTheme.typography.bodyMedium)
+                OutlinedButton(
+                    onClick = { context.startActivity(Intent(Settings.ACTION_WIFI_SETTINGS)) },
+                    enabled = !sending,
+                ) { IconLabel(Icons.Filled.Settings, "Open WiFi settings") }
+                if (sendState == SendState.Idle) {
+                    when (connection) {
+                        ConnectionStatus.NOT_CONNECTED -> StatusLine(Messages.NOT_CONNECTED, ok = false)
+                        ConnectionStatus.NO_DISPLAY -> StatusLine(Messages.NO_DISPLAY, ok = false)
+                        ConnectionStatus.DISPLAY_FOUND -> FoundLine(Messages.foundLabel(cardName))
+                    }
+                }
+            }
+
+            StepCard(3, "Set the time", steps.time) {
+                val step = timeStep
+                when (step) {
+                    is TimeStep.Set -> StatusLine(step.message, ok = true)
+                    TimeStep.Skipped -> Text("Skipped.", style = MaterialTheme.typography.bodyMedium)
+                    else -> {
+                        Text(
+                            "Phone time: ${WallClock.time(now)}  ${WallClock.date(now)}",
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                        if (!autoTime) StatusLine(Messages.TIME_MANUAL, ok = false)
+                        if (step is TimeStep.Failed) StatusLine(step.message, ok = false)
+                        if (step == TimeStep.Busy) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Button(onClick = model::setTime, enabled = step != TimeStep.Busy && !sending) {
+                                IconLabel(Icons.Filled.DateRange, "Set the time")
+                            }
+                            OutlinedButton(onClick = model::skipTime, enabled = step != TimeStep.Busy && !sending) {
+                                Text("Skip")
+                            }
                         }
                     }
                 }
