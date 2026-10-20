@@ -144,6 +144,8 @@ For m5 displays (384 × 32) only. The phone makes the Hijri program itself: no P
 15. Hijri: send the current month with the real year. The display must show the same text and the same day
     number as the program from the desktop app.
 16. Hijri: after a send, switch to another app and back. The display must not flicker.
+17. Hijri: during a Hijri send, open an .hdpkg file with "Open with". The send must continue, and the Send
+    page must not start a second send.
 
 If Create does not find a USB drive, tap the ⓘ icon at the top of the Create tab ("Share details")
 and send the text to support.

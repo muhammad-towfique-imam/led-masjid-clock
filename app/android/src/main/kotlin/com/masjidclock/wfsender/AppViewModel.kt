@@ -52,7 +52,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val network = CardNetwork(app).also { it.start() }
     private var checkJob: Job? = null
     private var check: ConnectionCheck<Network>? = null
-    private val gate = SendGate()
+    private val gate = SendGate.APP
 
     private val _page = MutableStateFlow(Page.SEND)
     val page: StateFlow<Page> = _page

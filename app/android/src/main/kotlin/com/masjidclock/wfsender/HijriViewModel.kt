@@ -53,7 +53,7 @@ class HijriViewModel(app: Application) : AndroidViewModel(app) {
     private val network = CardNetwork(app).also { it.start() }
     private var checkJob: Job? = null
     private var check: ConnectionCheck<Network>? = null
-    private val gate = SendGate()
+    private val gate = SendGate.APP
     private val prefs = app.getSharedPreferences("hijri", Context.MODE_PRIVATE)
     private val settings = HijriSettings(
         read = { prefs.getString(it, null) },

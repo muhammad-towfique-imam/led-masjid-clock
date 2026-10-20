@@ -20,4 +20,9 @@ class SendGate {
     fun finish() {
         busy = false
     }
+
+    companion object {
+        /** The gate of the app: the Send and the Hijri pages share it, so only 1 of them sends at a time. */
+        val APP = SendGate()
+    }
 }
