@@ -2,7 +2,9 @@ package com.masjidclock.wfsender.hijri
 
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
 import kotlin.math.abs
@@ -68,3 +70,16 @@ class HijriSettings(private val read: (String) -> String?, private val write: (S
         const val YEAR = "year"
     }
 }
+
+/** The first lines of the send log of a Hijri program (spec section 6). */
+fun hijriLogHeader(
+    month: String,
+    year: Int,
+    monthStart: LocalDate,
+    counterStart: LocalDateTime,
+    programSize: Int,
+): List<String> = listOf(
+    "Display: m5, 384 × 32, progam.hds $programSize bytes",
+    "Hijri: $month $year, month start $monthStart, counter start " +
+        counterStart.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+)

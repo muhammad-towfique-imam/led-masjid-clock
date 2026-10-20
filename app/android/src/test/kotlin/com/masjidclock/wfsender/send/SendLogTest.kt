@@ -3,8 +3,11 @@ package com.masjidclock.wfsender.send
 import com.masjidclock.wfsender.protocol.Ack
 import com.masjidclock.wfsender.protocol.FailureReason
 import com.masjidclock.wfsender.protocol.SendResult
+import com.masjidclock.wfsender.hijri.hijriLogHeader
 import com.masjidclock.wfsender.site.Card
 import java.io.File
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.Date
 import java.util.TimeZone
 import org.junit.Assert.assertEquals
@@ -55,5 +58,21 @@ class SendLogTest {
         val log = SendLog("s", Card("a", File("x"), 64, 32, 100), "0.7.0", "16", now = { Date(0) })
         log.note("Safe form, variant PLAIN")
         assertEquals("Safe form, variant PLAIN", log.text().lines().last())
+    }
+
+    @Test
+    fun headerConstructor() {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+        val header = hijriLogHeader(
+            "Juma Ula", 1448, LocalDate.of(2026, 10, 12), LocalDateTime.of(2026, 10, 11, 17, 14), 6053,
+        )
+        val log = SendLog(header = header, appVersion = "0.2.0", androidVersion = "16", now = { Date(0) })
+        val expected = """
+            Masjid Clock 0.2.0, Android 16
+            Time: 1970-01-01 00:00:00
+            Display: m5, 384 × 32, progam.hds 6053 bytes
+            Hijri: Juma Ula 1448, month start 2026-10-12, counter start 2026-10-11 17:14
+        """.trimIndent()
+        assertEquals(expected, log.text())
     }
 }

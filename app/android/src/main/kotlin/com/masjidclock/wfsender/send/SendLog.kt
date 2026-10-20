@@ -10,12 +10,21 @@ import java.util.Locale
 
 /** The log of 1 send, shared as plain text (spec section 6.3). */
 class SendLog(
-    siteName: String,
-    card: Card,
+    header: List<String>,
     appVersion: String,
     androidVersion: String,
     now: () -> Date = { Date() },
 ) : SendListener {
+
+    /** The log of a package send: the header names the site and the card. */
+    constructor(siteName: String, card: Card, appVersion: String, androidVersion: String, now: () -> Date = { Date() }) :
+        this(
+            listOf(
+                "Site: $siteName",
+                "Card: ${card.label}, ${card.width} × ${card.height}, progam.hds ${card.programSize} bytes",
+            ),
+            appVersion, androidVersion, now,
+        )
 
     private val lines = mutableListOf<String>()
 
@@ -23,8 +32,7 @@ class SendLog(
         val time = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(now())
         add("Masjid Clock $appVersion, Android $androidVersion")
         add("Time: $time")
-        add("Site: $siteName")
-        add("Card: ${card.label}, ${card.width} × ${card.height}, progam.hds ${card.programSize} bytes")
+        header.forEach(::add)
     }
 
     override fun onAttemptStarted(attempt: Int, transferId: Int) =
