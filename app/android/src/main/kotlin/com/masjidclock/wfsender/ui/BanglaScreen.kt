@@ -20,8 +20,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.masjidclock.wfsender.BanglaViewModel
-import com.masjidclock.wfsender.bangla.BanglaCalendar
 import com.masjidclock.wfsender.bangla.BanglaText
+import com.masjidclock.wfsender.bangla.banglaSummary
 import com.masjidclock.wfsender.hijri.HijriInput
 import java.time.LocalDate
 import kotlinx.coroutines.delay
@@ -70,7 +70,8 @@ private fun BanglaSummary(year: Int) {
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            val date = BanglaCalendar.dateOn(year, today)
+            val summary = banglaSummary(year, today)
+            val date = summary.date
             if (date != null) {
                 Text(
                     "The display shows: ${date.day} ${date.month} ${date.year}",
@@ -78,8 +79,7 @@ private fun BanglaSummary(year: Int) {
                 )
                 Text(BanglaText.CHANGE_TIME, style = MaterialTheme.typography.bodyMedium)
             }
-            // Program 13 (Baishakh of the next year) also belongs to the entered year.
-            if (date == null) StatusLine(BanglaText.yearWarning(BanglaCalendar.currentYear(today)), ok = false)
+            summary.warning?.let { StatusLine(it, ok = false) }
         }
     }
 }

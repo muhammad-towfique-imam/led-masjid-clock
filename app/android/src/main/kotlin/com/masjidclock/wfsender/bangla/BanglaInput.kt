@@ -32,3 +32,16 @@ fun banglaLogHeader(year: Int, programSize: Int): List<String> {
         "Bangla: year $year, ${ranges.first().start} to ${ranges.last().endInclusive}",
     )
 }
+
+/** What the Bangla summary box shows: the date on the display today (or null), and a warning (or null). */
+data class BanglaSummary(val date: BanglaDate?, val warning: String?)
+
+/**
+ * The warning shows if [year] does not contain [today] (spec 5.1): also from 14 April to 14 May, when program 13
+ * of [year] plays but today is already in the next year. Then the program of [year] stops on 14 May.
+ */
+fun banglaSummary(year: Int, today: LocalDate): BanglaSummary {
+    val date = BanglaCalendar.dateOn(year, today)
+    val warning = if (date == null || date.year != year) BanglaText.yearWarning(BanglaCalendar.currentYear(today)) else null
+    return BanglaSummary(date, warning)
+}
