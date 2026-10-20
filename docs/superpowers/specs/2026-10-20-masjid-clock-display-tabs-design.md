@@ -204,5 +204,6 @@ bn1458; all m5, correct XML). Experiment: `/home/towfique/Documents/debug/bangla
 - The day rule (whole days since the counter start) gives 25 Poush 1432 on 9 Jan 2026, as the photo shows.
 - **A fault in the desktop app:** program 13 (Baishakh of the next year) always shows "Baishakh 1431". The template
   text is "1431" there, and `set_year` replaces only "1430". The experiment can write the correct year (year + 1)
-  there.
+  there. **User decision (2026-10-20): the app corrects program 13** (find "1431", write year + 1). This is the
+  only intended difference from the desktop app.
 - English: the export is sent without a change (1 program, 384 × 64, 34,034 bytes).
