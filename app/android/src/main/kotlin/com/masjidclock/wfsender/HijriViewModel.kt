@@ -3,6 +3,7 @@ package com.masjidclock.wfsender
 import android.app.Application
 import android.content.Context
 import com.masjidclock.wfsender.display.DisplayTab
+import com.masjidclock.wfsender.hijri.HijriCardValues
 import com.masjidclock.wfsender.hijri.HijriInput
 import com.masjidclock.wfsender.hijri.HijriM5
 import com.masjidclock.wfsender.hijri.HijriMonths
@@ -33,26 +34,41 @@ class HijriViewModel(app: Application) : DisplayViewModel(app, DisplayTab.HIJRI)
 
     fun setDate(date: LocalDate) {
         if (gate.busy) return
+        inputChanged()
         _values.value = _values.value.copy(monthStart = date)
         settings.saveDate(date)
     }
 
     fun setMonth(month: Int) {
         if (gate.busy) return
+        inputChanged()
         _values.value = _values.value.copy(month = month)
         settings.saveMonth(month)
     }
 
     fun setYearText(text: String) {
         if (gate.busy) return
+        inputChanged()
         _values.value = _values.value.copy(yearText = text)
         HijriInput.parseYear(text)?.let(settings::saveYear)
     }
 
     fun setShowDivider(show: Boolean) {
         if (gate.busy) return
+        inputChanged()
         _values.value = _values.value.copy(showDivider = show)
         settings.saveShowDivider(show)
+    }
+
+    /** The values of the last send to the connected card; they also become the last values. */
+    override fun applyCardValues(text: String): Boolean {
+        val card = HijriCardValues.decode(text) ?: return false
+        _values.value = card
+        settings.saveDate(card.monthStart)
+        card.month?.let(settings::saveMonth)
+        HijriInput.parseYear(card.yearText)?.let(settings::saveYear)
+        settings.saveShowDivider(card.showDivider)
+        return true
     }
 
     override fun prepareSend(): SendJob? {
@@ -73,6 +89,7 @@ class HijriViewModel(app: Application) : DisplayViewModel(app, DisplayTab.HIJRI)
                     input.showDivider,
                 )
             },
+            cardValues = HijriCardValues.encode(input),
         )
     }
 }

@@ -54,6 +54,7 @@ private val TIME_TEXT = DateTimeFormatter.ofPattern("HH:mm", Locale.US)
 @Composable
 internal fun HijriScreen(model: HijriViewModel) {
     val values by model.values.collectAsStateWithLifecycle()
+    val fromCard by model.valuesFromCard.collectAsStateWithLifecycle()
     val year = HijriInput.parseYear(values.yearText)
     val month = values.month
     DisplayTabScreen(model, inputsValid = month != null && year != null) { state, sending ->
@@ -88,6 +89,7 @@ internal fun HijriScreen(model: HijriViewModel) {
                 Checkbox(checked = values.showDivider, onCheckedChange = null, enabled = !sending)
                 Text("Show the divider line", style = MaterialTheme.typography.bodyLarge)
             }
+            if (fromCard) Text(CARD_VALUES_NOTE, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
             Summary(values.monthStart, month, year)
         }
     }

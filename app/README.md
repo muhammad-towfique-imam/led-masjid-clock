@@ -101,6 +101,10 @@ connect to the WiFi of that display, set the time (or skip), and tap **Send**.
   14 April). The box shows the date that the display shows today, for example "25 Poush 1432".
 - **Hijri:** see "Set the Hijri month" below.
 
+The app remembers the inputs of each card: after a successful send, it saves the inputs under the card name. When
+it finds a card that it knows, the inputs change to that card's values ("Values from the last send to this card.").
+For an unknown card, the inputs keep the last values.
+
 The app remembers which card got which program. If the connected card last got a different program, the step
 "Connect" shows a warning under the card name, for example "This card last got the Hijri program."
 
@@ -173,6 +177,8 @@ For m5 displays (384 × 32) only. The phone makes the Hijri program itself: no P
 21. The menu: Send, Create, and Time open; the back arrow and the Android back button return to the last tab.
 22. Close and open the app: it opens on the last tab.
 23. Open the menu (≡) and press the Android back button: the menu closes, and the app stays open.
+24. Send Hijri to card A, then change the inputs and send to card B. Connect card A again: the inputs change to
+    card A's values and the note shows. Connect an unknown card: the inputs keep the last values.
 
 If Create does not find a USB drive, tap the ⓘ icon at the top of the Create tab ("Share details")
 and send the text to support.

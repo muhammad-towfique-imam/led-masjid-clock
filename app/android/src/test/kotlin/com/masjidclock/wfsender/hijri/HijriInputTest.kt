@@ -99,4 +99,17 @@ class HijriInputTest {
             HijriInput.dayOneStart(LocalDateTime.of(2026, 10, 11, 17, 14)),
         )
     }
+
+    @Test
+    fun cardValuesRoundTrip() {
+        val values = HijriValues(LocalDate.of(2026, 10, 12), 5, "1448", showDivider = false)
+        assertEquals(values, HijriCardValues.decode(HijriCardValues.encode(values)))
+    }
+
+    @Test
+    fun damagedCardValuesAreIgnored() {
+        for (text in listOf(null, "", "x|y", "2026-10-12|13|1448|true", "2026-10-12|5|abc|true", "12/10/26|5|1448|true")) {
+            assertNull("\"$text\"", HijriCardValues.decode(text))
+        }
+    }
 }

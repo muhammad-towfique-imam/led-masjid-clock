@@ -37,6 +37,9 @@ import com.masjidclock.wfsender.send.Messages
 import com.masjidclock.wfsender.send.SendState
 import com.masjidclock.wfsender.send.TimeStep
 
+/** Under the inputs, when they show the values of the last send to the connected card. */
+internal const val CARD_VALUES_NOTE = "Values from the last send to this card."
+
 /**
  * A display tab (English, Bangla, Hijri): the tab's own input step (if any), then the steps Connect, Set the time,
  * and Send. After a result, only the result shows. The checks run only while the tab is visible, and not after a

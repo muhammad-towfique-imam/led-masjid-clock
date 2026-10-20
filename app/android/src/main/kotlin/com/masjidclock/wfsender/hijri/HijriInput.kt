@@ -105,3 +105,28 @@ fun hijriLogHeader(
         counterStart.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) +
         ", divider line " + if (showDivider) "shown" else "hidden",
 )
+
+/** The Hijri inputs of the last successful send to a card, as 1 text: "monthStart|month|year|showDivider". */
+object HijriCardValues {
+    fun encode(values: HijriValues): String =
+        listOf(values.monthStart, values.month ?: "", values.yearText, values.showDivider).joinToString("|")
+
+    /** The values, or null if [text] is missing or damaged. */
+    fun decode(text: String?): HijriValues? {
+        val parts = text?.split('|') ?: return null
+        if (parts.size != 4) return null
+        val date = try {
+            LocalDate.parse(parts[0])
+        } catch (e: DateTimeParseException) {
+            return null
+        }
+        val month = parts[1].toIntOrNull()?.takeIf { it in 1..12 } ?: return null
+        if (HijriInput.parseYear(parts[2]) == null) return null
+        val showDivider = when (parts[3]) {
+            "true" -> true
+            "false" -> false
+            else -> return null
+        }
+        return HijriValues(date, month, parts[2], showDivider)
+    }
+}

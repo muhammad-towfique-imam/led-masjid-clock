@@ -2,6 +2,7 @@ package com.masjidclock.wfsender
 
 import android.app.Application
 import android.content.Context
+import com.masjidclock.wfsender.bangla.BanglaCardValues
 import com.masjidclock.wfsender.bangla.BanglaM5
 import com.masjidclock.wfsender.bangla.BanglaProgram
 import com.masjidclock.wfsender.bangla.BanglaSettings
@@ -28,8 +29,17 @@ class BanglaViewModel(app: Application) : DisplayViewModel(app, DisplayTab.BANGL
     /** Saves the year only when it is valid. */
     fun setYearText(text: String) {
         if (gate.busy) return
+        inputChanged()
         _yearText.value = text
         HijriInput.parseYear(text)?.let(settings::saveYear)
+    }
+
+    /** The year of the last send to the connected card; it also becomes the last value. */
+    override fun applyCardValues(text: String): Boolean {
+        val year = BanglaCardValues.decode(text) ?: return false
+        _yearText.value = year
+        HijriInput.parseYear(year)?.let(settings::saveYear)
+        return true
     }
 
     override fun prepareSend(): SendJob? {
@@ -37,6 +47,7 @@ class BanglaViewModel(app: Application) : DisplayViewModel(app, DisplayTab.BANGL
         return SendJob(
             makeExport = { HdsExport(BanglaM5.screen, BanglaProgram.make(BanglaM5.base(), BanglaM5.digits, year)) },
             logHeader = { export -> banglaLogHeader(year, export.program.size) },
+            cardValues = BanglaCardValues.encode(year),
         )
     }
 }
