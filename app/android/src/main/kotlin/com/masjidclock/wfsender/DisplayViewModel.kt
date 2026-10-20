@@ -8,10 +8,14 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.masjidclock.wfsender.display.CardList
 import com.masjidclock.wfsender.display.DisplayTab
+import com.masjidclock.wfsender.display.NearbyDisplay
+import com.masjidclock.wfsender.display.nearbyDisplays
 import com.masjidclock.wfsender.hijri.HijriDataException
 import com.masjidclock.wfsender.net.CardNetwork
 import com.masjidclock.wfsender.net.ConnectionCheck
 import com.masjidclock.wfsender.net.ConnectionStatus
+import com.masjidclock.wfsender.net.ScanState
+import com.masjidclock.wfsender.net.WifiScanner
 import com.masjidclock.wfsender.protocol.CardClock
 import com.masjidclock.wfsender.protocol.CardSender
 import com.masjidclock.wfsender.protocol.ClockFailure
@@ -56,6 +60,15 @@ abstract class DisplayViewModel(app: Application, val tab: DisplayTab) : Android
     private val network = CardNetwork(app).also { it.start() }
     private var checkJob: Job? = null
     private var check: ConnectionCheck<Network>? = null
+    private val scanner = WifiScanner(app)
+    private var scanJob: Job? = null
+
+    /** The card WiFi networks near the phone, for the list "Displays nearby". */
+    private val _nearby = MutableStateFlow<List<NearbyDisplay>>(emptyList())
+    val nearby: StateFlow<List<NearbyDisplay>> = _nearby
+
+    private val _scanState = MutableStateFlow(ScanState.NO_PERMISSION)
+    val scanState: StateFlow<ScanState> = _scanState
     protected val gate = SendGate.APP
     private val cards = app.getSharedPreferences("cards", Context.MODE_PRIVATE)
     private val cardList = CardList(read = { cards.getString(LIST, null) }, write = { cards.edit().putString(LIST, it).apply() })
@@ -100,6 +113,14 @@ abstract class DisplayViewModel(app: Application, val tab: DisplayTab) : Android
     fun startChecks() {
         if (_sendState.value != SendState.Idle) return
         stopChecks()
+        // The phone's WiFi scan results: they do not contact the cards.
+        scanner.startScan()
+        scanJob = viewModelScope.launch {
+            while (isActive) {
+                refreshNearby()
+                delay(3_000)
+            }
+        }
         _connection.value = ConnectionStatus.NOT_CONNECTED
         val newCheck = ConnectionCheck({ network.current }) { wifi ->
             val found = CardSender(network.connectorFor(wifi)).probe()
@@ -130,10 +151,23 @@ abstract class DisplayViewModel(app: Application, val tab: DisplayTab) : Android
     }
 
     fun stopChecks() {
+        scanJob?.cancel()
+        scanJob = null
         check?.stop()
         check = null
         checkJob?.cancel()
         checkJob = null
+    }
+
+    /** After the person answers the permission question. */
+    fun permissionChanged() {
+        scanner.startScan()
+        refreshNearby()
+    }
+
+    private fun refreshNearby() {
+        _scanState.value = scanner.state()
+        _nearby.value = nearbyDisplays(scanner.results(), tab) { cardList.tabOf(it) }
     }
 
     /** After a result: back to step 2 for the same display. */

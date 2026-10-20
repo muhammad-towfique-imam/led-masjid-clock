@@ -1,6 +1,9 @@
 package com.masjidclock.wfsender.ui
 
 import android.content.Intent
+import android.os.Build
+import android.content.Context
+import android.content.ActivityNotFoundException
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -26,6 +29,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.masjidclock.wfsender.net.WifiScanner
+import com.masjidclock.wfsender.net.ScanState
+import com.masjidclock.wfsender.display.signalText
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.clickable
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -80,8 +90,9 @@ internal fun DisplayTabScreen(
 
             StepCard(first, "Connect to the display WiFi", steps.connect) {
                 Text(Messages.WIFI_INSTRUCTIONS, style = MaterialTheme.typography.bodyMedium)
+                if (sendState == SendState.Idle && connection != ConnectionStatus.DISPLAY_FOUND) NearbyList(model)
                 OutlinedButton(
-                    onClick = { context.startActivity(Intent(Settings.ACTION_WIFI_SETTINGS)) },
+                    onClick = { openWifi(context) },
                     enabled = !sending,
                 ) { IconLabel(Icons.Filled.SettingsIcon, "Open WiFi settings") }
                 if (sendState == SendState.Idle) {
@@ -154,6 +165,55 @@ internal fun DisplayTabScreen(
                                 .putExtra(Intent.EXTRA_TEXT, state.log)
                             context.startActivity(Intent.createChooser(share, "Share log"))
                         }, modifier = Modifier.fillMaxWidth()) { IconLabel(Icons.Filled.Share, "Share log") }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** The WiFi selection: on Android 10 and later the WiFi panel over the app, else the WiFi settings. */
+internal fun openWifi(context: Context) {
+    val intent = if (Build.VERSION.SDK_INT >= 29) Intent(Settings.Panel.ACTION_WIFI) else Intent(Settings.ACTION_WIFI_SETTINGS)
+    try {
+        context.startActivity(intent)
+    } catch (e: ActivityNotFoundException) {
+        context.startActivity(Intent(Settings.ACTION_WIFI_SETTINGS))
+    }
+}
+
+/** "Displays nearby": the card WiFi networks near the phone, the card of this tab first (spec of 2026-10-20). */
+@Composable
+private fun NearbyList(model: DisplayViewModel) {
+    val nearby by model.nearby.collectAsStateWithLifecycle()
+    val scanState by model.scanState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { model.permissionChanged() }
+    Text("Displays nearby", style = MaterialTheme.typography.titleSmall)
+    when (scanState) {
+        ScanState.NO_PERMISSION -> OutlinedButton(onClick = { ask.launch(WifiScanner.permission()) }) {
+            Text("Show displays nearby")
+        }
+        ScanState.LOCATION_OFF -> StatusLine("Turn on location to see the displays nearby.", ok = false)
+        ScanState.OK -> if (nearby.isEmpty()) {
+            Text("No display found nearby.", style = MaterialTheme.typography.bodyMedium)
+        } else {
+            Column {
+                for (display in nearby) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().clickable { openWifi(context) }.padding(vertical = 6.dp),
+                    ) {
+                        Text(
+                            display.label,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = if (display.forThisTab) FontWeight.Bold else FontWeight.Normal,
+                            color = if (display.forThisTab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            signalText(display.level),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             }
