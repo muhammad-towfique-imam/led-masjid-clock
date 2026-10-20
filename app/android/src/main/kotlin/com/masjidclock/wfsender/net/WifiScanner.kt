@@ -5,26 +5,28 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.net.wifi.WifiManager
-import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
 import com.masjidclock.wfsender.display.WifiSeen
 
-/** Why the list "Displays nearby" can be empty. */
-enum class ScanState { NO_PERMISSION, LOCATION_OFF, OK }
+/** Why the list "Displays nearby" can be empty. APPROXIMATE: only approximate location is allowed. */
+enum class ScanState { NO_PERMISSION, APPROXIMATE, LOCATION_OFF, OK }
 
 /**
- * The phone's WiFi scan results. Android 13 and later: "Nearby devices" (not for location); Android 7–12: location,
- * and the location setting must be on. A scan does not contact the cards.
+ * The phone's WiFi scan results. They need precise location and the location setting on, on all Android versions;
+ * without it, Android gives an empty list and no error. A scan does not contact the cards.
  */
 class WifiScanner(private val context: Context) {
     private val wifi = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
 
     fun state(): ScanState = when {
-        ContextCompat.checkSelfPermission(context, permission()) != PackageManager.PERMISSION_GRANTED -> ScanState.NO_PERMISSION
-        Build.VERSION.SDK_INT < 33 && !locationOn() -> ScanState.LOCATION_OFF
-        else -> ScanState.OK
+        granted(Manifest.permission.ACCESS_FINE_LOCATION) -> if (locationOn()) ScanState.OK else ScanState.LOCATION_OFF
+        granted(Manifest.permission.ACCESS_COARSE_LOCATION) -> ScanState.APPROXIMATE
+        else -> ScanState.NO_PERMISSION
     }
+
+    private fun granted(permission: String) =
+        ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
 
     /** At most 4 scans in 2 minutes since Android 9; call it when the tab opens. */
     @Suppress("DEPRECATION")
@@ -48,7 +50,7 @@ class WifiScanner(private val context: Context) {
     }
 
     companion object {
-        fun permission(): String =
-            if (Build.VERSION.SDK_INT >= 33) Manifest.permission.NEARBY_WIFI_DEVICES else Manifest.permission.ACCESS_FINE_LOCATION
+        /** Android 12 and later: ask for both, so that the user can choose precise. */
+        val PERMISSIONS = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
     }
 }

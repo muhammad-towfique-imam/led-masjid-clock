@@ -103,8 +103,8 @@ connect to the WiFi of that display, set the time (or skip), and tap **Send**.
 
 In the step "Connect", the list "Displays nearby" shows the card WiFi networks near the phone (names such as
 `WF1_…`), with the card of this tab first and marked ✓. Tap a card or "Open WiFi settings" to choose the WiFi and
-type its password. The first time, tap "Show displays nearby" and allow the permission ("Nearby devices" on
-Android 13 and later; "Location" on Android 7–12, with the location setting on).
+type its password. The first time, tap "Show displays nearby" and allow **precise** location (Android needs it for the
+WiFi scan list on all versions); the location setting must be on.
 
 The app remembers the inputs of each card: after a successful send, it saves the inputs under the card name. When
 it finds a card that it knows, the inputs change to that card's values ("Values from the last send to this card.").
@@ -187,7 +187,7 @@ For m5 displays (384 × 32) only. The phone makes the Hijri program itself: no P
     card A's values and the note shows. Connect an unknown card: the inputs keep the last values.
 25. Hijri with "Outside temperature": the lower half shows "Outside Temp" and the value in all 3 sections.
 26. Displays nearby: on each tab, the list shows the card WiFis near the phone, with the card of that tab first and
-    marked ✓. Test the permission question once on Android 13+ and once on Android 7–12 (location on and off).
+    marked ✓. Test the permission question: precise, approximate, and denied; location setting on and off.
 
 If Create does not find a USB drive, tap the ⓘ icon at the top of the Create tab ("Share details")
 and send the text to support.

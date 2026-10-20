@@ -190,11 +190,15 @@ private fun NearbyList(model: DisplayViewModel) {
     val scanState by model.scanState.collectAsStateWithLifecycle()
     val summary by model.scanSummary.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { model.permissionChanged() }
+    val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { model.permissionChanged() }
     Text("Displays nearby", style = MaterialTheme.typography.titleSmall)
     when (scanState) {
-        ScanState.NO_PERMISSION -> OutlinedButton(onClick = { ask.launch(WifiScanner.permission()) }) {
+        ScanState.NO_PERMISSION -> OutlinedButton(onClick = { ask.launch(WifiScanner.PERMISSIONS) }) {
             Text("Show displays nearby")
+        }
+        ScanState.APPROXIMATE -> {
+            StatusLine("Allow precise location to see the displays nearby.", ok = false)
+            OutlinedButton(onClick = { ask.launch(WifiScanner.PERMISSIONS) }) { Text("Allow precise location") }
         }
         ScanState.LOCATION_OFF -> StatusLine("Turn on location to see the displays nearby.", ok = false)
         ScanState.OK -> if (nearby.isEmpty()) {
