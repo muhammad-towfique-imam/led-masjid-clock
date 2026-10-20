@@ -4,6 +4,7 @@ import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDateTime
 import java.util.Locale
@@ -73,6 +74,35 @@ class HijriProgramTest {
             }
         } finally {
             Locale.setDefault(saved)
+        }
+    }
+
+    @Test
+    fun dividerShownKeepsTheProgram() {
+        for (month in 1..12) {
+            assertArrayEquals(
+                "month $month",
+                HijriProgram.make(HijriM5.base(month), HijriM5.digits, 1448, start),
+                HijriProgram.make(HijriM5.base(month), HijriM5.digits, 1448, start, showDivider = true),
+            )
+        }
+    }
+
+    @Test
+    fun dividerHiddenClearsOnlyTheDividerAreas() {
+        for (month in 1..12) {
+            val base = HijriM5.base(month)
+            val dividers = Areas.of(base).filter { it.isDivider }
+            assertEquals("month $month: divider areas", 3, dividers.size)
+            val bitmaps = dividers.map { (it.start + Area.BITMAP) until it.end }
+            assertTrue("month $month: the base shows the line", bitmaps.any { r -> r.any { base[it].toInt() != 0 } })
+
+            val made = HijriProgram.make(base, HijriM5.digits, 1448, start, showDivider = false)
+            for (i in base.indices) {
+                val inDivider = bitmaps.any { i in it }
+                if (inDivider) assertEquals("month $month byte $i", 0, made[i].toInt())
+                else assertEquals("month $month byte $i", base[i], made[i])
+            }
         }
     }
 }

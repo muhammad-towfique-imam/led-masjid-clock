@@ -6,6 +6,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings as SettingsIcon
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
@@ -39,7 +41,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -107,7 +111,19 @@ internal fun HijriScreen(model: HijriViewModel) {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
             )
-            Summary(values.monthStart, month, year)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().toggleable(
+                    value = values.showDivider,
+                    enabled = !sending,
+                    role = Role.Checkbox,
+                    onValueChange = model::setShowDivider,
+                ),
+            ) {
+                Checkbox(checked = values.showDivider, onCheckedChange = null, enabled = !sending)
+                Text("Show the divider line", style = MaterialTheme.typography.bodyLarge)
+            }
+            Summary(values.monthStart, month, year, values.showDivider)
         }
 
         StepCard(2, "Connect to the display WiFi", steps.connect) {
@@ -236,7 +252,7 @@ private fun MonthField(month: Int?, enabled: Boolean, onChange: (Int) -> Unit) {
 
 /** What the display will show, and when day 1 starts (spec section 3). */
 @Composable
-private fun Summary(monthStart: LocalDate, month: Int?, year: Int?) {
+private fun Summary(monthStart: LocalDate, month: Int?, year: Int?, showDivider: Boolean) {
     Surface(
         color = MaterialTheme.colorScheme.secondaryContainer,
         shape = MaterialTheme.shapes.medium,
@@ -244,6 +260,10 @@ private fun Summary(monthStart: LocalDate, month: Int?, year: Int?) {
     ) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text("Display: m5 — 384 × 32", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                if (showDivider) "Divider line: shown" else "Divider line: hidden",
+                style = MaterialTheme.typography.bodyMedium,
+            )
             if (month != null && year != null) {
                 val today = LocalDate.now()
                 val start = HijriStart.counterStart(monthStart, today)

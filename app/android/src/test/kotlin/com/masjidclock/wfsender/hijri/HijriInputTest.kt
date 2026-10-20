@@ -58,7 +58,7 @@ class HijriInputTest {
 
     @Test
     fun settingsFirstUse() {
-        assertEquals(HijriValues(today, null, ""), settings(mutableMapOf()).load(today))
+        assertEquals(HijriValues(today, null, "", showDivider = true), settings(mutableMapOf()).load(today))
     }
 
     @Test
@@ -68,13 +68,14 @@ class HijriInputTest {
             saveDate(LocalDate.of(2026, 10, 12))
             saveMonth(5)
             saveYear(1448)
+            saveShowDivider(false)
         }
-        assertEquals(HijriValues(LocalDate.of(2026, 10, 12), 5, "1448"), settings(map).load(today))
+        assertEquals(HijriValues(LocalDate.of(2026, 10, 12), 5, "1448", showDivider = false), settings(map).load(today))
     }
 
     @Test
     fun settingsIgnoreDamagedValues() {
-        val map = mutableMapOf("monthStart" to "12/10/26", "month" to "13", "year" to "abc")
-        assertEquals(HijriValues(today, null, ""), settings(map).load(today))
+        val map = mutableMapOf("monthStart" to "12/10/26", "month" to "13", "year" to "abc", "showDivider" to "maybe")
+        assertEquals(HijriValues(today, null, "", showDivider = true), settings(map).load(today))
     }
 }

@@ -65,13 +65,14 @@ class SendLogTest {
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
         val header = hijriLogHeader(
             "Juma Ula", 1448, LocalDate.of(2026, 10, 12), LocalDateTime.of(2026, 10, 11, 17, 14), 6053,
+            showDivider = false,
         )
         val log = SendLog(header = header, appVersion = "0.2.0", androidVersion = "16", now = { Date(0) })
         val expected = """
             Masjid Clock 0.2.0, Android 16
             Time: 1970-01-01 00:00:00
             Display: m5, 384 × 32, progam.hds 6053 bytes
-            Hijri: Juma Ula 1448, month start 2026-10-12, counter start 2026-10-11 17:14
+            Hijri: Juma Ula 1448, month start 2026-10-12, counter start 2026-10-11 17:14, divider line hidden
         """.trimIndent()
         assertEquals(expected, log.text())
     }

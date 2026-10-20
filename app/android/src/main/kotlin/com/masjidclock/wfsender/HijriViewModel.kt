@@ -93,6 +93,12 @@ class HijriViewModel(app: Application) : AndroidViewModel(app) {
         HijriInput.parseYear(text)?.let(settings::saveYear)
     }
 
+    fun setShowDivider(show: Boolean) {
+        if (gate.busy) return
+        _values.value = _values.value.copy(showDivider = show)
+        settings.saveShowDivider(show)
+    }
+
     /**
      * While the tab is visible. Not during or after a send: after a send, each probe makes the display flicker.
      * [sendAgain] starts the checks again.
@@ -173,7 +179,9 @@ class HijriViewModel(app: Application) : AndroidViewModel(app) {
                     withContext(Dispatchers.Default) {
                         HdsExport(
                             HijriM5.screen,
-                            HijriProgram.make(HijriM5.base(month), HijriM5.digits, year, counterStart),
+                            HijriProgram.make(
+                                HijriM5.base(month), HijriM5.digits, year, counterStart, showDivider = input.showDivider,
+                            ),
                         )
                     }
                 } catch (e: HijriDataException) {
@@ -183,6 +191,7 @@ class HijriViewModel(app: Application) : AndroidViewModel(app) {
                 val log = SendLog(
                     header = hijriLogHeader(
                         HijriMonths.NAMES[month - 1], year, input.monthStart, counterStart, export.program.size,
+                        input.showDivider,
                     ),
                     appVersion = BuildConfig.VERSION_NAME,
                     androidVersion = Build.VERSION.RELEASE,

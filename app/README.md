@@ -114,7 +114,8 @@ For m5 displays (384 × 32) only. The phone makes the Hijri program itself: no P
 
 1. Open the **Hijri** tab (bottom bar).
 2. **Hijri month:** set the month start date (the first day of the Hijri month), select the Hijri month,
-   and enter the Hijri year. The box under the inputs shows what the display will show and when day 1
+   and enter the Hijri year. Turn "Show the divider line" off to hide the dashed line on the lower half.
+   The box under the inputs shows what the display will show and when day 1
    starts (at Maghrib in Dhaka). The app remembers these values.
 3. **Connect to the display WiFi** and wait for the card name.
 4. **Set the time** or tap **Skip**.

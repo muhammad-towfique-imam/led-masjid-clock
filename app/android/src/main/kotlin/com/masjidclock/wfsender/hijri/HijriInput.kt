@@ -39,8 +39,11 @@ object HijriInput {
     fun toPickerMillis(date: LocalDate): Long = date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
 }
 
-/** The inputs of the Hijri page. [month] is 1..12 or null; [yearText] is the text of the year field. */
-data class HijriValues(val monthStart: LocalDate, val month: Int?, val yearText: String)
+/**
+ * The inputs of the Hijri page. [month] is 1..12 or null; [yearText] is the text of the year field;
+ * [showDivider] shows the dashed line on the lower half of the display.
+ */
+data class HijriValues(val monthStart: LocalDate, val month: Int?, val yearText: String, val showDivider: Boolean = true)
 
 /** The saved inputs. A value that does not parse is ignored, and the default is used. */
 class HijriSettings(private val read: (String) -> String?, private val write: (String, String?) -> Unit) {
@@ -55,7 +58,8 @@ class HijriSettings(private val read: (String) -> String?, private val write: (S
         } ?: today
         val month = read(MONTH)?.toIntOrNull()?.takeIf { it in 1..12 }
         val year = read(YEAR)?.takeIf { HijriInput.parseYear(it) != null } ?: ""
-        return HijriValues(date, month, year)
+        val showDivider = read(DIVIDER) != "false"
+        return HijriValues(date, month, year, showDivider)
     }
 
     fun saveDate(date: LocalDate) = write(DATE, date.toString())
@@ -64,10 +68,13 @@ class HijriSettings(private val read: (String) -> String?, private val write: (S
 
     fun saveYear(year: Int) = write(YEAR, year.toString())
 
+    fun saveShowDivider(show: Boolean) = write(DIVIDER, show.toString())
+
     private companion object {
         const val DATE = "monthStart"
         const val MONTH = "month"
         const val YEAR = "year"
+        const val DIVIDER = "showDivider"
     }
 }
 
@@ -78,8 +85,10 @@ fun hijriLogHeader(
     monthStart: LocalDate,
     counterStart: LocalDateTime,
     programSize: Int,
+    showDivider: Boolean,
 ): List<String> = listOf(
     "Display: m5, 384 × 32, progam.hds $programSize bytes",
     "Hijri: $month $year, month start $monthStart, counter start " +
-        counterStart.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+        counterStart.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) +
+        ", divider line " + if (showDivider) "shown" else "hidden",
 )

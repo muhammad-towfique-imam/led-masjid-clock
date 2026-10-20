@@ -29,7 +29,8 @@ class Glyph(private val pixels: BooleanArray) {
 
 /**
  * Makes an m5 Hijri progam.hds from the HD2020 base of a month (spec section 5): writes the year digits into the
- * 3 month-and-year text areas and the counter start into the 3 day counter areas. The rest stays byte for byte.
+ * 3 month-and-year text areas and the counter start into the 3 day counter areas. If [showDivider] is false, the
+ * pixels of the 3 divider areas (the dashed line on the lower half) are cleared. The rest stays byte for byte.
  */
 object HijriProgram {
     /** The step from 1 year digit to the next, in pixels. */
@@ -41,6 +42,7 @@ object HijriProgram {
         year: Int,
         counterStart: LocalDateTime,
         baseYear: Int = 1448,
+        showDivider: Boolean = true,
     ): ByteArray {
         val program = base.copyOf()
         val newYear = year.toString().map { digits[it] ?: throw HijriDataException("no glyph for the digit $it") }
@@ -54,6 +56,9 @@ object HijriProgram {
         for (area in Areas.of(program).filter { it.isCounter }) {
             for (i in 0 until 4) program[area.start + 37 + i] = (seconds shr (24 - 8 * i)).toByte()
         }
+        if (!showDivider) {
+            for (area in Areas.of(program).filter { it.isDivider }) program.fill(0, area.start + Area.BITMAP, area.end)
+        }
         return program
     }
 }
@@ -65,6 +70,9 @@ internal class Area(private val program: ByteArray, val start: Int, val end: Int
     val height = u16(start + 10)
     val isCounter = end - start == COUNTER_SIZE
     val isText = !isCounter && y in 0..1 && height in setOf(16, 19)
+
+    /** The dashed line on the lower half (the s1/s2/s3-divider areas of the template). */
+    val isDivider = !isCounter && !isText
     private val stride = (width + 31) / 32 * 4
 
     /** The pixel at [row], [column] of [plane]. Rows outside the area read as 0. */
