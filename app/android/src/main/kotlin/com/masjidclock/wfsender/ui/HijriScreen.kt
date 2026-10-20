@@ -280,8 +280,9 @@ private fun Summary(monthStart: LocalDate, month: Int?, year: Int?) {
                         style = MaterialTheme.typography.titleMedium,
                     )
                 } else {
+                    val dayOne = HijriInput.dayOneStart(start)
                     Text(
-                        "Day 1 starts on ${start.toLocalDate().format(DATE_TEXT)} at ${start.format(TIME_TEXT)}.",
+                        "Day 1 starts on ${dayOne.toLocalDate().format(DATE_TEXT)} at ${dayOne.format(TIME_TEXT)}.",
                         style = MaterialTheme.typography.titleMedium,
                     )
                 }

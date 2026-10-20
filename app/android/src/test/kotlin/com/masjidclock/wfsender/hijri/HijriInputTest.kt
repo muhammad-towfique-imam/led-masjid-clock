@@ -82,12 +82,21 @@ class HijriInputTest {
 
     @Test
     fun dayNumberCountsWholeDaysFromTheCounterStart() {
+        // Juma Ula 1448: month start 12 Oct 2026, counter start 11 Oct 17:14. The user saw day 8 on 20 Oct (daytime).
         val start = LocalDateTime.of(2026, 10, 11, 17, 14)
         assertNull(HijriInput.dayNumber(start, LocalDateTime.of(2026, 10, 11, 17, 13)))
-        assertEquals(1, HijriInput.dayNumber(start, start))
-        assertEquals(1, HijriInput.dayNumber(start, LocalDateTime.of(2026, 10, 12, 17, 13)))
-        assertEquals(2, HijriInput.dayNumber(start, LocalDateTime.of(2026, 10, 12, 17, 14)))
-        assertEquals(9, HijriInput.dayNumber(start, LocalDateTime.of(2026, 10, 20, 12, 0)))
-        assertEquals(10, HijriInput.dayNumber(start, LocalDateTime.of(2026, 10, 20, 17, 14)))
+        assertNull(HijriInput.dayNumber(start, start))
+        assertNull(HijriInput.dayNumber(start, LocalDateTime.of(2026, 10, 12, 17, 13)))
+        assertEquals(1, HijriInput.dayNumber(start, LocalDateTime.of(2026, 10, 12, 17, 14)))
+        assertEquals(8, HijriInput.dayNumber(start, LocalDateTime.of(2026, 10, 20, 12, 0)))
+        assertEquals(9, HijriInput.dayNumber(start, LocalDateTime.of(2026, 10, 20, 17, 14)))
+    }
+
+    @Test
+    fun dayOneStartsOnTheMonthStartDateAtTheCounterTime() {
+        assertEquals(
+            LocalDateTime.of(2026, 10, 12, 17, 14),
+            HijriInput.dayOneStart(LocalDateTime.of(2026, 10, 11, 17, 14)),
+        )
     }
 }
