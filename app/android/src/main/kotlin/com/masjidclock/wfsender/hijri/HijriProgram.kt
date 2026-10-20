@@ -53,13 +53,21 @@ object HijriM5 {
 
     val screen: ByteArray by lazy { read("screen.hds") }
 
-    /** A copy of the HD2020 base of [month] (1 = Muharram … 12 = Zul-hijjah). */
-    fun base(month: Int): ByteArray {
+    /**
+     * A copy of the HD2020 base of [month] (1 = Muharram … 12 = Zul-hijjah). [lowerHalf] TEMPERATURE gives the base with
+     * the m4 temperature areas in the lower half (the same upper half, byte for byte); LINE and NOTHING the base with
+     * the divider line.
+     */
+    fun base(month: Int, lowerHalf: LowerHalf = LowerHalf.LINE): ByteArray {
         require(month in 1..12) { "month $month" }
-        return bases[month - 1].copyOf()
+        return (if (lowerHalf == LowerHalf.TEMPERATURE) temperatureBases else bases)[month - 1].copyOf()
     }
 
     private val bases: List<ByteArray> by lazy { (1..12).map { read(baseName(it)) } }
+
+    private val temperatureBases: List<ByteArray> by lazy {
+        (1..12).map { read(String.format(Locale.ROOT, "t%02d.hds", it)) }
+    }
 
     /** The resource name of the base of [month]. Locale.ROOT: a Bengali or Arabic phone must not give "m০১.hds". */
     internal fun baseName(month: Int): String = String.format(Locale.ROOT, "m%02d.hds", month)

@@ -11,6 +11,7 @@ import com.masjidclock.wfsender.hijri.HijriProgram
 import com.masjidclock.wfsender.hijri.HijriSettings
 import com.masjidclock.wfsender.hijri.HijriStart
 import com.masjidclock.wfsender.hijri.HijriValues
+import com.masjidclock.wfsender.hijri.LowerHalf
 import com.masjidclock.wfsender.hijri.hijriLogHeader
 import com.masjidclock.wfsender.protocol.HdsExport
 import java.time.LocalDate
@@ -53,11 +54,11 @@ class HijriViewModel(app: Application) : DisplayViewModel(app, DisplayTab.HIJRI)
         HijriInput.parseYear(text)?.let(settings::saveYear)
     }
 
-    fun setShowDivider(show: Boolean) {
+    fun setLowerHalf(lower: LowerHalf) {
         if (gate.busy) return
         inputChanged()
-        _values.value = _values.value.copy(showDivider = show)
-        settings.saveShowDivider(show)
+        _values.value = _values.value.copy(lowerHalf = lower)
+        settings.saveLowerHalf(lower)
     }
 
     /** The values of the last send to the connected card; they also become the last values. */
@@ -67,7 +68,7 @@ class HijriViewModel(app: Application) : DisplayViewModel(app, DisplayTab.HIJRI)
         settings.saveDate(card.monthStart)
         card.month?.let(settings::saveMonth)
         HijriInput.parseYear(card.yearText)?.let(settings::saveYear)
-        settings.saveShowDivider(card.showDivider)
+        settings.saveLowerHalf(card.lowerHalf)
         return true
     }
 
@@ -80,13 +81,16 @@ class HijriViewModel(app: Application) : DisplayViewModel(app, DisplayTab.HIJRI)
             makeExport = {
                 HdsExport(
                     HijriM5.screen,
-                    HijriProgram.make(HijriM5.base(month), HijriM5.digits, year, counterStart, showDivider = input.showDivider),
+                    HijriProgram.make(
+                        HijriM5.base(month, input.lowerHalf), HijriM5.digits, year, counterStart,
+                        showDivider = input.lowerHalf != LowerHalf.NOTHING,
+                    ),
                 )
             },
             logHeader = { export ->
                 hijriLogHeader(
                     HijriMonths.NAMES[month - 1], year, input.monthStart, counterStart, export.program.size,
-                    input.showDivider,
+                    input.lowerHalf,
                 )
             },
             cardValues = HijriCardValues.encode(input),

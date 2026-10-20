@@ -52,11 +52,20 @@ object HijriInput {
     }
 }
 
-/**
- * The inputs of the Hijri page. [month] is 1..12 or null; [yearText] is the text of the year field;
- * [showDivider] shows the dashed line on the lower half of the display.
- */
-data class HijriValues(val monthStart: LocalDate, val month: Int?, val yearText: String, val showDivider: Boolean = true)
+/** What the lower half of the Hijri display shows. */
+enum class LowerHalf(val label: String, val logText: String) {
+    LINE("Divider line", "divider line"),
+    TEMPERATURE("Outside temperature", "outside temperature"),
+    NOTHING("Nothing", "nothing"),
+}
+
+/** The inputs of the Hijri page. [month] is 1..12 or null; [yearText] is the text of the year field. */
+data class HijriValues(
+    val monthStart: LocalDate,
+    val month: Int?,
+    val yearText: String,
+    val lowerHalf: LowerHalf = LowerHalf.LINE,
+)
 
 /** The saved inputs. A value that does not parse is ignored, and the default is used. */
 class HijriSettings(private val read: (String) -> String?, private val write: (String, String?) -> Unit) {
@@ -71,8 +80,10 @@ class HijriSettings(private val read: (String) -> String?, private val write: (S
         } ?: today
         val month = read(MONTH)?.toIntOrNull()?.takeIf { it in 1..12 }
         val year = read(YEAR)?.takeIf { HijriInput.parseYear(it) != null } ?: ""
-        val showDivider = read(DIVIDER) != "false"
-        return HijriValues(date, month, year, showDivider)
+        // Before version 0.3.2, a checkbox: showDivider "false" = nothing.
+        val lower = LowerHalf.entries.firstOrNull { it.name == read(LOWER_HALF) }
+            ?: if (read(DIVIDER) == "false") LowerHalf.NOTHING else LowerHalf.LINE
+        return HijriValues(date, month, year, lower)
     }
 
     fun saveDate(date: LocalDate) = write(DATE, date.toString())
@@ -81,13 +92,14 @@ class HijriSettings(private val read: (String) -> String?, private val write: (S
 
     fun saveYear(year: Int) = write(YEAR, year.toString())
 
-    fun saveShowDivider(show: Boolean) = write(DIVIDER, show.toString())
+    fun saveLowerHalf(lower: LowerHalf) = write(LOWER_HALF, lower.name)
 
     private companion object {
         const val DATE = "monthStart"
         const val MONTH = "month"
         const val YEAR = "year"
         const val DIVIDER = "showDivider"
+        const val LOWER_HALF = "lowerHalf"
     }
 }
 
@@ -98,18 +110,18 @@ fun hijriLogHeader(
     monthStart: LocalDate,
     counterStart: LocalDateTime,
     programSize: Int,
-    showDivider: Boolean,
+    lowerHalf: LowerHalf,
 ): List<String> = listOf(
     "Display: m5, 384 × 32, progam.hds $programSize bytes",
     "Hijri: $month $year, month start $monthStart, counter start " +
         counterStart.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) +
-        ", divider line " + if (showDivider) "shown" else "hidden",
+        ", lower half: " + lowerHalf.logText,
 )
 
-/** The Hijri inputs of the last successful send to a card, as 1 text: "monthStart|month|year|showDivider". */
+/** The Hijri inputs of the last successful send to a card, as 1 text: "monthStart|month|year|lowerHalf". */
 object HijriCardValues {
     fun encode(values: HijriValues): String =
-        listOf(values.monthStart, values.month ?: "", values.yearText, values.showDivider).joinToString("|")
+        listOf(values.monthStart, values.month ?: "", values.yearText, values.lowerHalf.name).joinToString("|")
 
     /** The values, or null if [text] is missing or damaged. */
     fun decode(text: String?): HijriValues? {
@@ -122,11 +134,12 @@ object HijriCardValues {
         }
         val month = parts[1].toIntOrNull()?.takeIf { it in 1..12 } ?: return null
         if (HijriInput.parseYear(parts[2]) == null) return null
-        val showDivider = when (parts[3]) {
-            "true" -> true
-            "false" -> false
-            else -> return null
+        // Version 0.3.1 stored the checkbox: "true" = line, "false" = nothing.
+        val lower = when (parts[3]) {
+            "true" -> LowerHalf.LINE
+            "false" -> LowerHalf.NOTHING
+            else -> LowerHalf.entries.firstOrNull { it.name == parts[3] } ?: return null
         }
-        return HijriValues(date, month, parts[2], showDivider)
+        return HijriValues(date, month, parts[2], lower)
     }
 }

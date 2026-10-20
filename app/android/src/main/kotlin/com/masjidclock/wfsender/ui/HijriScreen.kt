@@ -3,14 +3,15 @@ package com.masjidclock.wfsender.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.Checkbox
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
@@ -41,6 +42,7 @@ import com.masjidclock.wfsender.HijriViewModel
 import com.masjidclock.wfsender.hijri.HijriInput
 import com.masjidclock.wfsender.hijri.HijriMonths
 import com.masjidclock.wfsender.hijri.HijriStart
+import com.masjidclock.wfsender.hijri.LowerHalf
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -76,18 +78,23 @@ internal fun HijriScreen(model: HijriViewModel) {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
             )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth().toggleable(
-                    value = values.showDivider,
-                    enabled = !sending,
-                    role = Role.Checkbox,
-                    onValueChange = model::setShowDivider,
-                ),
-            ) {
-                Checkbox(checked = values.showDivider, onCheckedChange = null, enabled = !sending)
-                Text("Show the divider line", style = MaterialTheme.typography.bodyLarge)
+            Text("Lower half", style = MaterialTheme.typography.titleSmall)
+            Column(modifier = Modifier.selectableGroup()) {
+                for (lower in LowerHalf.entries) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth().selectable(
+                            selected = values.lowerHalf == lower,
+                            enabled = !sending,
+                            role = Role.RadioButton,
+                            onClick = { model.setLowerHalf(lower) },
+                        ).padding(vertical = 4.dp),
+                    ) {
+                        RadioButton(selected = values.lowerHalf == lower, onClick = null, enabled = !sending)
+                        Text(lower.label, style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
             }
             if (fromCard) Text(CARD_VALUES_NOTE, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
             Summary(values.monthStart, month, year)

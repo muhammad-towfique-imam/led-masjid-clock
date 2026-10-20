@@ -107,4 +107,18 @@ class HijriProgramTest {
             }
         }
     }
+
+    @Test
+    fun temperatureBasesKeepTheirLowerHalf() {
+        for (month in 1..12) {
+            val base = HijriM5.base(month, LowerHalf.TEMPERATURE)
+            assertFalse("month $month", base.contentEquals(HijriM5.base(month)))
+            assertArrayEquals("month $month", base, HijriProgram.make(base, HijriM5.digits, 1448, start))
+            // A new year changes only the bitmaps of the 3 month-and-year areas.
+            val made = HijriProgram.make(base, HijriM5.digits, 1449, start)
+            val bitmaps = Areas.of(base).filter { it.isText }.map { (it.start + Area.BITMAP) until it.end }
+            assertEquals("month $month text areas", 3, bitmaps.size)
+            for (i in base.indices) if (bitmaps.none { i in it }) assertEquals("month $month byte $i", base[i], made[i])
+        }
+    }
 }

@@ -137,7 +137,8 @@ For m5 displays (384 × 32) only. The phone makes the Hijri program itself: no P
 
 1. Open the **Hijri** tab.
 2. **Hijri month:** set the month start date (the first day of the Hijri month), select the Hijri month,
-   and enter the Hijri year. Turn "Show the divider line" off to hide the dashed line on the lower half.
+   and enter the Hijri year. Under "Lower half", select "Divider line" (the dashed line), "Outside temperature"
+   ("Outside Temp: .. °C" from the card's temperature sensor; 0 °C without a sensor), or "Nothing".
    The box under the inputs shows the date that the display will show now, for example
    "9 Juma Ula 1448", and the time when the date changes each day (Maghrib in Dhaka). The app remembers these values.
 3. **Connect to the display WiFi** and wait for the card name.
@@ -179,6 +180,7 @@ For m5 displays (384 × 32) only. The phone makes the Hijri program itself: no P
 23. Open the menu (≡) and press the Android back button: the menu closes, and the app stays open.
 24. Send Hijri to card A, then change the inputs and send to card B. Connect card A again: the inputs change to
     card A's values and the note shows. Connect an unknown card: the inputs keep the last values.
+25. Hijri with "Outside temperature": the lower half shows "Outside Temp" and the value in all 3 sections.
 
 If Create does not find a USB drive, tap the ⓘ icon at the top of the Create tab ("Share details")
 and send the text to support.
