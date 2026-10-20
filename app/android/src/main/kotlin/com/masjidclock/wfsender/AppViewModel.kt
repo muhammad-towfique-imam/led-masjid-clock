@@ -42,8 +42,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/** The 2 tabs of the bottom navigation bar. */
-enum class Page { SEND, CREATE, TIME }
+/** The tabs of the bottom navigation bar. */
+enum class Page { SEND, CREATE, TIME, HIJRI }
 
 class AppViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -95,6 +95,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         if (gate.busy) return
         stopConnectionChecks()
         _page.value = Page.TIME
+    }
+
+    fun openHijri() {
+        if (gate.busy) return
+        stopConnectionChecks()
+        _page.value = Page.HIJRI
     }
 
     fun openCreate() {

@@ -108,6 +108,18 @@ Open the **Send** tab (bottom bar). It has 4 steps.
 
 The display gets the phone's local time. Keep the phone's automatic time on.
 
+## Set the Hijri month
+
+For m5 displays (384 × 32) only. The phone makes the Hijri program itself: no PC and no package.
+
+1. Open the **Hijri** tab (bottom bar).
+2. **Hijri month:** set the month start date (the first day of the Hijri month), select the Hijri month,
+   and enter the Hijri year. The box under the inputs shows what the display will show and when day 1
+   starts (at Maghrib in Dhaka). The app remembers these values.
+3. **Connect to the display WiFi** and wait for the card name.
+4. **Set the time** or tap **Skip**.
+5. Tap **Send**.
+
 ## Manual tests before a release (spec section 7.2)
 
 1. Visible change: send a `TEST` text program from HD2020, then send the clock program from the app.
@@ -128,6 +140,10 @@ The display gets the phone's local time. Keep the phone's automatic time on.
     to a wrong value (for example 12:34), then with automatic time on again.
 14. Time without a display WiFi: the button stays disabled. With a WiFi that is not a display:
     "No display found on this WiFi".
+
+15. Hijri: send the current month with the real year. The display must show the same text and the same day
+    number as the program from the desktop app.
+16. Hijri: after a send, switch to another app and back. The display must not flicker.
 
 If Create does not find a USB drive, tap the ⓘ icon at the top of the Create tab ("Share details")
 and send the text to support.

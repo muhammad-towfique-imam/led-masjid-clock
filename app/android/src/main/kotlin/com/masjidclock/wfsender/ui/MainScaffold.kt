@@ -10,6 +10,7 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.masjidclock.wfsender.AppViewModel
 import com.masjidclock.wfsender.CreateViewModel
+import com.masjidclock.wfsender.HijriViewModel
 import com.masjidclock.wfsender.Page
 import com.masjidclock.wfsender.TimeViewModel
 import com.masjidclock.wfsender.send.SendState
@@ -34,10 +36,11 @@ import kotlinx.coroutines.launch
 /** The app frame: a top app bar, the page, and a bottom navigation bar with Send and Create. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WfSenderApp(model: AppViewModel, create: CreateViewModel, time: TimeViewModel) {
+fun WfSenderApp(model: AppViewModel, create: CreateViewModel, time: TimeViewModel, hijri: HijriViewModel) {
     val page by model.page.collectAsStateWithLifecycle()
     val sendState by model.sendState.collectAsStateWithLifecycle()
-    val sending = sendState is SendState.Sending
+    val hijriState by hijri.sendState.collectAsStateWithLifecycle()
+    val sending = sendState is SendState.Sending || hijriState is SendState.Sending
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -51,6 +54,7 @@ fun WfSenderApp(model: AppViewModel, create: CreateViewModel, time: TimeViewMode
                                 Page.SEND -> "Send"
                                 Page.CREATE -> "Create a package"
                                 Page.TIME -> "Set the time"
+                                Page.HIJRI -> "Hijri month"
                             }
                         )
                     },
@@ -92,6 +96,13 @@ fun WfSenderApp(model: AppViewModel, create: CreateViewModel, time: TimeViewMode
                         icon = { Icon(Icons.Filled.DateRange, contentDescription = null) },
                         label = { Text("Time") },
                     )
+                    NavigationBarItem(
+                        selected = page == Page.HIJRI,
+                        onClick = model::openHijri,
+                        enabled = !sending,
+                        icon = { Icon(Icons.Filled.Star, contentDescription = null) },
+                        label = { Text("Hijri") },
+                    )
                 }
             },
         ) { padding ->
@@ -100,6 +111,7 @@ fun WfSenderApp(model: AppViewModel, create: CreateViewModel, time: TimeViewMode
                     Page.SEND -> SendScreen(model)
                     Page.CREATE -> CreateScreen(create, onBack = model::openSend)
                     Page.TIME -> TimeScreen(time, onBack = model::openSend)
+                    Page.HIJRI -> HijriScreen(hijri)
                 }
             }
         }
