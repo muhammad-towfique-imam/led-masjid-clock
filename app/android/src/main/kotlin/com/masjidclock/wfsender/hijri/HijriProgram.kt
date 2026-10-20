@@ -2,6 +2,7 @@ package com.masjidclock.wfsender.hijri
 
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.util.Locale
 
 /** The stored program data cannot be used. This occurs only with a wrong build. */
 class HijriDataException(message: String) : Exception(message)
@@ -144,7 +145,10 @@ object HijriM5 {
         return bases[month - 1].copyOf()
     }
 
-    private val bases: List<ByteArray> by lazy { (1..12).map { read("m%02d.hds".format(it)) } }
+    private val bases: List<ByteArray> by lazy { (1..12).map { read(baseName(it)) } }
+
+    /** The resource name of the base of [month]. Locale.ROOT: a Bengali or Arabic phone must not give "m০১.hds". */
+    internal fun baseName(month: Int): String = String.format(Locale.ROOT, "m%02d.hds", month)
 
     val digits: Map<Char, Glyph> by lazy {
         val library = mutableMapOf<Char, Glyph>()

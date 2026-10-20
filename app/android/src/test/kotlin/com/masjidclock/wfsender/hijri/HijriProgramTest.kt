@@ -6,6 +6,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import java.time.LocalDateTime
+import java.util.Locale
 
 /** The HD2020 exports of 2026-10-19 (m5, start date 10/01/26) are the expected values. */
 class HijriProgramTest {
@@ -59,5 +60,19 @@ class HijriProgramTest {
     @Test
     fun digitLibraryHasAllDigits() {
         assertEquals(('0'..'9').toSet(), HijriM5.digits.keys)
+    }
+
+    @Test
+    fun baseNamesUseAsciiDigitsInEveryPhoneLanguage() {
+        val saved = Locale.getDefault()
+        try {
+            for (tag in listOf("bn-BD", "ar-EG", "fa-IR")) {
+                Locale.setDefault(Locale.forLanguageTag(tag))
+                assertEquals(tag, "m01.hds", HijriM5.baseName(1))
+                assertEquals(tag, "m12.hds", HijriM5.baseName(12))
+            }
+        } finally {
+            Locale.setDefault(saved)
+        }
     }
 }
