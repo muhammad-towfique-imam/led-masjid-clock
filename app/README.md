@@ -98,7 +98,7 @@ Open the **Send** tab (bottom bar). It has 4 steps.
    or "Display found".
 3. **Set the time:** tap "Set the time" to set the display clock to the phone time, or "Skip".
 4. **Send:** tap "Send". If the send fails, tap "Share log" and send the log
-   to the person who sent you the package. Tap "Send again" to try again.
+   to the person who sent you the package. ("Share log" shows only after a failed send.) Tap "Send again" to try again.
 
 ## Set the display clock
 

@@ -172,12 +172,15 @@ internal fun SendScreen(model: AppViewModel) {
                     Button(onClick = model::sendAgain, modifier = Modifier.fillMaxWidth()) {
                         IconLabel(Icons.Filled.Refresh, "Send again")
                     }
-                    OutlinedButton(onClick = {
-                        val share = Intent(Intent.ACTION_SEND)
-                            .setType("text/plain")
-                            .putExtra(Intent.EXTRA_TEXT, state.log)
-                        context.startActivity(Intent.createChooser(share, "Share log"))
-                    }, modifier = Modifier.fillMaxWidth()) { IconLabel(Icons.Filled.Share, "Share log") }
+                    // The log is for support: only a failed send needs it.
+                    if (!state.success) {
+                        OutlinedButton(onClick = {
+                            val share = Intent(Intent.ACTION_SEND)
+                                .setType("text/plain")
+                                .putExtra(Intent.EXTRA_TEXT, state.log)
+                            context.startActivity(Intent.createChooser(share, "Share log"))
+                        }, modifier = Modifier.fillMaxWidth()) { IconLabel(Icons.Filled.Share, "Share log") }
+                    }
                 }
             }
         }
