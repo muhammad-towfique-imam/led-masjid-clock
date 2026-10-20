@@ -182,3 +182,27 @@ confirmed method.
   a shared composable and a shared helper are welcome, if the Hijri behavior does not change).
 - How the English and Bangla data are stored (as for Hijri).
 - Fix on the way: in `hijri/HijriInput.kt`, the KDoc of `dayNumber` is above `dayOneStart`; move it to `dayNumber`.
+
+## 9. Results of the analysis (2026-10-20)
+
+Exports: `/home/towfique/Documents/debug/bangla-kit/exports/` (english, bn1429, bn1432, bn1434, bn1436, bn1447,
+bn1458; all m5, correct XML). Experiment: `/home/towfique/Documents/debug/bangla-kit/experiment/` (`bangla_gen.py`,
+`check.py`).
+
+- **All 6 Bangla exports are rebuilt byte for byte from the 1 base `bn1432`**: 13 date ranges, 39 counter starts,
+  the year in the text areas. The file size does not change with the year (101,330 bytes).
+- `HC`: 27 bytes + a table of 4-byte absolute offsets, 1 for each `HP` block; the program count is at byte 4
+  (13; Hijri: 1). This also fits the Hijri file (1 entry, `HC` = 31 bytes).
+- `HP` + 17: the date range flag (1). `HP` + 18–21: the start date at 00:00, `HP` + 22–25: the end date at
+  23:59:59, both as unsigned 32-bit wall-clock seconds (local time written as UTC). 1447 uses values above 2³¹.
+- Area type at area bytes 34–35: `16 30` text, `3d 34` day counter (start at area bytes 37–40), `60 32` the
+  weekday (`time`). The Bangla counter areas are 334 bytes (Hijri: 306), so the type bytes, not the size, identify
+  the areas.
+- The counter start of each program: its start date − 1 day, at 00:00. So the date changes at 00:00.
+- The year digits are the **same shapes** as the Hijri digits (the same font, step 7, cells of 7 × 16), in other
+  color planes. The app compares the shape (any plane) and writes a new digit into the planes of the old digit.
+- The day rule (whole days since the counter start) gives 25 Poush 1432 on 9 Jan 2026, as the photo shows.
+- **A fault in the desktop app:** program 13 (Baishakh of the next year) always shows "Baishakh 1431". The template
+  text is "1431" there, and `set_year` replaces only "1430". The experiment can write the correct year (year + 1)
+  there.
+- English: the export is sent without a change (1 program, 384 × 64, 34,034 bytes).
