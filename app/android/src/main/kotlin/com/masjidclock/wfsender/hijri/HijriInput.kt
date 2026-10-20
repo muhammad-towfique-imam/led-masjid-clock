@@ -38,13 +38,13 @@ object HijriInput {
 
     fun toPickerMillis(date: LocalDate): Long = date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
 
+    /** When the display shows day 1: 1 day after [counterStart], on the month start date. */
+    fun dayOneStart(counterStart: LocalDateTime): LocalDateTime = counterStart.plusDays(1)
+
     /**
      * The day number that the display shows at [now]: the whole days since [counterStart] (no "+ 1": confirmed on
      * the display on 2026-10-20). So the date changes every day at the time of [counterStart]. Null before day 1.
      */
-    /** When the display shows day 1: 1 day after [counterStart], on the month start date. */
-    fun dayOneStart(counterStart: LocalDateTime): LocalDateTime = counterStart.plusDays(1)
-
     fun dayNumber(counterStart: LocalDateTime, now: LocalDateTime): Int? {
         val seconds = ChronoUnit.SECONDS.between(counterStart, now)
         val days = seconds / 86_400
