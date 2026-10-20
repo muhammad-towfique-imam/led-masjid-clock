@@ -1,5 +1,7 @@
 package com.masjidclock.wfsender.hijri
 
+import com.masjidclock.wfsender.display.Area
+import com.masjidclock.wfsender.display.Areas
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
