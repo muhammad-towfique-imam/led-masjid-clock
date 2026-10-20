@@ -75,7 +75,8 @@ fun WfSenderApp(
             drawerState = drawer,
             gesturesEnabled = page.isTab && !sending,
             drawerContent = {
-                ModalDrawerSheet {
+                // With the drawer state, the sheet closes on the Android back button (Material 3 1.3).
+                ModalDrawerSheet(drawerState = drawer) {
                     Text(
                         "Masjid Clock",
                         style = MaterialTheme.typography.titleLarge,

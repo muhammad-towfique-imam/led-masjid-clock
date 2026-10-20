@@ -172,6 +172,7 @@ For m5 displays (384 × 32) only. The phone makes the Hijri program itself: no P
 20. Connect the Hijri card on the Bangla tab: the warning "This card last got the Hijri program." shows.
 21. The menu: Send, Create, and Time open; the back arrow and the Android back button return to the last tab.
 22. Close and open the app: it opens on the last tab.
+23. Open the menu (≡) and press the Android back button: the menu closes, and the app stays open.
 
 If Create does not find a USB drive, tap the ⓘ icon at the top of the Create tab ("Share details")
 and send the text to support.
