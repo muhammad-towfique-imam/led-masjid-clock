@@ -148,3 +148,21 @@ the plan is written.
 
 - The code structure (it must fit the shared DisplayViewModel and the wizard).
 - How the data is stored in the app.
+
+## 8. Results of the analysis (2026-10-21)
+
+Exports: `/home/towfique/Documents/debug/waqt-kit/exports/` (w0, w0-b, w-digits, w1, w1-time, w3; inputs in each
+`inputs.json`). Experiment: `/home/towfique/Documents/debug/waqt-kit/experiment/waqt_rebuild.py`.
+
+- **All 6 exports are rebuilt byte for byte** from the first program block of `w0`, the digit cells, and the date
+  and time windows of each copy (7, 7, 7, 29, 29, 35 programs).
+- `HC`: 27 bytes + 1 absolute 4-byte offset for each program (as Bangla); the count at byte 4.
+- Each copy is the same `HP` block (23,512 bytes, 6 areas) except: `HP`+5 the time window flag, `HP`+6–8 the start
+  time and `HP`+9–11 the end time (3-byte big-endian seconds after midnight), `HP`+17 the date flag, `HP`+18–21 the
+  start date at 00:00 and `HP`+22–25 the end date + 86,399 s (wall-clock seconds, as Bangla), and the time bitmaps.
+  A copy without a time window keeps flag 0, start 0, end 86,399 (the template values).
+- The 3 `waqt-time` areas (x = 81, 209, 337; 35 × 128; bitmap stride 8 bytes, the 3-plane row layout as Hijri; the
+  text is red, plane 0): 8 rows of 16 pixels, right-aligned text " h:mm" (`pad`): digit cells of 7 × 16 pixels at
+  columns 20 (hour tens: blank or "1"), 27 (hour units), 38 and 45 (minutes); the colon (columns 34–37) never
+  changes. The names areas never change.
+- The digit cells (all 10 digits and the blank) are the same bitmap at every position: 0 conflicts in 114 copies.
