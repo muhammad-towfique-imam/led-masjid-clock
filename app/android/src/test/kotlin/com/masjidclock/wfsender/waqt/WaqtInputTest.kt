@@ -94,4 +94,12 @@ class WaqtInputTest {
         val fixed = WaqtValues(times, listOf(WaqtChange(d(10, 31), 5, HourMinute(1, 15)), WaqtChange(d(10, 31), 1, HourMinute(1, 0))))
         assertNull(WaqtInput.timeConflict(fixed))
     }
+
+    @Test
+    fun noChangesShowNoPeriodLine() {
+        assertEquals(
+            listOf("Today: Sunrise 5:58 am, Sunset 5:27 pm (calculated)."),
+            WaqtInput.summary(WaqtValues(times, emptyList()), LocalDateTime.of(2026, 10, 21, 21, 44, 2)),
+        )
+    }
 }

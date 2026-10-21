@@ -80,7 +80,8 @@ object WaqtInput {
         val sun = Sun.dhaka(now.toLocalDate())
         val first = "Today: Sunrise ${sun.sunrise.hour}:%02d am, Sunset ${sun.sunset.hour - 12}:%02d pm (calculated)."
             .format(Locale.ROOT, sun.sunrise.minute, sun.sunset.minute)
-        if (!isValid(values)) return listOf(first)
+        // Without changes, the period line is not shown (user, 2026-10-21).
+        if (!isValid(values) || values.changes.isEmpty()) return listOf(first)
         val copies = WaqtSchedule.copies(values.times.map { it!! }, values.changes, now)
         return listOf(
             first,
