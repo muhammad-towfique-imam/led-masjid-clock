@@ -54,6 +54,8 @@ internal fun WaqtScreen(model: WaqtViewModel) {
     val values by model.values.collectAsStateWithLifecycle()
     val fromCard by model.valuesFromCard.collectAsStateWithLifecycle()
     DisplayTabScreen(model, inputsValid = WaqtInput.isValid(values), inputTitle = "Prayer times") { sending ->
+        // Each time the step opens, changes that already apply move to "Today".
+        LaunchedEffect(Unit) { model.mergePast() }
         for ((prayer, name) in WaqtPrayers.NAMES.withIndex()) {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {

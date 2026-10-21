@@ -47,7 +47,9 @@ object WaqtInput {
     }
 
     /** The summary under the step: today's Sunrise and Sunset, and the period of the program (if the inputs are valid). */
-    fun summary(values: WaqtValues, now: LocalDateTime): List<String> {
+    fun summary(input: WaqtValues, now: LocalDateTime): List<String> {
+        // The same values as the send: past changes are already "Today".
+        val values = merged(input, now)
         val sun = Sun.dhaka(now.toLocalDate())
         val first = "Today: Sunrise ${sun.sunrise.hour}:%02d am, Sunset ${sun.sunset.hour - 12}:%02d pm (calculated)."
             .format(Locale.ROOT, sun.sunrise.minute, sun.sunset.minute)

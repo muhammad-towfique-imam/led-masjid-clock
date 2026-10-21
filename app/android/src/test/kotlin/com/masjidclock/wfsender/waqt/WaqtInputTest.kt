@@ -70,4 +70,12 @@ class WaqtInputTest {
             waqtLogHeader(WaqtValues(times, listOf(WaqtChange(d(10, 31), 2, HourMinute(4, 30)))), 29, 681991),
         )
     }
+
+    @Test
+    fun summaryDescribesTheProgramThatIsSent() {
+        // A change dated yesterday has already applied: the summary must not end 3 days after it.
+        val now = LocalDateTime.of(2026, 10, 21, 21, 44, 2)
+        val values = WaqtValues(times, listOf(WaqtChange(d(10, 20), 2, HourMinute(4, 30))))
+        assertEquals(WaqtInput.summary(WaqtInput.merged(values, now), now), WaqtInput.summary(values, now))
+    }
 }

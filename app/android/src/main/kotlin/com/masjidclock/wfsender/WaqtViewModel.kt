@@ -37,6 +37,13 @@ class WaqtViewModel(app: Application) : DisplayViewModel(app, DisplayTab.WAQT) {
 
     fun removeChange(index: Int) = update { it.copy(changes = it.changes.toMutableList().also { c -> c.removeAt(index) }) }
 
+    /** When the step opens: changes that already apply become "Today" (spec 3). Not an edit by the person. */
+    fun mergePast() {
+        if (gate.busy) return
+        val merged = WaqtInput.merged(_values.value, LocalDateTime.now())
+        if (merged != _values.value) save(merged)
+    }
+
     private fun update(change: (WaqtValues) -> WaqtValues) {
         if (gate.busy) return
         inputChanged()
