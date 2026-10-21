@@ -18,3 +18,9 @@ fun canGoNext(step: WizardStep, found: Boolean, inputsValid: Boolean, timeDone: 
 
 /** The later steps need the display: if the connection ends while nothing is sent, back to Connect. */
 fun stepAfterConnection(current: Int, found: Boolean, idle: Boolean): Int = if (!found && idle) 0 else current
+
+/**
+ * The list "Displays nearby" shows while no display is found, and also when the connected card got another tab's
+ * program last time (the wrong card). It hides for the right card, and for an unknown card (the app cannot know).
+ */
+fun showNearby(found: Boolean, cardTab: DisplayTab?, tab: DisplayTab): Boolean = !found || (cardTab != null && cardTab != tab)

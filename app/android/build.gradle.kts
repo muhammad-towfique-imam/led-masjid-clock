@@ -27,8 +27,8 @@ android {
         applicationId = "com.cyanwarelabs.masjidclock.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 18
-        versionName = "0.4.0"
+        versionCode = 19
+        versionName = "0.4.1"
     }
 
     signingConfigs {

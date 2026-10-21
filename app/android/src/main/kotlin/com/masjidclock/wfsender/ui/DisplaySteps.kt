@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import com.masjidclock.wfsender.display.wizardSteps
 import com.masjidclock.wfsender.display.stepAfterConnection
 import com.masjidclock.wfsender.display.canGoNext
+import com.masjidclock.wfsender.display.showNearby
 import com.masjidclock.wfsender.display.WizardStep
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableIntStateOf
@@ -149,7 +150,8 @@ private fun ConnectStep(model: DisplayViewModel) {
     val context = LocalContext.current
 
     Text(Messages.WIFI_INSTRUCTIONS, style = MaterialTheme.typography.bodyMedium)
-    if (sendState == SendState.Idle && connection != ConnectionStatus.DISPLAY_FOUND) NearbyList(model)
+    val found = connection == ConnectionStatus.DISPLAY_FOUND
+    if (sendState == SendState.Idle && showNearby(found, cardTab, model.tab)) NearbyList(model)
     OutlinedButton(
         onClick = { openWifi(context) },
         enabled = !sending,

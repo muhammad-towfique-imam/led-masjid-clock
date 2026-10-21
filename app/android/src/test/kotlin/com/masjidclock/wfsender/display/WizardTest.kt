@@ -35,4 +35,12 @@ class WizardTest {
         assertEquals(3, stepAfterConnection(current = 3, found = false, idle = false))
         assertEquals(0, stepAfterConnection(current = 0, found = false, idle = true))
     }
+
+    @Test
+    fun nearbyListShowsUnlessTheRightOrAnUnknownCardIsConnected() {
+        assertTrue(showNearby(found = false, cardTab = null, tab = DisplayTab.HIJRI))
+        assertTrue(showNearby(found = true, cardTab = DisplayTab.BANGLA, tab = DisplayTab.HIJRI))
+        assertFalse(showNearby(found = true, cardTab = DisplayTab.HIJRI, tab = DisplayTab.HIJRI))
+        assertFalse(showNearby(found = true, cardTab = null, tab = DisplayTab.HIJRI))
+    }
 }
