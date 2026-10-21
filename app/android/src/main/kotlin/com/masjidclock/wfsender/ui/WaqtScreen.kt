@@ -79,6 +79,7 @@ internal fun WaqtScreen(model: WaqtViewModel) {
                 }
             }
         }
+        WaqtInput.timeConflict(values)?.let { StatusLine(it, ok = false) }
         if (fromCard) Text(CARD_VALUES_NOTE, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
         WaqtSummary(values)
     }

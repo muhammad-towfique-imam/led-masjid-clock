@@ -85,7 +85,8 @@ object WaqtSchedule {
             current[change.prayer] = change.time
             val start = applyTime(change)
             // The app: changes with the same start time are 1 row. The desktop app makes 2 rows, and the first then
-            // ends 1 second before it starts (a reversed window).
+            // ends 1 second before it starts (a reversed window). 2 prayers never have the same time (WaqtInput checks
+            // it), but the calculated Sunrise and Sunset can: for example 6:00 and 6:00 on 27 Sep 2028.
             if (!desktopEnd && table.last().first == start) table[table.lastIndex] = start to current.toList()
             else table += start to current.toList()
         }

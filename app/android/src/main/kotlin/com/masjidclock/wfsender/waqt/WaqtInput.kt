@@ -33,11 +33,38 @@ object WaqtInput {
         return WaqtValues(times, later.sortedWith(compareBy({ it.prayer }, { it.date })))
     }
 
-    /** All 6 times set and valid, and no 2 changes of 1 prayer on 1 date. */
+    /** All 6 times set and valid, no 2 changes of 1 prayer on 1 date, and no 2 prayers at the same time. */
     fun isValid(values: WaqtValues): Boolean =
         values.times.size == 6 && values.times.all { it != null && valid(it) } &&
             values.changes.all { it.prayer in 0..5 && valid(it.time) } &&
-            values.changes.groupBy { it.prayer to it.date }.all { it.value.size == 1 }
+            values.changes.groupBy { it.prayer to it.date }.all { it.value.size == 1 } &&
+            timeConflict(values) == null
+
+    /**
+     * The message if 2 prayers have the same clock time on a day (user, 2026-10-21: no 2 prayers have the same time),
+     * else null: the "Today" times, then the times from each change date. am/pm as [WaqtSchedule.applyTime].
+     */
+    fun timeConflict(values: WaqtValues): String? {
+        if (values.times.size != 6 || values.times.any { it == null }) return null
+        val current = values.times.map { it!! }.toMutableList()
+        conflict(current)?.let { return "$it (today)." }
+        for ((date, changes) in values.changes.groupBy { it.date }.toSortedMap()) {
+            changes.forEach { if (it.prayer in 0..5) current[it.prayer] = it.time }
+            conflict(current)?.let { return "$it (from ${date.format(DAY_TEXT)})." }
+        }
+        return null
+    }
+
+    private fun conflict(times: List<HourMinute>): String? {
+        for (a in times.indices) for (b in a + 1 until times.size) {
+            if (clock(a, times[a]) == clock(b, times[b])) {
+                return "${WaqtPrayers.NAMES[a]} and ${WaqtPrayers.NAMES[b]} have the same time"
+            }
+        }
+        return null
+    }
+
+    private fun clock(prayer: Int, time: HourMinute) = (if (prayer > 0 && time.hour < 12) time.hour + 12 else time.hour) * 60 + time.minute
 
     /** "+ Add a change": the day after the last row of [prayer], with its time. */
     fun nextRow(values: WaqtValues, prayer: Int, today: LocalDate): WaqtChange {

@@ -78,4 +78,20 @@ class WaqtInputTest {
         val values = WaqtValues(times, listOf(WaqtChange(d(10, 20), 2, HourMinute(4, 30))))
         assertEquals(WaqtInput.summary(WaqtInput.merged(values, now), now), WaqtInput.summary(values, now))
     }
+
+    @Test
+    fun twoPrayersCannotHaveTheSameTime() {
+        assertNull(WaqtInput.timeConflict(WaqtValues(times, emptyList())))
+        // Fajr 5:10 am and Magrib 5:10 pm are different times.
+        assertNull(WaqtInput.timeConflict(WaqtValues(times.toMutableList().also { it[3] = HourMinute(5, 10) }, emptyList())))
+        val today = WaqtValues(times.toMutableList().also { it[4] = HourMinute(4, 15) }, emptyList())
+        assertEquals("Asr and Isha have the same time (today).", WaqtInput.timeConflict(today))
+        assertFalse(WaqtInput.isValid(today))
+        val later = WaqtValues(times, listOf(WaqtChange(d(10, 31), 5, HourMinute(1, 15))))
+        assertEquals("Zuhr and Jumu'ah have the same time (from 31 Oct 2026).", WaqtInput.timeConflict(later))
+        assertFalse(WaqtInput.isValid(later))
+        // A conflict that a later change of the same date removes is not a conflict.
+        val fixed = WaqtValues(times, listOf(WaqtChange(d(10, 31), 5, HourMinute(1, 15)), WaqtChange(d(10, 31), 1, HourMinute(1, 0))))
+        assertNull(WaqtInput.timeConflict(fixed))
+    }
 }
