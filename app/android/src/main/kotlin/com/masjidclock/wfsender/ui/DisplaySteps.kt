@@ -16,8 +16,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings as SettingsIcon
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
@@ -116,8 +116,9 @@ internal fun DisplayTabScreen(
                 WizardStep.INPUTS -> inputStep?.invoke(sending)
                 WizardStep.TIME -> TimeStepContent(model)
                 WizardStep.SEND -> SendStep(model, inputsValid) {
+                    // "Done": back to step 1 (the inputs, or Connect on English) for the next display.
                     model.sendAgain()
-                    index = connectIndex
+                    index = 0
                 }
             }
         }
@@ -225,7 +226,7 @@ private fun SendStep(model: DisplayViewModel, inputsValid: Boolean, onSendAgain:
         is SendState.Finished -> {
             StatusLine(state.message, ok = state.success)
             Button(onClick = onSendAgain, modifier = Modifier.fillMaxWidth()) {
-                IconLabel(Icons.Filled.Refresh, "Send again")
+                IconLabel(Icons.Filled.Check, "Done")
             }
             // The log is for support: only a failed send needs it.
             if (!state.success) {

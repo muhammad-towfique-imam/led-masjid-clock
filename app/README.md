@@ -98,7 +98,7 @@ a wizard, 1 step at a time with **Prev** and **Next**: (1) the inputs (Bangla, H
 WiFi of that display, (3) set the time (or skip), (4) **Send**. English starts at "Connect". The inputs of each tab
 are saved as you type them, so an operator can prepare all tabs first (for example at home) and then go to the
 displays to connect and send. Next is enabled when the step is complete. If the connection ends, the tab goes back
-to "Connect". After a result, "Send again" starts at "Connect".
+to "Connect". After a result, "Done" goes back to step 1.
 
 - **English:** no input. The app sends the stored English program; the card draws the date and the time.
 - **Bangla:** enter the Bangla year (the first time, the app fills in the current year; the year starts on
