@@ -27,7 +27,7 @@ class BanglaViewModel(app: Application) : DisplayViewModel(app, DisplayTab.BANGL
 
     /** Saves the year only when it is valid. */
     fun setYearText(text: String) {
-        if (gate.busy) return
+        if (!editable()) return
         _yearText.value = text
         HijriInput.parseYear(text)?.let(settings::saveYear)
     }

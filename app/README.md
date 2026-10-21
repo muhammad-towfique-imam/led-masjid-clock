@@ -97,7 +97,9 @@ each display, in the order of the stack: **English**, **Bangla**, **Hijri**, **W
 a wizard, 1 step at a time with **Prev** and **Next**: (1) the inputs (Bangla, Hijri, Waqt), (2) connect to the
 WiFi of that display, (3) set the time (or skip), (4) **Send**. English starts at "Connect". The inputs of each tab
 are saved as you type them, so an operator can prepare all tabs first (for example at home) and then go to the
-displays to connect and send. Next is enabled when the step is complete. If the connection ends, the tab goes back
+displays to connect and send. The **Lock** button next to the title of step 1 makes the inputs read-only, against
+accidental changes; tap **Unlock** to change them again. The page locks by itself when you tap Next on step 1, and
+after a successful send. The lock is saved for each tab. Next is enabled when the step is complete. If the connection ends, the tab goes back
 to "Connect". After a result, "Done" goes back to step 1.
 
 - **English:** no input. The app sends the stored English program; the card draws the date and the time.
@@ -198,6 +200,8 @@ For m5 displays (384 × 32) only. The phone makes the Hijri program itself: no P
     marked ✓. Test the permission question: precise, approximate, and denied; location setting on and off.
 27. Waqt: send a schedule with changes. Each time changes 30 minutes after that prayer on the day before;
     Sunrise and Sunset change daily; a 12:30 Zuhr shows "12:30"; after the end the display is blank.
+28. Lock: on Bangla, Hijri, and Waqt, Next on step 1 locks the inputs; Unlock opens them; a successful send locks
+    them; the lock stays after the app restarts.
 
 If Create does not find a USB drive, tap the ⓘ icon at the top of the Create tab ("Share details")
 and send the text to support.

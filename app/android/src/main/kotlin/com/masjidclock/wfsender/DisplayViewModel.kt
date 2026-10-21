@@ -69,6 +69,19 @@ abstract class DisplayViewModel(app: Application, val tab: DisplayTab) : Android
     val scanState: StateFlow<ScanState> = _scanState
     protected val gate = SendGate.APP
     private val cards = app.getSharedPreferences("cards", Context.MODE_PRIVATE)
+    private val locks = app.getSharedPreferences("locks", Context.MODE_PRIVATE)
+
+    /** The lock of the inputs page: against accidental changes. Saved for each tab. */
+    private val _locked = MutableStateFlow(locks.getBoolean(tab.name, false))
+    val locked: StateFlow<Boolean> = _locked
+
+    fun setLocked(locked: Boolean) {
+        _locked.value = locked
+        locks.edit().putBoolean(tab.name, locked).apply()
+    }
+
+    /** The inputs can change: no send runs, and the page is not locked. */
+    protected fun editable(): Boolean = !gate.busy && !_locked.value
     private val cardList = CardList(read = { cards.getString(LIST, null) }, write = { cards.edit().putString(LIST, it).apply() })
 
     private val _connection = MutableStateFlow(ConnectionStatus.NOT_CONNECTED)
@@ -224,6 +237,8 @@ abstract class DisplayViewModel(app: Application, val tab: DisplayTab) : Android
         val name = _cardName.value
         if (result == SendResult.Success) {
             cardList.remember(name, tab)
+            // After a successful send, the inputs lock by themselves (user, 2026-10-21).
+            setLocked(true)
             _cardTab.value = cardList.tabOf(name)
         }
         _sendState.value = SendState.Finished(result == SendResult.Success, Messages.forResult(result), log.text())

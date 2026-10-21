@@ -18,6 +18,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.filled.Settings as SettingsIcon
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
@@ -28,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.masjidclock.wfsender.display.wizardSteps
 import com.masjidclock.wfsender.display.stepAfterConnection
@@ -71,6 +74,7 @@ internal fun DisplayTabScreen(
     val connection by model.connection.collectAsStateWithLifecycle()
     val sendState by model.sendState.collectAsStateWithLifecycle()
     val timeStep by model.timeStep.collectAsStateWithLifecycle()
+    val locked by model.locked.collectAsStateWithLifecycle()
 
     LifecycleResumeEffect(Unit) {
         model.startChecks()
@@ -97,23 +101,34 @@ internal fun DisplayTabScreen(
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Text(
-            when (step) {
-                WizardStep.CONNECT -> "Connect to the display WiFi"
-                WizardStep.INPUTS -> inputTitle
-                WizardStep.TIME -> "Set the time"
-                WizardStep.SEND -> "Send"
-            },
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(bottom = 12.dp),
-        )
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
+            Text(
+                when (step) {
+                    WizardStep.CONNECT -> "Connect to the display WiFi"
+                    WizardStep.INPUTS -> inputTitle
+                    WizardStep.TIME -> "Set the time"
+                    WizardStep.SEND -> "Send"
+                },
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.weight(1f),
+            )
+            if (step == WizardStep.INPUTS) {
+                OutlinedButton(onClick = { model.setLocked(!locked) }, enabled = !sending) {
+                    IconLabel(if (locked) Icons.Filled.Lock else Icons.Outlined.Lock, if (locked) "Unlock" else "Lock")
+                }
+            }
+        }
         Column(
             modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             when (step) {
                 WizardStep.CONNECT -> ConnectStep(model)
-                WizardStep.INPUTS -> inputStep?.invoke(sending)
+                WizardStep.INPUTS -> {
+                    if (locked) StatusLine("The inputs are locked.", ok = true)
+                    // A locked page is read-only, as during a send.
+                    inputStep?.invoke(sending || locked)
+                }
                 WizardStep.TIME -> TimeStepContent(model)
                 WizardStep.SEND -> SendStep(model, inputsValid) {
                     // "Done": back to step 1 (the inputs, or Connect on English) for the next display.
@@ -127,7 +142,11 @@ internal fun DisplayTabScreen(
                 OutlinedButton(onClick = { index-- }, enabled = index > 0, modifier = Modifier.weight(1f)) { Text("Prev") }
                 if (step != WizardStep.SEND) {
                     Button(
-                        onClick = { index++ },
+                        onClick = {
+                            // Leaving the inputs locks them (user, 2026-10-21).
+                            if (step == WizardStep.INPUTS) model.setLocked(true)
+                            index++
+                        },
                         enabled = canGoNext(step, found, inputsValid, timeStep.done),
                         modifier = Modifier.weight(1f),
                     ) { Text("Next") }

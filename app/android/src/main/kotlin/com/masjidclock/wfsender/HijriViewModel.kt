@@ -33,25 +33,25 @@ class HijriViewModel(app: Application) : DisplayViewModel(app, DisplayTab.HIJRI)
     val values: StateFlow<HijriValues> = _values
 
     fun setDate(date: LocalDate) {
-        if (gate.busy) return
+        if (!editable()) return
         _values.value = _values.value.copy(monthStart = date)
         settings.saveDate(date)
     }
 
     fun setMonth(month: Int) {
-        if (gate.busy) return
+        if (!editable()) return
         _values.value = _values.value.copy(month = month)
         settings.saveMonth(month)
     }
 
     fun setYearText(text: String) {
-        if (gate.busy) return
+        if (!editable()) return
         _values.value = _values.value.copy(yearText = text)
         HijriInput.parseYear(text)?.let(settings::saveYear)
     }
 
     fun setLowerHalf(lower: LowerHalf) {
-        if (gate.busy) return
+        if (!editable()) return
         _values.value = _values.value.copy(lowerHalf = lower)
         settings.saveLowerHalf(lower)
     }

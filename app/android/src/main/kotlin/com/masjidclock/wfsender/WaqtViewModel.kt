@@ -45,7 +45,7 @@ class WaqtViewModel(app: Application) : DisplayViewModel(app, DisplayTab.WAQT) {
     }
 
     private fun update(change: (WaqtValues) -> WaqtValues) {
-        if (gate.busy) return
+        if (!editable()) return
         save(change(_values.value))
     }
 
