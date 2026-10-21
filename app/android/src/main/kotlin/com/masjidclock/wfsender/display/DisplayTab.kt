@@ -5,4 +5,5 @@ enum class DisplayTab(val label: String) {
     ENGLISH("English"),
     BANGLA("Bangla"),
     HIJRI("Hijri"),
+    WAQT("Waqt"),
 }

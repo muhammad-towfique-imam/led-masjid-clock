@@ -48,7 +48,7 @@ import kotlinx.coroutines.withContext
  * section 3); Send, Create, and Time open from the side menu.
  */
 enum class Page(val isTab: Boolean) {
-    ENGLISH(true), BANGLA(true), HIJRI(true), SEND(false), CREATE(false), TIME(false);
+    ENGLISH(true), BANGLA(true), HIJRI(true), WAQT(true), SEND(false), CREATE(false), TIME(false);
 
     companion object {
         /** The tab that the app opens on: the last tab; the first time, English. */

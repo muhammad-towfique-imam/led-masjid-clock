@@ -39,6 +39,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.masjidclock.wfsender.AppViewModel
 import com.masjidclock.wfsender.CreateViewModel
 import com.masjidclock.wfsender.HijriViewModel
+import com.masjidclock.wfsender.WaqtViewModel
 import com.masjidclock.wfsender.Page
 import com.masjidclock.wfsender.TimeViewModel
 import com.masjidclock.wfsender.send.SendState
@@ -57,13 +58,15 @@ fun WfSenderApp(
     english: EnglishViewModel,
     bangla: BanglaViewModel,
     hijri: HijriViewModel,
+    waqt: WaqtViewModel,
 ) {
     val page by model.page.collectAsStateWithLifecycle()
     val sendState by model.sendState.collectAsStateWithLifecycle()
     val englishState by english.sendState.collectAsStateWithLifecycle()
     val banglaState by bangla.sendState.collectAsStateWithLifecycle()
     val hijriState by hijri.sendState.collectAsStateWithLifecycle()
-    val sending = listOf(sendState, englishState, banglaState, hijriState).any { it is SendState.Sending }
+    val waqtState by waqt.sendState.collectAsStateWithLifecycle()
+    val sending = listOf(sendState, englishState, banglaState, hijriState, waqtState).any { it is SendState.Sending }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val drawer = rememberDrawerState(DrawerValue.Closed)
@@ -110,6 +113,7 @@ fun WfSenderApp(
                                     Page.ENGLISH -> "English display"
                                     Page.BANGLA -> "Bangla display"
                                     Page.HIJRI -> "Hijri month"
+                                    Page.WAQT -> "Waqt display"
                                     Page.SEND -> "Send"
                                     Page.CREATE -> "Create a package"
                                     Page.TIME -> "Set the time"
@@ -149,6 +153,7 @@ fun WfSenderApp(
                                 Triple(Page.ENGLISH, "Aa", "English"),
                                 Triple(Page.BANGLA, "অ", "Bangla"),
                                 Triple(Page.HIJRI, "ع", "Hijri"),
+                                Triple(Page.WAQT, "W", "Waqt"),
                             )) {
                                 NavigationBarItem(
                                     selected = page == tab,
@@ -167,6 +172,7 @@ fun WfSenderApp(
                         Page.ENGLISH -> EnglishScreen(english)
                         Page.BANGLA -> BanglaScreen(bangla)
                         Page.HIJRI -> HijriScreen(hijri)
+                        Page.WAQT -> WaqtScreen(waqt)
                         Page.SEND -> SendScreen(model)
                         Page.CREATE -> CreateScreen(create, onBack = model::back)
                         Page.TIME -> TimeScreen(time, onBack = model::back)

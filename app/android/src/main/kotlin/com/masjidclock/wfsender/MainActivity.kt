@@ -18,6 +18,7 @@ class MainActivity : ComponentActivity() {
     private val english: EnglishViewModel by viewModels()
     private val bangla: BanglaViewModel by viewModels()
     private val hijri: HijriViewModel by viewModels()
+    private val waqt: WaqtViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Edge to edge: the status-bar icons follow light or dark mode, and the Scaffold pads the
@@ -25,7 +26,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) handleIntent(intent)
-        setContent { WfSenderApp(model, create, time, english, bangla, hijri) }
+        setContent { WfSenderApp(model, create, time, english, bangla, hijri, waqt) }
     }
 
     override fun onNewIntent(intent: Intent) {

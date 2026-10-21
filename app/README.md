@@ -93,7 +93,7 @@ with the old key.
 ### The display tabs
 
 A masjid clock is a stack of separate displays, each with its own card and WiFi. The bottom bar has 1 tab for
-each display, in the order of the stack: **English**, **Bangla**, **Hijri** (m5 displays, 384 wide). Each tab is
+each display, in the order of the stack: **English**, **Bangla**, **Hijri**, **Waqt** (m5 displays, 384 wide). Each tab is
 a wizard, 1 step at a time with **Prev** and **Next**: (1) connect to the WiFi of that display, (2) the inputs
 (Bangla and Hijri only), (3) set the time (or skip), (4) **Send**. Next is enabled when the step is complete. If the
 connection ends, the tab goes back to step 1. After a result, "Send again" starts at step 1.
@@ -118,6 +118,15 @@ The app remembers which card got which program. If the connected card last got a
 
 The menu (≡ at the top left) has **Send** (a package), **Create** (a package), and **Time**. The back arrow returns
 to the last tab. The app opens on the last tab that you used.
+
+### Set the prayer times (Waqt)
+
+The **Waqt** tab (the 4th tab) programs the waqt display (m5, 384 × 128): Fajr, Zuhr, Asr, Magrib, Isha,
+Jumu'ah, Sunrise, Sunset. Step 2 "Prayer times" has 1 card for each prayer: the time of **Today**, and the
+changes of that prayer (a date and a new time; "+ Add a change" fills in the next day and the last time).
+Fajr is am, the others are pm. A change starts 30 minutes after that prayer on the day before. Sunrise and
+Sunset are calculated for each day (Dhaka). The program ends 3 days after the last change (without changes:
+30 days after today); after that, the display is blank. The app remembers the times for each card.
 
 ### Send a package
 
@@ -191,6 +200,8 @@ For m5 displays (384 × 32) only. The phone makes the Hijri program itself: no P
 25. Hijri with "Outside temperature": the lower half shows "Outside Temp" and the value in all 3 sections.
 26. Displays nearby: on each tab, the list shows the card WiFis near the phone, with the card of that tab first and
     marked ✓. Test the permission question: precise, approximate, and denied; location setting on and off.
+27. Waqt: send a schedule with changes. Each time changes 30 minutes after that prayer on the day before;
+    Sunrise and Sunset change daily; a 12:30 Zuhr shows "12:30"; after the end the display is blank.
 
 If Create does not find a USB drive, tap the ⓘ icon at the top of the Create tab ("Share details")
 and send the text to support.
