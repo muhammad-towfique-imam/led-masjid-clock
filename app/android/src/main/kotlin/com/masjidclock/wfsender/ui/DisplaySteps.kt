@@ -56,12 +56,9 @@ import com.masjidclock.wfsender.send.Messages
 import com.masjidclock.wfsender.send.SendState
 import com.masjidclock.wfsender.send.TimeStep
 
-/** Under the inputs, when they show the values of the last send to the connected card. */
-internal const val CARD_VALUES_NOTE = "Values from the last send to this card."
-
 /**
- * A display tab (English, Bangla, Hijri) as a wizard: 1 step at a time, with Prev and Next. The steps: Connect, the
- * tab's inputs (if any), Set the time, Send. The checks run only while the tab is visible, and not after a send (see
+ * A display tab (English, Bangla, Hijri, Waqt) as a wizard: 1 step at a time, with Prev and Next. The steps: the
+ * tab's inputs (if any), Connect, Set the time, Send. The checks run only while the tab is visible, and not after a send (see
  * DisplayViewModel.startChecks).
  */
 @Composable
@@ -86,7 +83,8 @@ internal fun DisplayTabScreen(
     val idle = sendState == SendState.Idle
     val found = connection == ConnectionStatus.DISPLAY_FOUND
     // A send and its result belong to the Send step. A lost connection goes back to Connect.
-    LaunchedEffect(found, idle) { index = if (idle) stepAfterConnection(index, found, idle) else steps.lastIndex }
+    val connectIndex = steps.indexOf(WizardStep.CONNECT)
+    LaunchedEffect(found, idle) { index = if (idle) stepAfterConnection(index, connectIndex, found, idle) else steps.lastIndex }
     val step = steps[index.coerceIn(0, steps.lastIndex)]
 
     BackHandler(enabled = sending) {}
@@ -119,7 +117,7 @@ internal fun DisplayTabScreen(
                 WizardStep.TIME -> TimeStepContent(model)
                 WizardStep.SEND -> SendStep(model, inputsValid) {
                     model.sendAgain()
-                    index = 0
+                    index = connectIndex
                 }
             }
         }

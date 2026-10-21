@@ -47,10 +47,4 @@ class BanglaInputTest {
         assertNull(banglaSummary(1433, LocalDate.of(2026, 10, 20)).warning)
     }
 
-    @Test
-    fun cardValues() {
-        assertEquals("1432", BanglaCardValues.decode(BanglaCardValues.encode(1432)))
-        assertNull(BanglaCardValues.decode("14x2"))
-        assertNull(BanglaCardValues.decode(null))
-    }
 }

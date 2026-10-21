@@ -117,29 +117,3 @@ fun hijriLogHeader(
         counterStart.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) +
         ", lower half: " + lowerHalf.logText,
 )
-
-/** The Hijri inputs of the last successful send to a card, as 1 text: "monthStart|month|year|lowerHalf". */
-object HijriCardValues {
-    fun encode(values: HijriValues): String =
-        listOf(values.monthStart, values.month ?: "", values.yearText, values.lowerHalf.name).joinToString("|")
-
-    /** The values, or null if [text] is missing or damaged. */
-    fun decode(text: String?): HijriValues? {
-        val parts = text?.split('|') ?: return null
-        if (parts.size != 4) return null
-        val date = try {
-            LocalDate.parse(parts[0])
-        } catch (e: DateTimeParseException) {
-            return null
-        }
-        val month = parts[1].toIntOrNull()?.takeIf { it in 1..12 } ?: return null
-        if (HijriInput.parseYear(parts[2]) == null) return null
-        // Version 0.3.1 stored the checkbox: "true" = line, "false" = nothing.
-        val lower = when (parts[3]) {
-            "true" -> LowerHalf.LINE
-            "false" -> LowerHalf.NOTHING
-            else -> LowerHalf.entries.firstOrNull { it.name == parts[3] } ?: return null
-        }
-        return HijriValues(date, month, parts[2], lower)
-    }
-}

@@ -42,15 +42,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/**
- * What a tab sends: the program is made when Send is tapped, and the log header describes it. [cardValues] are the
- * inputs of the send, saved under the card name after a successful send.
- */
-class SendJob(
-    val makeExport: () -> HdsExport,
-    val logHeader: (HdsExport) -> List<String>,
-    val cardValues: String? = null,
-)
+/** What a tab sends: the program is made when Send is tapped, and the log header describes it. */
+class SendJob(val makeExport: () -> HdsExport, val logHeader: (HdsExport) -> List<String>)
 
 /**
  * The flow of the English, Bangla, and Hijri tabs: the connection check, the time step, the send (normal form, then
@@ -78,12 +71,6 @@ abstract class DisplayViewModel(app: Application, val tab: DisplayTab) : Android
     private val cards = app.getSharedPreferences("cards", Context.MODE_PRIVATE)
     private val cardList = CardList(read = { cards.getString(LIST, null) }, write = { cards.edit().putString(LIST, it).apply() })
 
-    private val values = app.getSharedPreferences("card-values-" + tab.name.lowercase(), Context.MODE_PRIVATE)
-
-    /** True while the inputs show the values of the last send to the connected card. */
-    private val _valuesFromCard = MutableStateFlow(false)
-    val valuesFromCard: StateFlow<Boolean> = _valuesFromCard
-
     private val _connection = MutableStateFlow(ConnectionStatus.NOT_CONNECTED)
     val connection: StateFlow<ConnectionStatus> = _connection
 
@@ -102,14 +89,6 @@ abstract class DisplayViewModel(app: Application, val tab: DisplayTab) : Android
 
     /** The job of a send, or null if the inputs of the tab are not valid. Called on the main thread. */
     protected abstract fun prepareSend(): SendJob?
-
-    /** Shows the saved [text] of a card in the inputs; false if the text is damaged. Tabs without inputs: false. */
-    protected open fun applyCardValues(text: String): Boolean = false
-
-    /** The person changed an input: the inputs no longer show the card's values. */
-    protected fun inputChanged() {
-        _valuesFromCard.value = false
-    }
 
     /**
      * While the tab is visible. Not during or after a send: after a send, each probe makes the display flicker.
@@ -131,10 +110,6 @@ abstract class DisplayViewModel(app: Application, val tab: DisplayTab) : Android
             val found = CardSender(network.connectorFor(wifi)).probe()
             _cardName.value = if (found) CardClock(network.udpFor(wifi), timeoutMs = 1_500, tries = 1).discover()?.name else null
             _cardTab.value = cardList.tabOf(_cardName.value)
-            // Once for each connection: the check probes only until the card answers.
-            _cardName.value?.let { name ->
-                values.getString(name, null)?.let { if (applyCardValues(it)) _valuesFromCard.value = true }
-            }
             found
         }
         check = newCheck
@@ -145,7 +120,6 @@ abstract class DisplayViewModel(app: Application, val tab: DisplayTab) : Android
                 if (status != ConnectionStatus.DISPLAY_FOUND) {
                     _cardName.value = null
                     _cardTab.value = null
-                    _valuesFromCard.value = false
                 }
                 if (status != ConnectionStatus.DISPLAY_FOUND && _timeStep.value != TimeStep.Busy) {
                     _timeStep.value = TimeStep.Pending
@@ -251,7 +225,6 @@ abstract class DisplayViewModel(app: Application, val tab: DisplayTab) : Android
         if (result == SendResult.Success) {
             cardList.remember(name, tab)
             _cardTab.value = cardList.tabOf(name)
-            if (!name.isNullOrBlank() && job.cardValues != null) values.edit().putString(name, job.cardValues).apply()
         }
         _sendState.value = SendState.Finished(result == SendResult.Success, Messages.forResult(result), log.text())
     }

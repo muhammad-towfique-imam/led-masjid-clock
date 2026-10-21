@@ -10,8 +10,9 @@ class WizardTest {
     @Test
     fun stepsOfTheTabs() {
         assertEquals(listOf(WizardStep.CONNECT, WizardStep.TIME, WizardStep.SEND), wizardSteps(hasInputs = false))
+        // The inputs first: the operator prepares them before going to the display.
         assertEquals(
-            listOf(WizardStep.CONNECT, WizardStep.INPUTS, WizardStep.TIME, WizardStep.SEND),
+            listOf(WizardStep.INPUTS, WizardStep.CONNECT, WizardStep.TIME, WizardStep.SEND),
             wizardSteps(hasInputs = true),
         )
     }
@@ -29,11 +30,15 @@ class WizardTest {
 
     @Test
     fun aLostConnectionGoesBackToConnect() {
-        assertEquals(0, stepAfterConnection(current = 2, found = false, idle = true))
-        assertEquals(2, stepAfterConnection(current = 2, found = true, idle = true))
+        // Connect is step index 1 when the tab has inputs, 0 when not.
+        assertEquals(1, stepAfterConnection(current = 3, connect = 1, found = false, idle = true))
+        assertEquals(3, stepAfterConnection(current = 3, connect = 1, found = true, idle = true))
+        // The inputs step and the Connect step do not change.
+        assertEquals(0, stepAfterConnection(current = 0, connect = 1, found = false, idle = true))
+        assertEquals(1, stepAfterConnection(current = 1, connect = 1, found = false, idle = true))
+        assertEquals(0, stepAfterConnection(current = 2, connect = 0, found = false, idle = true))
         // During a send or with a result, the step does not change.
-        assertEquals(3, stepAfterConnection(current = 3, found = false, idle = false))
-        assertEquals(0, stepAfterConnection(current = 0, found = false, idle = true))
+        assertEquals(3, stepAfterConnection(current = 3, connect = 1, found = false, idle = false))
     }
 
     @Test

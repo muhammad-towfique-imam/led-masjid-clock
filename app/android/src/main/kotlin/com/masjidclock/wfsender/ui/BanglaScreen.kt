@@ -30,7 +30,6 @@ import kotlinx.coroutines.delay
 @Composable
 internal fun BanglaScreen(model: BanglaViewModel) {
     val yearText by model.yearText.collectAsStateWithLifecycle()
-    val fromCard by model.valuesFromCard.collectAsStateWithLifecycle()
     val year = HijriInput.parseYear(yearText)
     DisplayTabScreen(model, inputsValid = year != null, inputTitle = "Bangla year") { sending ->
         OutlinedTextField(
@@ -48,7 +47,6 @@ internal fun BanglaScreen(model: BanglaViewModel) {
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth(),
         )
-        if (fromCard) Text(CARD_VALUES_NOTE, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
         if (year != null) BanglaSummary(year)
     
     }

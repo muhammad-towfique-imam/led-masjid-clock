@@ -46,20 +46,12 @@ class WaqtViewModel(app: Application) : DisplayViewModel(app, DisplayTab.WAQT) {
 
     private fun update(change: (WaqtValues) -> WaqtValues) {
         if (gate.busy) return
-        inputChanged()
         save(change(_values.value))
     }
 
     private fun save(values: WaqtValues) {
         _values.value = values
         prefs.edit().putString(VALUES, WaqtCodec.encode(values)).apply()
-    }
-
-    /** The values of the last send to the connected card, with its past changes moved to "Today". */
-    override fun applyCardValues(text: String): Boolean {
-        val card = WaqtCodec.decode(text) ?: return false
-        save(WaqtInput.merged(card, LocalDateTime.now()))
-        return true
     }
 
     override fun prepareSend(): SendJob? {
@@ -70,7 +62,6 @@ class WaqtViewModel(app: Application) : DisplayViewModel(app, DisplayTab.WAQT) {
         return SendJob(
             makeExport = { HdsExport(WaqtM5.screen, WaqtProgram.make(copies)) },
             logHeader = { export -> waqtLogHeader(values, copies.size, export.program.size) },
-            cardValues = WaqtCodec.encode(values),
         )
     }
 

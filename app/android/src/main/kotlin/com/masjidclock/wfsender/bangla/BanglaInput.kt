@@ -45,11 +45,3 @@ fun banglaSummary(year: Int, today: LocalDate): BanglaSummary {
     val warning = if (date == null || date.year != year) BanglaText.yearWarning(BanglaCalendar.currentYear(today)) else null
     return BanglaSummary(date, warning)
 }
-
-/** The Bangla year of the last successful send to a card. */
-object BanglaCardValues {
-    fun encode(year: Int): String = year.toString()
-
-    /** The year text, or null if [text] is missing or not a valid year. */
-    fun decode(text: String?): String? = text?.takeIf { HijriInput.parseYear(it) != null }
-}

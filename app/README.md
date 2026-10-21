@@ -94,9 +94,11 @@ with the old key.
 
 A masjid clock is a stack of separate displays, each with its own card and WiFi. The bottom bar has 1 tab for
 each display, in the order of the stack: **English**, **Bangla**, **Hijri**, **Waqt** (m5 displays, 384 wide). Each tab is
-a wizard, 1 step at a time with **Prev** and **Next**: (1) connect to the WiFi of that display, (2) the inputs
-(Bangla and Hijri only), (3) set the time (or skip), (4) **Send**. Next is enabled when the step is complete. If the
-connection ends, the tab goes back to step 1. After a result, "Send again" starts at step 1.
+a wizard, 1 step at a time with **Prev** and **Next**: (1) the inputs (Bangla, Hijri, Waqt), (2) connect to the
+WiFi of that display, (3) set the time (or skip), (4) **Send**. English starts at "Connect". The inputs of each tab
+are saved as you type them, so an operator can prepare all tabs first (for example at home) and then go to the
+displays to connect and send. Next is enabled when the step is complete. If the connection ends, the tab goes back
+to "Connect". After a result, "Send again" starts at "Connect".
 
 - **English:** no input. The app sends the stored English program; the card draws the date and the time.
 - **Bangla:** enter the Bangla year (the first time, the app fills in the current year; the year starts on
@@ -108,10 +110,6 @@ In the step "Connect", the list "Displays nearby" shows the card WiFi networks n
 type its password (on Android 10 and later, a small WiFi dialog opens; if the card is not in it, use its link to
 all networks). The first time, tap "Show displays nearby" and allow **precise** location (Android needs it for the
 WiFi scan list on all versions); the location setting must be on.
-
-The app remembers the inputs of each card: after a successful send, it saves the inputs under the card name. When
-it finds a card that it knows, the inputs change to that card's values ("Values from the last send to this card.").
-For an unknown card, the inputs keep the last values.
 
 The app remembers which card got which program. If the connected card last got a different program, the step
 "Connect" shows a warning under the card name, for example "This card last got the Hijri program."
@@ -126,7 +124,7 @@ Jumu'ah, Sunrise, Sunset. Step 2 "Prayer times" has 1 card for each prayer: the 
 changes of that prayer (a date and a new time; "+ Add a change" fills in the next day and the last time).
 Fajr is am, the others are pm. A change starts 30 minutes after that prayer on the day before. Sunrise and
 Sunset are calculated for each day (Dhaka). The program ends 3 days after the last change (without changes:
-30 days after today); after that, the display is blank. The app remembers the times for each card.
+30 days after today); after that, the display is blank.
 
 ### Send a package
 
@@ -157,7 +155,7 @@ For m5 displays (384 × 32) only. The phone makes the Hijri program itself: no P
    and enter the Hijri year. Under "Lower half", select "Divider line" (the dashed line), "Outside temperature"
    ("Outside Temp: .. °C" from the card's temperature sensor; 0 °C without a sensor), or "Nothing".
    The box under the inputs shows the date that the display will show now, for example
-   "9 Juma Ula 1448", and the time when the date changes each day (Maghrib in Dhaka). The app remembers these values.
+   "9 Juma Ula 1448", and the time when the date changes each day (Maghrib in Dhaka). The app saves these values.
 3. **Connect to the display WiFi** and wait for the card name.
 4. **Set the time** or tap **Skip**.
 5. Tap **Send**.
@@ -195,8 +193,6 @@ For m5 displays (384 × 32) only. The phone makes the Hijri program itself: no P
 21. The menu: Send, Create, and Time open; the back arrow and the Android back button return to the last tab.
 22. Close and open the app: it opens on the last tab.
 23. Open the menu (≡) and press the Android back button: the menu closes, and the app stays open.
-24. Send Hijri to card A, then change the inputs and send to card B. Connect card A again: the inputs change to
-    card A's values and the note shows. Connect an unknown card: the inputs keep the last values.
 25. Hijri with "Outside temperature": the lower half shows "Outside Temp" and the value in all 3 sections.
 26. Displays nearby: on each tab, the list shows the card WiFis near the phone, with the card of that tab first and
     marked ✓. Test the permission question: precise, approximate, and denied; location setting on and off.

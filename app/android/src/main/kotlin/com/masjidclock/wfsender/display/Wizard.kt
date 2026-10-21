@@ -3,9 +3,9 @@ package com.masjidclock.wfsender.display
 /** The steps of a display tab, shown 1 at a time with Prev and Next. */
 enum class WizardStep { CONNECT, INPUTS, TIME, SEND }
 
-/** Connect first; the inputs (Bangla, Hijri) after the connection, so that a card's saved values show first. */
+/** The inputs first (user, 2026-10-21: the operator prepares them before going to the display), then Connect. */
 fun wizardSteps(hasInputs: Boolean): List<WizardStep> =
-    if (hasInputs) listOf(WizardStep.CONNECT, WizardStep.INPUTS, WizardStep.TIME, WizardStep.SEND)
+    if (hasInputs) listOf(WizardStep.INPUTS, WizardStep.CONNECT, WizardStep.TIME, WizardStep.SEND)
     else listOf(WizardStep.CONNECT, WizardStep.TIME, WizardStep.SEND)
 
 /** Next is enabled when the step is complete. The Send step has no Next. */
@@ -16,8 +16,9 @@ fun canGoNext(step: WizardStep, found: Boolean, inputsValid: Boolean, timeDone: 
     WizardStep.SEND -> false
 }
 
-/** The later steps need the display: if the connection ends while nothing is sent, back to Connect. */
-fun stepAfterConnection(current: Int, found: Boolean, idle: Boolean): Int = if (!found && idle) 0 else current
+/** The steps after Connect need the display: if the connection ends while nothing is sent, back to [connect]. */
+fun stepAfterConnection(current: Int, connect: Int, found: Boolean, idle: Boolean): Int =
+    if (!found && idle && current > connect) connect else current
 
 /**
  * The list "Displays nearby" shows while no display is found, and also when the connected card got another tab's

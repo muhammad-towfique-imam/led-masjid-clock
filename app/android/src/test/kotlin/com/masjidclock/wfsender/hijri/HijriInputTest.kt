@@ -101,30 +101,10 @@ class HijriInputTest {
     }
 
     @Test
-    fun cardValuesRoundTrip() {
-        for (lower in LowerHalf.entries) {
-            val values = HijriValues(LocalDate.of(2026, 10, 12), 5, "1448", lower)
-            assertEquals(values, HijriCardValues.decode(HijriCardValues.encode(values)))
-        }
-    }
-
-    @Test
-    fun damagedCardValuesAreIgnored() {
-        for (text in listOf(null, "", "x|y", "2026-10-12|13|1448|true", "2026-10-12|5|abc|true", "12/10/26|5|1448|true")) {
-            assertNull("\"$text\"", HijriCardValues.decode(text))
-        }
-    }
-
-    @Test
     fun settingsConvertTheOldCheckbox() {
         assertEquals(LowerHalf.NOTHING, settings(mutableMapOf("showDivider" to "false")).load(today).lowerHalf)
         assertEquals(LowerHalf.LINE, settings(mutableMapOf("showDivider" to "true")).load(today).lowerHalf)
         assertEquals(LowerHalf.TEMPERATURE, settings(mutableMapOf("showDivider" to "false", "lowerHalf" to "TEMPERATURE")).load(today).lowerHalf)
     }
 
-    @Test
-    fun oldCardValuesConvertTheCheckbox() {
-        assertEquals(LowerHalf.NOTHING, HijriCardValues.decode("2026-10-12|5|1448|false")?.lowerHalf)
-        assertEquals(LowerHalf.LINE, HijriCardValues.decode("2026-10-12|5|1448|true")?.lowerHalf)
-    }
 }

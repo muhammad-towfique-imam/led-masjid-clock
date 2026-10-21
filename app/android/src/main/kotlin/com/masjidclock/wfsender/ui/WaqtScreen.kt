@@ -52,7 +52,6 @@ private val DAY = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.US)
 @Composable
 internal fun WaqtScreen(model: WaqtViewModel) {
     val values by model.values.collectAsStateWithLifecycle()
-    val fromCard by model.valuesFromCard.collectAsStateWithLifecycle()
     DisplayTabScreen(model, inputsValid = WaqtInput.isValid(values), inputTitle = "Prayer times") { sending ->
         // Each time the step opens, changes that already apply move to "Today".
         LaunchedEffect(Unit) { model.mergePast() }
@@ -80,7 +79,6 @@ internal fun WaqtScreen(model: WaqtViewModel) {
             }
         }
         WaqtInput.timeConflict(values)?.let { StatusLine(it, ok = false) }
-        if (fromCard) Text(CARD_VALUES_NOTE, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
         WaqtSummary(values)
     }
 }
