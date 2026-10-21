@@ -44,6 +44,7 @@ class Shape(private val pixels: BooleanArray) {
 
 /** 1 HA area of a progam.hds (Hijri spec section 5.2; display-tabs spec section 9). */
 internal class Area(private val program: ByteArray, val start: Int, val end: Int) {
+    val x = u16(start + 4)
     val y = u16(start + 6)
     val width = u16(start + 8)
     val height = u16(start + 10)
