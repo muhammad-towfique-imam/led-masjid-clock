@@ -12,6 +12,8 @@ import uuid
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+# In the repository, praytimes.py is at the root (2 folders up); in the kit, next to this file.
+sys.path.insert(1, os.path.join(HERE, "..", ".."))
 from praytimes import PrayTimes  # noqa: E402
 DT_FMT = '%d/%m/%y %H:%M'
 CHANGES_DATE_FMT = "%d/%m/%y"
@@ -97,7 +99,7 @@ def _set_waqt(program, times):
             def text(t):
                 tag = t.group(0)
                 for i, ph in enumerate(("11:11", "22:22", "33:33", "44:44", "55:55", "66:66", "77:77", "88:88")):
-                    new = pad(join_time(times[i]))
+                    new = times[i]
                     tag = re.sub(r'(editData=")([^"]*)(")', lambda x: x.group(1) + _replace_edit(x.group(2), ph, new) + x.group(3), tag)
                     tag = re.sub(r'(rtfData=")([^"]*)(")', lambda x: x.group(1) + _replace_rtf(x.group(2), ph, new) + x.group(3), tag)
                 return tag
@@ -106,7 +108,7 @@ def _set_waqt(program, times):
     return program
 
 
-def _new_program(tmpl, date_start, date_end, time_start, time_end, times):
+def _new_program(tmpl, date_start, date_end, time_start, time_end, times, texts=None):
     head = re.match(r'<program\b[^>]*>', tmpl).group(0)
     h = _attr(head, "nodeName", join_time_str(date_start, time_start) + " -- " + join_time_str(date_end, time_end))
     h = _attr(h, "specifedDateEnabled", 1)
@@ -116,13 +118,11 @@ def _new_program(tmpl, date_start, date_end, time_start, time_end, times):
         h = _attr(h, "specifedTimeEnabled", 1)
         h = _attr(h, "timeStart", time_start)
         h = _attr(h, "timeEnd", time_end)
-    return _set_waqt(h + tmpl[len(head):], times)
+    return _set_waqt(h + tmpl[len(head):], texts)
 
 
-def make_xml(times, changes, now=None, save_name=None, node_name=None):
-    """times: 8 [h, m] (Sunrise/Sunset slots are ignored); changes: [["dd/mm/yy", index, [h, m]], ...]."""
-    now = now or datetime.datetime.today()
-    xml = open(os.path.join(HERE, "templates", "m5-waqt.xml"), encoding="utf-8").read()
+def copies(times, changes, now):
+    """The program copies of get_m5_waqt_xml: [(date_start, date_end, time_start or None, time_end or None, 8 texts)]."""
     changes = copy.deepcopy(changes)
     changes.sort(key=lambda x: get_apply_date(x[0], x[1], x[2]))
     base_date = now - datetime.timedelta(days=1)
@@ -153,21 +153,34 @@ def make_xml(times, changes, now=None, save_name=None, node_name=None):
             return table[idx][0] - datetime.timedelta(seconds=1)
         return now + datetime.timedelta(days=30)
 
-    m = re.search(r'<program\b[^>]*nodeName="salah".*?</program>', xml, re.S)
-    tmpl = m.group(0)
     out = []
+    def add(d0, d1, t0, t1, ts):
+        out.append((d0, d1, t0, t1, [pad(join_time(t)) for t in ts]))
     for i, row in enumerate(table):
         waqt_times = row[1:]
         date_start, time_start = break_date(row[0])
         date_end, time_end = break_date(end_of(i + 1))
         if date_start == date_end:
-            out.append(_new_program(tmpl, date_start, date_end, time_start, time_end, waqt_times))
+            add(date_start, date_end, time_start, time_end, waqt_times)
         else:
             if time_start != 0:
-                out.append(_new_program(tmpl, date_start, date_start, time_start, WHOLE_DAY_IN_SEC, waqt_times))
+                add(date_start, date_start, time_start, WHOLE_DAY_IN_SEC, waqt_times)
             if (date_end - date_start).days > 1:
-                out.append(_new_program(tmpl, date_start + datetime.timedelta(days=1), date_end - datetime.timedelta(days=1), None, None, waqt_times))
-            out.append(_new_program(tmpl, date_end, date_end, 0, time_end, waqt_times))
+                add(date_start + datetime.timedelta(days=1), date_end - datetime.timedelta(days=1), None, None, waqt_times)
+            add(date_end, date_end, 0, time_end, waqt_times)
+    return out
+
+
+def make_xml(times, changes, now=None, save_name=None, node_name=None):
+    """times: 8 [h, m] (Sunrise/Sunset slots are ignored); changes: [["dd/mm/yy", index, [h, m]], ...]."""
+    now = now or datetime.datetime.today()
+    path = os.path.join(HERE, "templates", "m5-waqt.xml")
+    if not os.path.isfile(path):  # in the repository
+        path = os.path.join(HERE, "..", "..", "templates", "m5", "m5-waqt.xml")
+    xml = open(path, encoding="utf-8").read()
+    m = re.search(r'<program\b[^>]*nodeName="salah".*?</program>', xml, re.S)
+    tmpl = m.group(0)
+    out = [_new_program(tmpl, d0, d1, t0, t1, None, texts) for d0, d1, t0, t1, texts in copies(times, changes, now)]
     xml = xml[:m.start()] + "\n".join(out) + xml[m.end():]
     if save_name:
         xml = re.sub(r'(<screen\b[^>]*?saveFileName=")[^"]*(")', lambda x: x.group(1) + save_name + x.group(2), xml, count=1)
