@@ -23,16 +23,19 @@ object Maghrib {
     /** The sun angle at sunset for elevation 0: 0.833 + 0.0347 * sqrt(0). */
     private const val SUNSET_ANGLE = 0.833
 
-    fun dhaka(date: LocalDate): LocalTime {
+    fun dhaka(date: LocalDate): LocalTime = Sun.dhaka(date).sunset
+
+    /** The sunrise ([sunrise] true, first guess 06:00, 'ccw') or the sunset (first guess 18:00) of praytimes.py. */
+    internal fun sunTime(date: LocalDate, sunrise: Boolean): LocalTime {
         val jDate = julian(date.year, date.monthValue, date.dayOfMonth) - LONGITUDE / (15 * 24.0)
-        // 1 iteration from the first guess 18:00, as numIterations = 1 in praytimes.py.
-        val portion = 18 / 24.0
+        // 1 iteration from the first guess, as numIterations = 1 in praytimes.py.
+        val portion = (if (sunrise) 6 else 18) / 24.0
         val decl = sunPosition(jDate + portion).first
         val noon = fixHour(12 - sunPosition(jDate + portion).second)
         val t = 1 / 15.0 * arccos((-dsin(SUNSET_ANGLE) - dsin(decl) * dsin(LATITUDE)) / (dcos(decl) * dcos(LATITUDE)))
-        val sunset = noon + t + (TIME_ZONE - LONGITUDE / 15.0)
+        val local = (if (sunrise) noon + -t else noon + t) + (TIME_ZONE - LONGITUDE / 15.0)
         // Maghrib = sunset - 0 min. Round to the minute as getFormattedTime does.
-        val time = fixHour(sunset + 0.5 / 60)
+        val time = fixHour(local + 0.5 / 60)
         val hours = floor(time)
         val minutes = floor((time - hours) * 60)
         return LocalTime.of(hours.toInt(), minutes.toInt())
@@ -75,4 +78,11 @@ object Maghrib {
         val r = a - mode * floor(a / mode)
         return if (r < 0) r + mode else r
     }
+}
+
+data class SunTimes(val sunrise: LocalTime, val sunset: LocalTime)
+
+/** Sunrise and Sunset in Dhaka, as praytimes.py calculates them (the waqt display). */
+object Sun {
+    fun dhaka(date: LocalDate): SunTimes = SunTimes(Maghrib.sunTime(date, sunrise = true), Maghrib.sunTime(date, sunrise = false))
 }
