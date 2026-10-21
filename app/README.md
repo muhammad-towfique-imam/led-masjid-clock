@@ -103,7 +103,8 @@ connect to the WiFi of that display, set the time (or skip), and tap **Send**.
 
 In the step "Connect", the list "Displays nearby" shows the card WiFi networks near the phone (names such as
 `WF1_…`), with the card of this tab first and marked ✓. Tap a card or "Open WiFi settings" to choose the WiFi and
-type its password. The first time, tap "Show displays nearby" and allow **precise** location (Android needs it for the
+type its password (on Android 10 and later, a small WiFi dialog opens; if the card is not in it, use its link to
+all networks). The first time, tap "Show displays nearby" and allow **precise** location (Android needs it for the
 WiFi scan list on all versions); the location setting must be on.
 
 The app remembers the inputs of each card: after a successful send, it saves the inputs under the card name. When

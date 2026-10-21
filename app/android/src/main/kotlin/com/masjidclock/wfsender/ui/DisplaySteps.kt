@@ -1,6 +1,7 @@
 package com.masjidclock.wfsender.ui
 
 import android.content.Intent
+import android.os.Build
 import android.content.Context
 import android.content.ActivityNotFoundException
 import android.provider.Settings
@@ -172,14 +173,16 @@ internal fun DisplayTabScreen(
 }
 
 /**
- * The WiFi settings. Not the WiFi panel of Android 10 and later: it shows only the first few networks, and an app
- * cannot change that (field test 2026-10-20).
+ * The WiFi selection: on Android 10 and later the WiFi panel over the app (user choice, 2026-10-21), else the WiFi
+ * settings. The panel shows only the first few networks, and an app cannot filter it; the list "Displays nearby"
+ * names the card, and the panel's link to all networks opens the full list.
  */
 internal fun openWifi(context: Context) {
+    val intent = if (Build.VERSION.SDK_INT >= 29) Intent(Settings.Panel.ACTION_WIFI) else Intent(Settings.ACTION_WIFI_SETTINGS)
     try {
-        context.startActivity(Intent(Settings.ACTION_WIFI_SETTINGS))
+        context.startActivity(intent)
     } catch (e: ActivityNotFoundException) {
-        // No WiFi settings on this device: nothing to open.
+        runCatching { context.startActivity(Intent(Settings.ACTION_WIFI_SETTINGS)) }
     }
 }
 
