@@ -93,8 +93,10 @@ with the old key.
 ### The display tabs
 
 A masjid clock is a stack of separate displays, each with its own card and WiFi. The bottom bar has 1 tab for
-each display, in the order of the stack: **English**, **Bangla**, **Hijri** (m5 displays, 384 wide). On each tab:
-connect to the WiFi of that display, set the time (or skip), and tap **Send**.
+each display, in the order of the stack: **English**, **Bangla**, **Hijri** (m5 displays, 384 wide). Each tab is
+a wizard, 1 step at a time with **Prev** and **Next**: (1) connect to the WiFi of that display, (2) the inputs
+(Bangla and Hijri only), (3) set the time (or skip), (4) **Send**. Next is enabled when the step is complete. If the
+connection ends, the tab goes back to step 1. After a result, "Send again" starts at step 1.
 
 - **English:** no input. The app sends the stored English program; the card draws the date and the time.
 - **Bangla:** enter the Bangla year (the first time, the app fills in the current year; the year starts on

@@ -32,26 +32,25 @@ internal fun BanglaScreen(model: BanglaViewModel) {
     val yearText by model.yearText.collectAsStateWithLifecycle()
     val fromCard by model.valuesFromCard.collectAsStateWithLifecycle()
     val year = HijriInput.parseYear(yearText)
-    DisplayTabScreen(model, inputsValid = year != null) { state, sending ->
-        StepCard(1, "Bangla year", state) {
-            OutlinedTextField(
-                value = yearText,
-                onValueChange = model::setYearText,
-                label = { Text("Bangla year") },
-                singleLine = true,
-                enabled = !sending,
-                isError = yearText.isNotEmpty() && year == null,
-                supportingText = if (yearText.isNotEmpty() && year == null) {
-                    { Text(BanglaText.YEAR_ERROR) }
-                } else {
-                    null
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
-            )
-            if (fromCard) Text(CARD_VALUES_NOTE, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
-            if (year != null) BanglaSummary(year)
-        }
+    DisplayTabScreen(model, inputsValid = year != null, inputTitle = "Bangla year") { sending ->
+        OutlinedTextField(
+            value = yearText,
+            onValueChange = model::setYearText,
+            label = { Text("Bangla year") },
+            singleLine = true,
+            enabled = !sending,
+            isError = yearText.isNotEmpty() && year == null,
+            supportingText = if (yearText.isNotEmpty() && year == null) {
+                { Text(BanglaText.YEAR_ERROR) }
+            } else {
+                null
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth(),
+        )
+        if (fromCard) Text(CARD_VALUES_NOTE, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+        if (year != null) BanglaSummary(year)
+    
     }
 }
 

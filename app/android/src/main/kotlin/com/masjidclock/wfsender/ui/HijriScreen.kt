@@ -59,46 +59,45 @@ internal fun HijriScreen(model: HijriViewModel) {
     val fromCard by model.valuesFromCard.collectAsStateWithLifecycle()
     val year = HijriInput.parseYear(values.yearText)
     val month = values.month
-    DisplayTabScreen(model, inputsValid = month != null && year != null) { state, sending ->
-        StepCard(1, "Hijri month", state) {
-            DateField(values.monthStart, enabled = !sending, onChange = model::setDate)
-            MonthField(month, enabled = !sending, onChange = model::setMonth)
-            OutlinedTextField(
-                value = values.yearText,
-                onValueChange = model::setYearText,
-                label = { Text("Hijri year") },
-                singleLine = true,
-                enabled = !sending,
-                isError = values.yearText.isNotEmpty() && year == null,
-                supportingText = if (values.yearText.isNotEmpty() && year == null) {
-                    { Text(HijriInput.YEAR_ERROR) }
-                } else {
-                    null
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Text("Lower half", style = MaterialTheme.typography.titleSmall)
-            Column(modifier = Modifier.selectableGroup()) {
-                for (lower in LowerHalf.entries) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth().selectable(
-                            selected = values.lowerHalf == lower,
-                            enabled = !sending,
-                            role = Role.RadioButton,
-                            onClick = { model.setLowerHalf(lower) },
-                        ).padding(vertical = 4.dp),
-                    ) {
-                        RadioButton(selected = values.lowerHalf == lower, onClick = null, enabled = !sending)
-                        Text(lower.label, style = MaterialTheme.typography.bodyLarge)
-                    }
+    DisplayTabScreen(model, inputsValid = month != null && year != null, inputTitle = "Hijri month") { sending ->
+        DateField(values.monthStart, enabled = !sending, onChange = model::setDate)
+        MonthField(month, enabled = !sending, onChange = model::setMonth)
+        OutlinedTextField(
+            value = values.yearText,
+            onValueChange = model::setYearText,
+            label = { Text("Hijri year") },
+            singleLine = true,
+            enabled = !sending,
+            isError = values.yearText.isNotEmpty() && year == null,
+            supportingText = if (values.yearText.isNotEmpty() && year == null) {
+                { Text(HijriInput.YEAR_ERROR) }
+            } else {
+                null
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Text("Lower half", style = MaterialTheme.typography.titleSmall)
+        Column(modifier = Modifier.selectableGroup()) {
+            for (lower in LowerHalf.entries) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth().selectable(
+                        selected = values.lowerHalf == lower,
+                        enabled = !sending,
+                        role = Role.RadioButton,
+                        onClick = { model.setLowerHalf(lower) },
+                    ).padding(vertical = 4.dp),
+                ) {
+                    RadioButton(selected = values.lowerHalf == lower, onClick = null, enabled = !sending)
+                    Text(lower.label, style = MaterialTheme.typography.bodyLarge)
                 }
             }
-            if (fromCard) Text(CARD_VALUES_NOTE, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
-            Summary(values.monthStart, month, year)
         }
+        if (fromCard) Text(CARD_VALUES_NOTE, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+        Summary(values.monthStart, month, year)
+    
     }
 }
 
