@@ -155,7 +155,7 @@ private fun ConnectStep(model: DisplayViewModel) {
     OutlinedButton(
         onClick = { openWifi(context) },
         enabled = !sending,
-    ) { IconLabel(Icons.Filled.SettingsIcon, "Open WiFi settings") }
+    ) { IconLabel(Icons.Filled.SettingsIcon, "Connect") }
     if (sendState == SendState.Idle) {
         when (connection) {
             ConnectionStatus.NOT_CONNECTED -> StatusLine(Messages.NOT_CONNECTED, ok = false)

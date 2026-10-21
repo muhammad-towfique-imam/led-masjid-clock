@@ -104,7 +104,7 @@ connection ends, the tab goes back to step 1. After a result, "Send again" start
 - **Hijri:** see "Set the Hijri month" below.
 
 In the step "Connect", the list "Displays nearby" shows the card WiFi networks near the phone (names such as
-`WF1_…`), with the card of this tab first and marked ✓. Tap a card or "Open WiFi settings" to choose the WiFi and
+`WF1_…`), with the card of this tab first and marked ✓. Tap a card or "Connect" to choose the WiFi and
 type its password (on Android 10 and later, a small WiFi dialog opens; if the card is not in it, use its link to
 all networks). The first time, tap "Show displays nearby" and allow **precise** location (Android needs it for the
 WiFi scan list on all versions); the location setting must be on.
