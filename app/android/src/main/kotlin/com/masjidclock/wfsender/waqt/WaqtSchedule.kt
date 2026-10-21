@@ -83,7 +83,11 @@ object WaqtSchedule {
         val table = mutableListOf(baseDate to current.toList())
         for (change in all) {
             current[change.prayer] = change.time
-            table += applyTime(change) to current.toList()
+            val start = applyTime(change)
+            // The app: changes with the same start time are 1 row. The desktop app makes 2 rows, and the first then
+            // ends 1 second before it starts (a reversed window).
+            if (!desktopEnd && table.last().first == start) table[table.lastIndex] = start to current.toList()
+            else table += start to current.toList()
         }
 
         val out = mutableListOf<WaqtCopy>()

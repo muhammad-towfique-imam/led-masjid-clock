@@ -93,6 +93,19 @@ class WaqtScheduleTest {
         assertNoOverlap(copies)
     }
 
+    @Test
+    fun sameApplyTimeGivesNoReversedWindow() {
+        // Zuhr and Jumu'ah change to 1:20 on the same date: both apply on 30 Oct at 13:50.
+        val c = case("w0")
+        val changes = listOf(
+            WaqtChange(LocalDate.of(2026, 10, 31), 1, HourMinute(1, 20)),
+            WaqtChange(LocalDate.of(2026, 10, 31), 5, HourMinute(1, 20)),
+        )
+        val copies = WaqtSchedule.copies(c.times, changes, c.now)
+        assertNoOverlap(copies)
+        assertTrue(copies.none { it.times[1] == " 1:20" && it.times[5] != " 1:20" })
+    }
+
     /** The copies are in order, and each starts after the one before ends. */
     private fun assertNoOverlap(copies: List<WaqtCopy>) {
         var previousEnd: LocalDateTime? = null
