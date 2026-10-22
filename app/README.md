@@ -126,7 +126,9 @@ Jumu'ah, Sunrise, Sunset. Step 1 "Prayer times" has 1 card for each prayer: the 
 changes of that prayer (a date and a new time; "+ Add a change" fills in the next day and the last time).
 Fajr is am, the others are pm. A change starts 30 minutes after that prayer on the day before. Sunrise and
 Sunset are calculated for each day (Dhaka). The program ends 3 days after the last change (without changes:
-30 days after today); after that, the display is blank.
+30 days after today); after that, the display is blank. The summary line "The program covers …" ends on the date of
+the last change, without the 3 days. 2 prayers cannot have the same time, but Zuhr and Jumu'ah can (on Friday,
+Jumu'ah replaces Zuhr).
 
 Each masjid has its own jamaat times, so the Waqt tab has **profiles**: 1 profile for each masjid. The dropdown
 **Masjid** at the top of step 1 selects the profile; the app sends the selected profile, and the send log shows

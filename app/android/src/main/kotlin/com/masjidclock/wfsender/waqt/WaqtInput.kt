@@ -43,6 +43,7 @@ object WaqtInput {
     /**
      * The message if 2 prayers have the same clock time on a day (user, 2026-10-21: no 2 prayers have the same time),
      * else null: the "Today" times, then the times from each change date. am/pm as [WaqtSchedule.applyTime].
+     * Zuhr and Jumu'ah can have the same time: on Friday, Jumu'ah replaces Zuhr (user, 2026-10-22).
      */
     fun timeConflict(values: WaqtValues): String? {
         if (values.times.size != 6 || values.times.any { it == null }) return null
@@ -57,12 +58,16 @@ object WaqtInput {
 
     private fun conflict(times: List<HourMinute>): String? {
         for (a in times.indices) for (b in a + 1 until times.size) {
+            if (a == ZUHR && b == JUMUAH) continue
             if (clock(a, times[a]) == clock(b, times[b])) {
                 return "${WaqtPrayers.NAMES[a]} and ${WaqtPrayers.NAMES[b]} have the same time"
             }
         }
         return null
     }
+
+    private const val ZUHR = 1
+    private const val JUMUAH = 5
 
     private fun clock(prayer: Int, time: HourMinute) = (if (prayer > 0 && time.hour < 12) time.hour + 12 else time.hour) * 60 + time.minute
 
@@ -73,7 +78,7 @@ object WaqtInput {
         else WaqtChange(today.plusDays(1), prayer, values.times[prayer] ?: HourMinute(12, 0))
     }
 
-    /** The summary under the step: today's Sunrise and Sunset, and the period of the program (if the inputs are valid). */
+    /** The summary under the step: today's Sunrise and Sunset, and the period of the schedule (if the inputs are valid). */
     fun summary(input: WaqtValues, now: LocalDateTime): List<String> {
         // The same values as the send: past changes are already "Today".
         val values = merged(input, now)
@@ -85,7 +90,8 @@ object WaqtInput {
         val copies = WaqtSchedule.copies(values.times.map { it!! }, values.changes, now)
         return listOf(
             first,
-            "The program covers ${copies.first().dateStart.format(DAY_TEXT)} to ${copies.last().dateEnd.format(DAY_TEXT)}.",
+            // The end is the last change date (user, 2026-10-22), not the end of the 3-day buffer.
+            "The program covers ${copies.first().dateStart.format(DAY_TEXT)} to ${values.changes.maxOf { it.date }.format(DAY_TEXT)}.",
         )
     }
 

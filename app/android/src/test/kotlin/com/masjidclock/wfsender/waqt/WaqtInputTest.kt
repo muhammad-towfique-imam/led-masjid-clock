@@ -58,7 +58,7 @@ class WaqtInputTest {
     fun summaryLines() {
         val values = WaqtValues(times, listOf(WaqtChange(d(10, 31), 2, HourMinute(4, 30))))
         assertEquals(
-            listOf("Today: Sunrise 5:58 am, Sunset 5:27 pm (calculated).", "The program covers 19 Oct 2026 to 3 Nov 2026."),
+            listOf("Today: Sunrise 5:58 am, Sunset 5:27 pm (calculated).", "The program covers 19 Oct 2026 to 31 Oct 2026."),
             WaqtInput.summary(values, LocalDateTime.of(2026, 10, 21, 21, 44, 2)),
         )
     }
@@ -87,12 +87,23 @@ class WaqtInputTest {
         val today = WaqtValues(times.toMutableList().also { it[4] = HourMinute(4, 15) }, emptyList())
         assertEquals("Asr and Isha have the same time (today).", WaqtInput.timeConflict(today))
         assertFalse(WaqtInput.isValid(today))
-        val later = WaqtValues(times, listOf(WaqtChange(d(10, 31), 5, HourMinute(1, 15))))
-        assertEquals("Zuhr and Jumu'ah have the same time (from 31 Oct 2026).", WaqtInput.timeConflict(later))
+        val later = WaqtValues(times, listOf(WaqtChange(d(10, 31), 4, HourMinute(4, 15))))
+        assertEquals("Asr and Isha have the same time (from 31 Oct 2026).", WaqtInput.timeConflict(later))
         assertFalse(WaqtInput.isValid(later))
         // A conflict that a later change of the same date removes is not a conflict.
-        val fixed = WaqtValues(times, listOf(WaqtChange(d(10, 31), 5, HourMinute(1, 15)), WaqtChange(d(10, 31), 1, HourMinute(1, 0))))
+        val fixed = WaqtValues(times, listOf(WaqtChange(d(10, 31), 4, HourMinute(4, 15)), WaqtChange(d(10, 31), 2, HourMinute(4, 0))))
         assertNull(WaqtInput.timeConflict(fixed))
+    }
+
+    @Test
+    fun zuhrAndJumuahCanHaveTheSameTime() {
+        // On Friday, Jumu'ah replaces Zuhr (user, 2026-10-22).
+        val today = WaqtValues(times.toMutableList().also { it[5] = HourMinute(1, 15) }, emptyList())
+        assertNull(WaqtInput.timeConflict(today))
+        assertTrue(WaqtInput.isValid(today))
+        val later = WaqtValues(times, listOf(WaqtChange(d(10, 31), 5, HourMinute(1, 15))))
+        assertNull(WaqtInput.timeConflict(later))
+        assertTrue(WaqtInput.isValid(later))
     }
 
     @Test
