@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.masjidclock.wfsender.WaqtViewModel
 import com.masjidclock.wfsender.hijri.HijriInput
+import com.masjidclock.wfsender.send.SendState
 import com.masjidclock.wfsender.waqt.HourMinute
 import com.masjidclock.wfsender.waqt.WaqtInput
 import com.masjidclock.wfsender.waqt.WaqtPrayers
@@ -52,9 +53,13 @@ private val DAY = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.US)
 @Composable
 internal fun WaqtScreen(model: WaqtViewModel) {
     val values by model.values.collectAsStateWithLifecycle()
+    val profiles by model.profiles.collectAsStateWithLifecycle()
+    val sendState by model.sendState.collectAsStateWithLifecycle()
     DisplayTabScreen(model, inputsValid = WaqtInput.isValid(values), inputTitle = "Prayer times") { sending ->
         // Each time the step opens, changes that already apply move to "Today".
         LaunchedEffect(Unit) { model.mergePast() }
+        // [sending] is also true when the page is locked; a locked page can still select a profile.
+        WaqtProfileField(model, profiles, canSelect = sendState !is SendState.Sending, canChange = !sending)
         for ((prayer, name) in WaqtPrayers.NAMES.withIndex()) {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {

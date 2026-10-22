@@ -128,7 +128,8 @@ object WaqtCodec {
 }
 
 /** The first lines of the send log of a waqt program. */
-fun waqtLogHeader(values: WaqtValues, copies: Int, programSize: Int): List<String> = listOf(
+fun waqtLogHeader(profile: String, values: WaqtValues, copies: Int, programSize: Int): List<String> = listOf(
     "Display: m5, 384 × 128, progam.hds $programSize bytes",
+    "Profile: $profile",
     "Waqt: $copies copies, ${values.changes.size} changes",
 )

@@ -9,6 +9,8 @@ import com.masjidclock.wfsender.waqt.WaqtChange
 import com.masjidclock.wfsender.waqt.WaqtCodec
 import com.masjidclock.wfsender.waqt.WaqtInput
 import com.masjidclock.wfsender.waqt.WaqtM5
+import com.masjidclock.wfsender.waqt.WaqtProfileCodec
+import com.masjidclock.wfsender.waqt.WaqtProfiles
 import com.masjidclock.wfsender.waqt.WaqtProgram
 import com.masjidclock.wfsender.waqt.WaqtSchedule
 import com.masjidclock.wfsender.waqt.WaqtValues
@@ -23,10 +25,42 @@ class WaqtViewModel(app: Application) : DisplayViewModel(app, DisplayTab.WAQT) {
 
     private val prefs = app.getSharedPreferences("waqt", Context.MODE_PRIVATE)
 
-    private val _values = MutableStateFlow(
-        WaqtInput.merged(WaqtCodec.decode(prefs.getString(VALUES, null)) ?: EMPTY, LocalDateTime.now()),
+    /** The profiles. Before 0.7.0 the app had 1 set of values ("values"): it becomes the profile "Default". */
+    private val _profiles = MutableStateFlow(
+        (WaqtProfileCodec.decode(prefs.getString(PROFILES, null)) ?: WaqtProfiles.first(WaqtCodec.decode(prefs.getString(VALUES, null))))
+            .let { it.update(WaqtInput.merged(it.current.values, LocalDateTime.now())) },
     )
+    val profiles: StateFlow<WaqtProfiles> = _profiles
+
+    /** The values of the selected profile. */
+    private val _values = MutableStateFlow(_profiles.value.current.values)
     val values: StateFlow<WaqtValues> = _values
+
+    /** A different profile can be selected while the inputs are locked, but not during a send. */
+    fun selectProfile(name: String) {
+        if (gate.busy) return
+        saveProfiles(_profiles.value.select(name))
+        mergePast()
+    }
+
+    fun createProfile(name: String) = changeProfiles { it.create(name) }
+
+    fun duplicateProfile(name: String) = changeProfiles { it.duplicate(name) }
+
+    fun renameProfile(old: String, name: String) = changeProfiles { it.rename(old, name) }
+
+    fun deleteProfile(name: String) = changeProfiles { it.delete(name) }
+
+    private fun changeProfiles(change: (WaqtProfiles) -> WaqtProfiles) {
+        if (!editable()) return
+        saveProfiles(change(_profiles.value))
+    }
+
+    private fun saveProfiles(profiles: WaqtProfiles) {
+        _profiles.value = profiles
+        _values.value = profiles.current.values
+        prefs.edit().putString(PROFILES, WaqtProfileCodec.encode(profiles)).apply()
+    }
 
     fun setTime(prayer: Int, time: HourMinute) = update { it.copy(times = it.times.toMutableList().also { t -> t[prayer] = time }) }
 
@@ -49,24 +83,22 @@ class WaqtViewModel(app: Application) : DisplayViewModel(app, DisplayTab.WAQT) {
         save(change(_values.value))
     }
 
-    private fun save(values: WaqtValues) {
-        _values.value = values
-        prefs.edit().putString(VALUES, WaqtCodec.encode(values)).apply()
-    }
+    private fun save(values: WaqtValues) = saveProfiles(_profiles.value.update(values))
 
     override fun prepareSend(): SendJob? {
+        val profile = _profiles.value.current.name
         val values = WaqtInput.merged(_values.value, LocalDateTime.now())
         if (!WaqtInput.isValid(values)) return null
         val now = LocalDateTime.now()
         val copies = WaqtSchedule.copies(values.times.map { it!! }, values.changes, now)
         return SendJob(
             makeExport = { HdsExport(WaqtM5.screen, WaqtProgram.make(copies)) },
-            logHeader = { export -> waqtLogHeader(values, copies.size, export.program.size) },
+            logHeader = { export -> waqtLogHeader(profile, values, copies.size, export.program.size) },
         )
     }
 
     private companion object {
         const val VALUES = "values"
-        val EMPTY = WaqtValues(List(6) { null }, emptyList())
+        const val PROFILES = "profiles"
     }
 }

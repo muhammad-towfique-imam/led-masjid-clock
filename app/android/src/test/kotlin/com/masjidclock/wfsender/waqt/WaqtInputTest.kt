@@ -66,8 +66,8 @@ class WaqtInputTest {
     @Test
     fun logHeader() {
         assertEquals(
-            listOf("Display: m5, 384 × 128, progam.hds 681991 bytes", "Waqt: 29 copies, 1 changes"),
-            waqtLogHeader(WaqtValues(times, listOf(WaqtChange(d(10, 31), 2, HourMinute(4, 30)))), 29, 681991),
+            listOf("Display: m5, 384 × 128, progam.hds 681991 bytes", "Profile: Baitul Aman", "Waqt: 29 copies, 1 changes"),
+            waqtLogHeader("Baitul Aman", WaqtValues(times, listOf(WaqtChange(d(10, 31), 2, HourMinute(4, 30)))), 29, 681991),
         )
     }
 

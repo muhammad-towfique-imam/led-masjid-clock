@@ -122,11 +122,18 @@ to the last tab. The app opens on the last tab that you used.
 ### Set the prayer times (Waqt)
 
 The **Waqt** tab (the 4th tab) programs the waqt display (m5, 384 × 128): Fajr, Zuhr, Asr, Magrib, Isha,
-Jumu'ah, Sunrise, Sunset. Step 2 "Prayer times" has 1 card for each prayer: the time of **Today**, and the
+Jumu'ah, Sunrise, Sunset. Step 1 "Prayer times" has 1 card for each prayer: the time of **Today**, and the
 changes of that prayer (a date and a new time; "+ Add a change" fills in the next day and the last time).
 Fajr is am, the others are pm. A change starts 30 minutes after that prayer on the day before. Sunrise and
 Sunset are calculated for each day (Dhaka). The program ends 3 days after the last change (without changes:
 30 days after today); after that, the display is blank.
+
+Each masjid has its own jamaat times, so the Waqt tab has **profiles**: 1 profile for each masjid. The dropdown
+**Masjid** at the top of step 1 selects the profile; the app sends the selected profile, and the send log shows
+its name. The first profile is "Default" (with the times from before 0.7.0). In the dropdown, "+ New profile"
+makes a profile with no times, "Copy" makes a profile with the times and the changes of the selected profile, and
+"Rename" and "Delete" change the selected profile. The last profile cannot be deleted. When the inputs are locked,
+you can select a profile, but you cannot make, rename, or delete one.
 
 ### Send a package
 
@@ -202,6 +209,9 @@ For m5 displays (384 × 32) only. The phone makes the Hijri program itself: no P
     Sunrise and Sunset change daily; a 12:30 Zuhr shows "12:30"; after the end the display is blank.
 28. Lock: on Bangla, Hijri, and Waqt, Next on step 1 locks the inputs; Unlock opens them; a successful send locks
     them; the lock stays after the app restarts.
+29. Waqt profiles: after the update, "Default" has the old times. Copy it, change 1 time in the copy, and select
+    "Default" again: its time did not change. Send each profile and look at the display. Rename and delete a
+    profile; the selected profile stays after the app restarts.
 
 If Create does not find a USB drive, tap the ⓘ icon at the top of the Create tab ("Share details")
 and send the text to support.
